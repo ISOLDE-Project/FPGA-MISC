@@ -764,8 +764,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.512695",
-   "Default View_TopLeft":"-246,-884",
+   "Default View_ScaleFactor":"0.705979",
+   "Default View_TopLeft":"-246,-686",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:9.0 non-TLS
 #  -string -flagsOSRD
@@ -799,11 +799,11 @@ preplace netloc clk_wiz_0_clk_out2 1 1 1 500 -210n
 preplace netloc clk_wiz_0_clk_out3 1 1 3 510 -50 1010 -260 1630
 preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 2 520 240 990
 preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 1 3 520 -570 NJ -570 1620
-preplace netloc axi_chip2chip_0_m_axi_lite 1 2 1 N 30
-preplace netloc axi_smc_1_M00_AXI 1 2 2 1020 -50 1620
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
 preplace netloc axi_smc_M00_AXI 1 1 4 520 -40 NJ -40 NJ -40 1900
 preplace netloc CLK_IN1_D_0_1 1 0 1 N -210
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
+preplace netloc axi_smc_1_M00_AXI 1 2 2 1020 -50 1620
+preplace netloc axi_chip2chip_0_m_axi_lite 1 2 1 N 30
 levelinfo -pg 1 0 390 750 1330 1770 1940
 pagesize -pg 1 -db -bbox -sgen -250 -860 2200 870
 "
