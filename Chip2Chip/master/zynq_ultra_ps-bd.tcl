@@ -72,10 +72,10 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
 
 
   # Create interface ports
-  set clk_300mhz [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 clk_300mhz ]
+  set CLK_IN1_D_0 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK_IN1_D_0 ]
   set_property -dict [ list \
    CONFIG.FREQ_HZ {300000000} \
-   ] $clk_300mhz
+   ] $CLK_IN1_D_0
 
 
   # Create ports
@@ -129,7 +129,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.CLKOUT3_PHASE_ERROR {77.836} \
    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {80.000} \
    CONFIG.CLKOUT3_USED {true} \
-   CONFIG.CLK_IN1_BOARD_INTERFACE {clk_300mhz} \
+   CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
+   CONFIG.CLK_IN2_BOARD_INTERFACE {Custom} \
    CONFIG.MMCM_CLKFBOUT_MULT_F {4.000} \
    CONFIG.MMCM_CLKIN1_PERIOD {3.333} \
    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
@@ -137,7 +138,9 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.MMCM_CLKOUT1_DIVIDE {6} \
    CONFIG.MMCM_CLKOUT2_DIVIDE {15} \
    CONFIG.NUM_OUT_CLKS {3} \
+   CONFIG.PRIM_IN_FREQ {300.000} \
    CONFIG.PRIM_SOURCE {Differential_clock_capable_pin} \
+   CONFIG.RESET_BOARD_INTERFACE {Custom} \
    CONFIG.USE_BOARD_FLOW {true} \
    CONFIG.USE_LOCKED {false} \
    CONFIG.USE_RESET {false} \
@@ -307,6 +310,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.PSU_MIO_76_POLARITY {Default} \
    CONFIG.PSU_MIO_77_DIRECTION {inout} \
    CONFIG.PSU_MIO_77_POLARITY {Default} \
+   CONFIG.PSU_MIO_7_INPUT_TYPE {cmos} \
+   CONFIG.PSU_MIO_7_POLARITY {Default} \
    CONFIG.PSU_MIO_TREE_PERIPHERALS {Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Feedback Clk##########I2C 1#I2C 1#UART 0#UART 0#UART 1#UART 1###CAN 1#CAN 1##DPAUX#DPAUX#DPAUX#DPAUX###############SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#MDIO 3#MDIO 3} \
    CONFIG.PSU_MIO_TREE_SIGNALS {sclk_out#miso_mo1#mo2#mo3#mosi_mi0#n_ss_out#clk_for_lpbk##########scl_out#sda_out#rxd#txd#txd#rxd###phy_tx#phy_rx##dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in###############sdio1_cd_n#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl#gem3_mdc#gem3_mdio_out} \
    CONFIG.PSU_SD1_INTERNAL_BUS_WIDTH {4} \
@@ -728,10 +733,10 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
  ] $zynq_ultra_ps_e_0
 
   # Create interface connections
+  connect_bd_intf_net -intf_net CLK_IN1_D_0_1 [get_bd_intf_ports CLK_IN1_D_0] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
   connect_bd_intf_net -intf_net axi_chip2chip_0_m_axi_lite [get_bd_intf_pins axi_chip2chip_0/m_axi_lite] [get_bd_intf_pins axi_smc_1/S00_AXI]
   connect_bd_intf_net -intf_net axi_smc_1_M00_AXI [get_bd_intf_pins axi_smc_1/M00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HPC0_FPD]
   connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_chip2chip_0/s_axi] [get_bd_intf_pins axi_smc/M00_AXI]
-  connect_bd_intf_net -intf_net clk_300mhz_1 [get_bd_intf_ports clk_300mhz] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins axi_smc/S00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD]
 
   # Create port connections
@@ -759,12 +764,12 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.512695",
-   "Default View_TopLeft":"-246,-884",
+   "Default View_ScaleFactor":"1.35301",
+   "Default View_TopLeft":"-704,-388",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:9.0 non-TLS
 #  -string -flagsOSRD
-preplace port clk_300mhz -pg 1 -lvl 0 -x 0 -y -210 -defaultsOSRD
+preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x 0 -y -210 -defaultsOSRD
 preplace port GPIO_LED_0 -pg 1 -lvl 5 -x 1940 -y 140 -defaultsOSRD
 preplace port GPIO_LED_1 -pg 1 -lvl 5 -x 1940 -y 200 -defaultsOSRD
 preplace port GPIO_LED_2 -pg 1 -lvl 5 -x 1940 -y 170 -defaultsOSRD
@@ -794,11 +799,11 @@ preplace netloc clk_wiz_0_clk_out2 1 1 1 500 -210n
 preplace netloc clk_wiz_0_clk_out3 1 1 3 510 -50 1010 -260 1630
 preplace netloc proc_sys_reset_0_peripheral_aresetn 1 1 2 520 240 990
 preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 1 3 520 -570 NJ -570 1620
-preplace netloc axi_smc_1_M00_AXI 1 2 2 1020 -50 1620
-preplace netloc clk_300mhz_1 1 0 1 N -210
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
 preplace netloc axi_smc_M00_AXI 1 1 4 520 -40 NJ -40 NJ -40 1900
 preplace netloc axi_chip2chip_0_m_axi_lite 1 2 1 N 30
+preplace netloc axi_smc_1_M00_AXI 1 2 2 1020 -50 1620
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
+preplace netloc CLK_IN1_D_0_1 1 0 1 N -210
 levelinfo -pg 1 0 390 750 1330 1770 1940
 pagesize -pg 1 -db -bbox -sgen -250 -860 2200 870
 "

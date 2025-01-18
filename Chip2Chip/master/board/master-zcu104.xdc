@@ -2,6 +2,10 @@
 ## ZCU104 board
 ######################################
 
+#clock
+set_property PACKAGE_PIN AH18 [get_ports CLK_IN1_D_0_clk_p]
+set_property PACKAGE_PIN AH17 [get_ports CLK_IN1_D_0_clk_n]
+
 #GPIO LEDs (Active High)
 set_property PACKAGE_PIN D5 [get_ports GPIO_LED_0]
 set_property PACKAGE_PIN D6 [get_ports GPIO_LED_1]
@@ -86,3 +90,5 @@ set_property PACKAGE_PIN A11 [get_ports {axi_c2c_selio_rx_data_in_0[20]}]
 set_property PACKAGE_PIN B11 [get_ports {axi_c2c_selio_rx_data_in_0[21]}]
 
 
+
+set_property IOSTANDARD DIFF_SSTL12 [get_ports CLK_IN1_D_0_clk_p]
