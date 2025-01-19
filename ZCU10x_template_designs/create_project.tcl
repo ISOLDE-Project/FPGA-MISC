@@ -6,7 +6,7 @@ source ./board/xilinx_zcu104.cfg
 
 ################################################################
 # load block design
-source  $project-bd.tcl
+source  ${_block_design_script_}-bd.tcl
 ################################################################
 
 if { ![info exists ::project] } {
