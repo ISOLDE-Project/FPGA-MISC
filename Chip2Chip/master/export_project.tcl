@@ -47,7 +47,7 @@ puts [ format "%s -- %s" $proj_dir $proj_name ]
 
 write_project_tcl -target_proj_dir "$orig_proj_dir" -force $script_folder/$proj_name-export.tcl
 puts [ format "%s -- done" $script_folder/$proj_name-export.tcl ]
-write_bd_tcl -force -no_project_wrapper -include_layout -bd_name "\$::_xil_proj_name_" $script_folder/${_block_design_script_}-bd.tcl
+write_bd_tcl  -no_ip_version -force -no_project_wrapper -include_layout -bd_name "\$::_xil_proj_name_" $script_folder/${_block_design_script_}-bd.tcl
 puts [ format "%s -- done" $script_folder/$proj_name-bd.tcl ]
 #
 set filename  $script_folder/$proj_name-properties.txt
