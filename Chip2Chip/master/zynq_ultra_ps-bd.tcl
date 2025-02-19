@@ -15,11 +15,11 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set bCheckIPs 1
   if { $bCheckIPs == 1 } {
      set list_check_ips "\ 
-  xilinx.com:ip:axi_chip2chip:5.0\
-  xilinx.com:ip:smartconnect:1.0\
-  xilinx.com:ip:clk_wiz:6.0\
-  xilinx.com:ip:proc_sys_reset:5.0\
-  xilinx.com:ip:zynq_ultra_ps_e:3.3\
+  xilinx.com:ip:axi_chip2chip:*\
+  xilinx.com:ip:smartconnect:*\
+  xilinx.com:ip:clk_wiz:*\
+  xilinx.com:ip:proc_sys_reset:*\
+  xilinx.com:ip:zynq_ultra_ps_e:*\
   "
 
    set list_ips_missing ""
@@ -90,7 +90,7 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set axi_c2c_selio_tx_diff_clk_out_p_0 [ create_bd_port -dir O -type clk axi_c2c_selio_tx_diff_clk_out_p_0 ]
 
   # Create instance: axi_chip2chip_0, and set properties
-  set axi_chip2chip_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_chip2chip:5.0 axi_chip2chip_0 ]
+  set axi_chip2chip_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_chip2chip axi_chip2chip_0 ]
   set_property -dict [ list \
    CONFIG.C_AXI_DATA_WIDTH {64} \
    CONFIG.C_AXI_STB_WIDTH {8} \
@@ -102,20 +102,20 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
  ] $axi_chip2chip_0
 
   # Create instance: axi_smc, and set properties
-  set axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axi_smc ]
+  set axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect axi_smc ]
   set_property -dict [ list \
    CONFIG.HAS_ARESETN {0} \
    CONFIG.NUM_SI {1} \
  ] $axi_smc
 
   # Create instance: axi_smc_1, and set properties
-  set axi_smc_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axi_smc_1 ]
+  set axi_smc_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect axi_smc_1 ]
   set_property -dict [ list \
    CONFIG.NUM_SI {1} \
  ] $axi_smc_1
 
   # Create instance: clk_wiz_0, and set properties
-  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
+  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz clk_wiz_0 ]
   set_property -dict [ list \
    CONFIG.CLKIN1_JITTER_PS {33.330000000000005} \
    CONFIG.CLKOUT1_JITTER {116.415} \
@@ -147,10 +147,10 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
  ] $clk_wiz_0
 
   # Create instance: proc_sys_reset_0, and set properties
-  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0 ]
+  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_0 ]
 
   # Create instance: zynq_ultra_ps_e_0, and set properties
-  set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.3 zynq_ultra_ps_e_0 ]
+  set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e zynq_ultra_ps_e_0 ]
   set_property -dict [ list \
    CONFIG.PSU_BANK_0_IO_STANDARD {LVCMOS18} \
    CONFIG.PSU_BANK_1_IO_STANDARD {LVCMOS18} \
@@ -764,8 +764,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"1.35301",
-   "Default View_TopLeft":"-704,-388",
+   "Default View_ScaleFactor":"0.512695",
+   "Default View_TopLeft":"-246,-884",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:9.0 non-TLS
 #  -string -flagsOSRD
@@ -802,8 +802,8 @@ preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 1 3 520 -570 NJ -570 1620
 preplace netloc axi_smc_M00_AXI 1 1 4 520 -40 NJ -40 NJ -40 1900
 preplace netloc axi_chip2chip_0_m_axi_lite 1 2 1 N 30
 preplace netloc axi_smc_1_M00_AXI 1 2 2 1020 -50 1620
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
 preplace netloc CLK_IN1_D_0_1 1 0 1 N -210
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 3 1 1630 -360n
 levelinfo -pg 1 0 390 750 1330 1770 1940
 pagesize -pg 1 -db -bbox -sgen -250 -860 2200 870
 "
