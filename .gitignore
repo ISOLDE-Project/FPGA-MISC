@@ -1,3 +1,7 @@
 vivado/
 .Xil/
 xilinx.cfg
+vitis_hls.log
+vitis_out.txt
+ vivado-ip/
+ 
