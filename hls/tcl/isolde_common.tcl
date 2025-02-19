@@ -17,7 +17,7 @@ set configs { \
 
 # ########################################################
 #set active solution
-set config_index 0
+set config_index 1
 
 # helpers ########################################################
 proc listconfigs {configs} {
@@ -34,9 +34,9 @@ proc mkdir { base_dir suffix_dir} {
     # Create the directory if it doesn't exist
     if {![file exists $target_dir]} {
         file mkdir $target_dir
-        puts "Created directory: $target_dir"
+        puts "**** INFO: Created directory: $target_dir"
     } else {
-        puts "Directory already exists: $target_dir"
+        puts "**** INFO: Directory already exists: $target_dir"
     }
 }
 
@@ -72,22 +72,22 @@ proc build_solution {__prj_name __sol_name hls_exec } {
 
         set __out_file  [get_solution -directory]/[get_project  -name]-[get_solution -name].zip
         set __ip_name  [get_project  -name] 
-        mkdir [get_solution -directory] "../../../../vivado-ip"
+        mkdir [get_solution -directory] ../../../../vivado-ip
         csynth_design 
         export_design  -description \"${::__ip_description}\" -display_name ${__ip_name} -flow syn -format ip_catalog -ipname ${__ip_name} -output ${__out_file}  -taxonomy \"${::__ip_taxonomy}\"
-        file copy -force ${__out_file} [get_solution -directory]/../../../../hardware/IP/	
+        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip	
     } elseif {$hls_exec == 5} { 
                 
         set __out_file  [get_solution -directory]/[get_project  -name]-[get_solution -name].zip
         set __ip_name  [get_project  -name] 
-        mkdir [get_solution -directory] "../../../../vivado-ip"
+        mkdir [get_solution -directory] ../../../../vivado-ip
         csynth_design 
         export_design  -description \"${::__ip_description}\" -display_name ${__ip_name} -flow impl -format ip_catalog -ipname ${__ip_name} -output ${__out_file}  -taxonomy \"${::__ip_taxonomy}\"
-        file copy -force ${__out_file} [get_solution -directory]/../../../../hardware/IP/	
+        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip	
     } else {
 
         #we are done 
-        mkdir [get_solution -directory] "../../../../vivado-ip"
+        mkdir [get_solution -directory] ../../../../vivado-ip
     }
     close_project
 }   

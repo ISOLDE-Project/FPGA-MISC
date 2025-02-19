@@ -2,7 +2,6 @@
 source prj_config.tcl
 source ../tcl/isolde_common.tcl
 
-set active_config [lindex $configs $config_index]
 
 #possible values for hls_exec
 # 1   =>  only checks source code, no synthesis
@@ -13,4 +12,6 @@ set active_config [lindex $configs $config_index]
 # >5  =>  nothing...
 
 
-build_solution $__prj_name [lindex $active_config 0 ] 6 
+puts "**** INFO: active configuration:  [lindex $configs $config_index]"
+
+build_solution $__prj_name [lindex [lindex $configs $config_index] 0 ] 4

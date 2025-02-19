@@ -3,5 +3,4 @@ vivado/
 xilinx.cfg
 vitis_hls.log
 vitis_out.txt
- vivado-ip/
- 
+vivado-ip/

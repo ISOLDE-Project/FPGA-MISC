@@ -7,13 +7,14 @@ set __m_axi_depth [expr 4*1024]
 
 proc set_optimizations {} {
     global __top_function
-	# Set any optimization directives
+    global __m_axi_depth
+    set_directive_interface -mode ap_ctrl_none ${__top_function}
+    set_directive_interface -bundle data_mem  -mode m_axi      ${__top_function} data_port  -depth ${::__m_axi_depth}
 
-	set_directive_interface -mode m_axi     ${__top_function}  data_port  -depth ${::__m_axi_depth}
-	set_directive_interface -mode s_axilite ${__top_function}  cfg_port1       
-	set_directive_interface -mode s_axilite ${__top_function}  cfg_port2
-	set_directive_interface -mode s_axilite ${__top_function}  return       -bundle control
+    set_directive_interface -bundle cfg_port1 -mode s_axilite  ${__top_function} cfg_port1  
+    set_directive_interface -bundle cfg_port2 -mode s_axilite  ${__top_function} cfg_port2  
 }
+
 
 
 # Add design files
