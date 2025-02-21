@@ -106,7 +106,7 @@ proc create_project { __prj_name __files __tb_files __top_function } {
     set __proj_dir [get_project -directory]
 
     # Define compiler flags
-    set __C__FLAGS "-I${__proj_dir} -DAC_IGNORE_BUILTINS -std=c++14"
+    set __C__FLAGS "-I${__proj_dir} -I${__proj_dir}/../../include -DAC_IGNORE_BUILTINS -std=c++14"
 
     # Add source files with compiler flags
     add_files ${__files} -cflags $__C__FLAGS -csimflags $__C__FLAGS
