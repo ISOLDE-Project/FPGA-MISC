@@ -16,6 +16,10 @@ python csv_to_xdc.py slave-zcu102.csv ../slave/board/slave-zcu102.xdc
 pip3 list --format=freeze | grep -v "@" > python-requirements.txt
 ```
 ## Update the current environment
+create an environment
+```sh
+conda create -n my_env python=3.11
+```
 ```sh
 pip3 install -U -r python-requirements.txt
 ```
