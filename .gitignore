@@ -4,3 +4,6 @@ xilinx.cfg
 vitis_hls.log
 vitis_out.txt
 vivado-ip/
+*.jou
+*.log
+*_pid*.str

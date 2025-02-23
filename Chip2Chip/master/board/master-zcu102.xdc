@@ -21,19 +21,19 @@ set_property IOSTANDARD LVCMOS33 [get_ports GPIO_LED_2]
 set_property IOSTANDARD LVCMOS33 [get_ports GPIO_LED_3]
 
 
-set_property IOSTANDARD LVCMOS18 [get_ports axi_c2c_selio_rx_data*]
-set_property IOSTANDARD LVCMOS18 [get_ports axi_c2c_selio_tx_data*]
+set_property IOSTANDARD LVCMOS18 [get_ports {axi_c2c_selio_rx_data*}]
+set_property IOSTANDARD LVCMOS18 [get_ports {axi_c2c_selio_tx_data*}]
 
 
-set_property IOSTANDARD DIFF_SSTL18_I [get_ports axi_c2c_selio_rx_diff_clk_in_n_0]
-set_property IOSTANDARD DIFF_SSTL18_I [get_ports axi_c2c_selio_rx_diff_clk_in_p_0]
-set_property IOSTANDARD DIFF_SSTL18_I [get_ports axi_c2c_selio_tx_diff_clk_out_n_0]
-set_property IOSTANDARD DIFF_SSTL18_I [get_ports axi_c2c_selio_tx_diff_clk_out_p_0]
+set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_rx_diff_clk_in_n_0}]
+set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_rx_diff_clk_in_p_0}]
+set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_tx_diff_clk_out_n_0}]
+set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_tx_diff_clk_out_p_0}]
 
 
 # TX pins
-set_property PACKAGE_PIN AA7 [get_ports axi_c2c_selio_tx_diff_clk_out_p_0]
-set_property PACKAGE_PIN AA6 [get_ports axi_c2c_selio_tx_diff_clk_out_n_0]
+set_property PACKAGE_PIN AA7 [get_ports {axi_c2c_selio_tx_diff_clk_out_p_0}]
+set_property PACKAGE_PIN AA6 [get_ports {axi_c2c_selio_tx_diff_clk_out_n_0}]
 
 set_property PACKAGE_PIN V1 [get_ports {axi_c2c_selio_tx_data_out_0[0]}]
 set_property PACKAGE_PIN V2 [get_ports {axi_c2c_selio_tx_data_out_0[1]}]
@@ -63,8 +63,8 @@ set_property PACKAGE_PIN W7 [get_ports {axi_c2c_selio_tx_data_out_0[21]}]
 
 
 # RX pins
-set_property PACKAGE_PIN T8 [get_ports axi_c2c_selio_rx_diff_clk_in_p_0]
-set_property PACKAGE_PIN R8 [get_ports axi_c2c_selio_rx_diff_clk_in_n_0]
+set_property PACKAGE_PIN T8 [get_ports {axi_c2c_selio_rx_diff_clk_in_p_0}]
+set_property PACKAGE_PIN R8 [get_ports {axi_c2c_selio_rx_diff_clk_in_n_0}]
 set_property PACKAGE_PIN AC8 [get_ports {axi_c2c_selio_rx_data_in_0[0]}]
 set_property PACKAGE_PIN AB8 [get_ports {axi_c2c_selio_rx_data_in_0[1]}]
 set_property PACKAGE_PIN AC6 [get_ports {axi_c2c_selio_rx_data_in_0[2]}]
