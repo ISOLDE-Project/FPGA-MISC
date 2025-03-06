@@ -1,0 +1,1 @@
+rm -fr aiml_stub
