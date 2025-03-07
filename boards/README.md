@@ -1,0 +1,1 @@
+[https://github.com/Xilinx/XilinxBoardStore/tree/2022.2/boards](https://github.com/Xilinx/XilinxBoardStore/tree/2022.2/boards)
