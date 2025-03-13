@@ -34,7 +34,6 @@ set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_tx_diff_clk_out_
 # TX pins
 set_property PACKAGE_PIN AA7 [get_ports {axi_c2c_selio_tx_diff_clk_out_p_0}]
 set_property PACKAGE_PIN AA6 [get_ports {axi_c2c_selio_tx_diff_clk_out_n_0}]
-
 set_property PACKAGE_PIN V1 [get_ports {axi_c2c_selio_tx_data_out_0[0]}]
 set_property PACKAGE_PIN V2 [get_ports {axi_c2c_selio_tx_data_out_0[1]}]
 set_property PACKAGE_PIN Y1 [get_ports {axi_c2c_selio_tx_data_out_0[2]}]
@@ -57,8 +56,6 @@ set_property PACKAGE_PIN AB5 [get_ports {axi_c2c_selio_tx_data_out_0[18]}]
 set_property PACKAGE_PIN AB6 [get_ports {axi_c2c_selio_tx_data_out_0[19]}]
 set_property PACKAGE_PIN W6 [get_ports {axi_c2c_selio_tx_data_out_0[20]}]
 set_property PACKAGE_PIN W7 [get_ports {axi_c2c_selio_tx_data_out_0[21]}]
-
-
 
 
 
