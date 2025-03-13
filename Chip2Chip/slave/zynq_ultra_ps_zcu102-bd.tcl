@@ -15,13 +15,12 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set bCheckIPs 1
   if { $bCheckIPs == 1 } {
      set list_check_ips "\ 
-  xilinx.com:hls:LEDSupervisor:*\
   xilinx.com:hls:aiml_stub:*\
   xilinx.com:ip:axi_chip2chip:*\
   xilinx.com:ip:clk_wiz:*\
   xilinx.com:ip:proc_sys_reset:*\
-  xilinx.com:hls:sensorSupervisor:*\
   xilinx.com:ip:smartconnect:*\
+  xilinx.com:ip:system_ila:*\
   "
 
    set list_ips_missing ""
@@ -94,9 +93,6 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.POLARITY {ACTIVE_HIGH} \
  ] $reset
 
-  # Create instance: LEDSupervisor_0, and set properties
-  set LEDSupervisor_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:LEDSupervisor LEDSupervisor_0 ]
-
   # Create instance: aiml_stub_0, and set properties
   set aiml_stub_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:aiml_stub aiml_stub_0 ]
 
@@ -119,7 +115,7 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set_property -dict [ list \
    CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
    CONFIG.NUM_MI {1} \
-   CONFIG.NUM_SI {3} \
+   CONFIG.NUM_SI {1} \
  ] $axi_interconnect_0
 
   # Create instance: clk_wiz_0, and set properties
@@ -133,10 +129,10 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.CLKOUT2_PHASE_ERROR {77.836} \
    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200.000} \
    CONFIG.CLKOUT2_USED {true} \
-   CONFIG.CLKOUT3_JITTER {101.475} \
+   CONFIG.CLKOUT3_JITTER {106.018} \
    CONFIG.CLKOUT3_PHASE_ERROR {77.836} \
-   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} \
-   CONFIG.CLKOUT3_USED {true} \
+   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {80.000} \
+   CONFIG.CLKOUT3_USED {false} \
    CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
    CONFIG.CLK_IN2_BOARD_INTERFACE {Custom} \
    CONFIG.MMCM_CLKFBOUT_MULT_F {4.000} \
@@ -144,8 +140,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
    CONFIG.MMCM_CLKOUT0_DIVIDE_F {15.000} \
    CONFIG.MMCM_CLKOUT1_DIVIDE {6} \
-   CONFIG.MMCM_CLKOUT2_DIVIDE {12} \
-   CONFIG.NUM_OUT_CLKS {3} \
+   CONFIG.MMCM_CLKOUT2_DIVIDE {1} \
+   CONFIG.NUM_OUT_CLKS {2} \
    CONFIG.PRIM_IN_FREQ {300.000} \
    CONFIG.PRIM_SOURCE {Differential_clock_capable_pin} \
    CONFIG.RESET_BOARD_INTERFACE {Custom} \
@@ -161,40 +157,59 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.USE_BOARD_FLOW {true} \
  ] $proc_sys_reset_0
 
-  # Create instance: proc_sys_reset_1, and set properties
-  set proc_sys_reset_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_1 ]
-  set_property -dict [ list \
-   CONFIG.RESET_BOARD_INTERFACE {reset} \
-   CONFIG.USE_BOARD_FLOW {true} \
- ] $proc_sys_reset_1
-
-  # Create instance: sensorSupervisor_0, and set properties
-  set sensorSupervisor_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sensorSupervisor sensorSupervisor_0 ]
-
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect smartconnect_0 ]
   set_property -dict [ list \
    CONFIG.HAS_ARESETN {0} \
-   CONFIG.NUM_CLKS {2} \
-   CONFIG.NUM_MI {4} \
+   CONFIG.NUM_CLKS {1} \
+   CONFIG.NUM_MI {1} \
    CONFIG.NUM_SI {1} \
  ] $smartconnect_0
 
+  # Create instance: system_ila_0, and set properties
+  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila system_ila_0 ]
+  set_property -dict [ list \
+   CONFIG.C_MON_TYPE {INTERFACE} \
+   CONFIG.C_NUM_MONITOR_SLOTS {2} \
+   CONFIG.C_SLOT_0_APC_EN {0} \
+   CONFIG.C_SLOT_0_AXI_AR_SEL_DATA {1} \
+   CONFIG.C_SLOT_0_AXI_AR_SEL_TRIG {1} \
+   CONFIG.C_SLOT_0_AXI_AW_SEL_DATA {1} \
+   CONFIG.C_SLOT_0_AXI_AW_SEL_TRIG {1} \
+   CONFIG.C_SLOT_0_AXI_B_SEL_DATA {1} \
+   CONFIG.C_SLOT_0_AXI_B_SEL_TRIG {1} \
+   CONFIG.C_SLOT_0_AXI_R_SEL_DATA {1} \
+   CONFIG.C_SLOT_0_AXI_R_SEL_TRIG {1} \
+   CONFIG.C_SLOT_0_AXI_W_SEL_DATA {1} \
+   CONFIG.C_SLOT_0_AXI_W_SEL_TRIG {1} \
+   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
+   CONFIG.C_SLOT_1_APC_EN {0} \
+   CONFIG.C_SLOT_1_AXI_AR_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_AR_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_AW_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_AW_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_B_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_B_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_R_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_R_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_W_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_W_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
+ ] $system_ila_0
+
   # Create interface connections
   connect_bd_intf_net -intf_net CLK_IN1_D_0_1 [get_bd_intf_ports CLK_IN1_D_0] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
-  connect_bd_intf_net -intf_net LEDSupervisor_0_m_axi_status [get_bd_intf_pins LEDSupervisor_0/m_axi_status] [get_bd_intf_pins axi_interconnect_0/S01_AXI]
   connect_bd_intf_net -intf_net aiml_stub_0_m_axi_data_mem [get_bd_intf_pins aiml_stub_0/m_axi_data_mem] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets aiml_stub_0_m_axi_data_mem] [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets aiml_stub_0_m_axi_data_mem]
   connect_bd_intf_net -intf_net axi_chip2chip_0_m_axi [get_bd_intf_pins axi_chip2chip_0/m_axi] [get_bd_intf_pins smartconnect_0/S00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_chip2chip_0/s_axi_lite] [get_bd_intf_pins axi_interconnect_0/M00_AXI]
-  connect_bd_intf_net -intf_net sensorSupervisor_0_m_axi_status [get_bd_intf_pins axi_interconnect_0/S02_AXI] [get_bd_intf_pins sensorSupervisor_0/m_axi_status]
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins aiml_stub_0/s_axi_cfg_port1] [get_bd_intf_pins smartconnect_0/M00_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M01_AXI [get_bd_intf_pins aiml_stub_0/s_axi_cfg_port2] [get_bd_intf_pins smartconnect_0/M01_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M02_AXI [get_bd_intf_pins LEDSupervisor_0/s_axi_cfg] [get_bd_intf_pins smartconnect_0/M02_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M03_AXI [get_bd_intf_pins sensorSupervisor_0/s_axi_cfg] [get_bd_intf_pins smartconnect_0/M03_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets smartconnect_0_M00_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI] [get_bd_intf_pins system_ila_0/SLOT_1_AXI]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets smartconnect_0_M00_AXI]
 
   # Create port connections
-  connect_bd_net -net ARESETN_1 [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins proc_sys_reset_1/interconnect_aresetn]
-  connect_bd_net -net M00_ARESETN_1 [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
+  connect_bd_net -net M00_ARESETN_1 [get_bd_pins aiml_stub_0/ap_rst_n] [get_bd_pins axi_chip2chip_0/m_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net axi_c2c_selio_rx_data_in_1 [get_bd_ports axi_c2c_selio_rx_data_in_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_data_in]
   connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_n_1 [get_bd_ports axi_c2c_selio_rx_diff_clk_in_n_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_diff_clk_in_n]
   connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_p_1 [get_bd_ports axi_c2c_selio_rx_diff_clk_in_p_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_diff_clk_in_p]
@@ -203,52 +218,40 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_data_out [get_bd_ports axi_c2c_selio_tx_data_out_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_data_out]
   connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n [get_bd_ports axi_c2c_selio_tx_diff_clk_out_n_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_diff_clk_out_n]
   connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p [get_bd_ports axi_c2c_selio_tx_diff_clk_out_p_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_diff_clk_out_p]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins axi_chip2chip_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk1]
+  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins aiml_stub_0/ap_clk] [get_bd_pins axi_chip2chip_0/m_aclk] [get_bd_pins axi_chip2chip_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins system_ila_0/clk]
   connect_bd_net -net clk_wiz_0_clk_out2 [get_bd_pins axi_chip2chip_0/idelay_ref_clk] [get_bd_pins clk_wiz_0/clk_out2]
-  connect_bd_net -net clk_wiz_0_clk_out3 [get_bd_pins LEDSupervisor_0/ap_clk] [get_bd_pins aiml_stub_0/ap_clk] [get_bd_pins axi_chip2chip_0/m_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axi_interconnect_0/S01_ACLK] [get_bd_pins axi_interconnect_0/S02_ACLK] [get_bd_pins clk_wiz_0/clk_out3] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins sensorSupervisor_0/ap_clk] [get_bd_pins smartconnect_0/aclk]
-  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins LEDSupervisor_0/ap_rst_n] [get_bd_pins aiml_stub_0/ap_rst_n] [get_bd_pins axi_chip2chip_0/m_aresetn] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins axi_interconnect_0/S02_ARESETN] [get_bd_pins proc_sys_reset_1/peripheral_aresetn] [get_bd_pins sensorSupervisor_0/ap_rst_n]
-  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins proc_sys_reset_1/ext_reset_in]
+  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins proc_sys_reset_0/ext_reset_in]
 
   # Create address segments
-  assign_bd_address -offset 0x00000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs LEDSupervisor_0/s_axi_cfg/Reg] -force
-  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs aiml_stub_0/s_axi_cfg_port1/Reg] -force
-  assign_bd_address -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs aiml_stub_0/s_axi_cfg_port2/Reg] -force
-  assign_bd_address -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs sensorSupervisor_0/s_axi_cfg/Reg] -force
-
-  # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces LEDSupervisor_0/Data_m_axi_status] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg]
-  exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces aiml_stub_0/Data_m_axi_data_mem] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg]
-  exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sensorSupervisor_0/Data_m_axi_status] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg]
+  assign_bd_address -offset 0xFFFD0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces aiml_stub_0/Data_m_axi_data_mem] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg] -force
+  assign_bd_address -offset 0xA0000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs aiml_stub_0/s_axi_cfg_port1/Reg] -force
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.721828",
-   "Default View_TopLeft":"-284,-202",
+   "Default View_ScaleFactor":"0.717936",
+   "Default View_TopLeft":"247,84",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
 preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x 0 -y 480 -defaultsOSRD
-preplace port port-id_GPIO_LED_0 -pg 1 -lvl 6 -x 1960 -y 740 -defaultsOSRD
-preplace port port-id_GPIO_LED_1 -pg 1 -lvl 6 -x 1960 -y 760 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x 0 -y 760 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x 0 -y 740 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 6 -x 1960 -y 720 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 6 -x 1960 -y 700 -defaultsOSRD
-preplace port port-id_reset -pg 1 -lvl 0 -x 0 -y 560 -defaultsOSRD
+preplace port GPIO_LED_0 -pg 1 -lvl 6 -x 2160 -y 740 -defaultsOSRD
+preplace port GPIO_LED_1 -pg 1 -lvl 6 -x 2160 -y 760 -defaultsOSRD
+preplace port axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x 0 -y 760 -defaultsOSRD
+preplace port axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x 0 -y 740 -defaultsOSRD
+preplace port axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 6 -x 2160 -y 720 -defaultsOSRD
+preplace port axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 6 -x 2160 -y 700 -defaultsOSRD
+preplace port reset -pg 1 -lvl 0 -x 0 -y 570 -defaultsOSRD
 preplace portBus axi_c2c_selio_rx_data_in_0 -pg 1 -lvl 0 -x 0 -y 720 -defaultsOSRD
-preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 6 -x 1960 -y 680 -defaultsOSRD
-preplace inst aiml_stub_0 -pg 1 -lvl 3 -x 910 -y 230 -defaultsOSRD
-preplace inst axi_chip2chip_0 -pg 1 -lvl 5 -x 1700 -y 700 -defaultsOSRD
+preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 6 -x 2160 -y 680 -defaultsOSRD
+preplace inst axi_chip2chip_0 -pg 1 -lvl 5 -x 1900 -y 700 -defaultsOSRD
+preplace inst axi_interconnect_0 -pg 1 -lvl 4 -x 1350 -y 500 -defaultsOSRD
 preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 140 -y 480 -defaultsOSRD
 preplace inst proc_sys_reset_0 -pg 1 -lvl 3 -x 910 -y 590 -defaultsOSRD
 preplace inst smartconnect_0 -pg 1 -lvl 2 -x 470 -y 350 -defaultsOSRD
-preplace inst axi_interconnect_0 -pg 1 -lvl 4 -x 1300 -y 500 -defaultsOSRD
-preplace inst proc_sys_reset_1 -pg 1 -lvl 2 -x 470 -y 540 -defaultsOSRD
-preplace inst LEDSupervisor_0 -pg 1 -lvl 3 -x 910 -y 80 -defaultsOSRD
-preplace inst sensorSupervisor_0 -pg 1 -lvl 3 -x 910 -y 400 -defaultsOSRD
-preplace netloc ARESETN_1 1 2 2 700J 490 1110
-preplace netloc M00_ARESETN_1 1 3 1 1140 540n
+preplace inst system_ila_0 -pg 1 -lvl 4 -x 1350 -y 180 -defaultsOSRD
+preplace inst aiml_stub_0 -pg 1 -lvl 3 -x 910 -y 230 -defaultsOSRD
+preplace netloc M00_ARESETN_1 1 2 3 640 310 1140 660 N
 preplace netloc axi_c2c_selio_rx_data_in_1 1 0 5 NJ 720 NJ 720 NJ 720 NJ 720 NJ
 preplace netloc axi_c2c_selio_rx_diff_clk_in_n_1 1 0 5 NJ 760 NJ 760 NJ 760 NJ 760 NJ
 preplace netloc axi_c2c_selio_rx_diff_clk_in_p_1 1 0 5 NJ 740 NJ 740 NJ 740 NJ 740 NJ
@@ -257,23 +260,16 @@ preplace netloc axi_chip2chip_0_axi_c2c_multi_bit_error_out 1 5 1 NJ 760
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_data_out 1 5 1 NJ 680
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n 1 5 1 NJ 720
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p 1 5 1 NJ 700
-preplace netloc clk_wiz_0_clk_out1 1 1 4 290 640 710 710 1150 710 1460J
-preplace netloc clk_wiz_0_clk_out2 1 1 4 260 700 NJ 700 NJ 700 NJ
-preplace netloc clk_wiz_0_clk_out3 1 1 4 270 250 710 480 1120 680 1450
-preplace netloc proc_sys_reset_1_peripheral_aresetn 1 2 3 690 690 1130 690 1460J
-preplace netloc reset_1 1 0 3 NJ 560 280 440 660J
+preplace netloc clk_wiz_0_clk_out1 1 1 4 260 270 630 320 1120 670 1510J
+preplace netloc clk_wiz_0_clk_out2 1 1 4 N 490 NJ 490 1110J 620 1500J
+preplace netloc reset_1 1 0 3 NJ 570 N 570 NJ
+preplace netloc axi_interconnect_0_M00_AXI 1 4 1 1510 500n
+preplace netloc axi_chip2chip_0_m_axi 1 1 5 270 280 620J 330 NJ 330 NJ 330 2140
+preplace netloc smartconnect_0_M00_AXI 1 2 2 610 150 1120
 preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 480
-preplace netloc LEDSupervisor_0_m_axi_status 1 3 1 1120 80n
-preplace netloc aiml_stub_0_m_axi_data_mem 1 3 1 1110 230n
-preplace netloc axi_chip2chip_0_m_axi 1 1 5 290 260 680J 320 NJ 320 NJ 320 1940
-preplace netloc axi_interconnect_0_M00_AXI 1 4 1 1450 500n
-preplace netloc sensorSupervisor_0_m_axi_status 1 3 1 1110 400n
-preplace netloc smartconnect_0_M00_AXI 1 2 1 660 200n
-preplace netloc smartconnect_0_M01_AXI 1 2 1 670 220n
-preplace netloc smartconnect_0_M02_AXI 1 2 1 650 60n
-preplace netloc smartconnect_0_M03_AXI 1 2 1 N 380
-levelinfo -pg 1 0 140 470 910 1300 1700 1960
-pagesize -pg 1 -db -bbox -sgen -290 0 2260 840
+preplace netloc aiml_stub_0_m_axi_data_mem 1 3 1 1130 150n
+levelinfo -pg 1 0 140 470 910 1350 1900 2160
+pagesize -pg 1 -db -bbox -sgen -290 0 2460 840
 "
 }
 
