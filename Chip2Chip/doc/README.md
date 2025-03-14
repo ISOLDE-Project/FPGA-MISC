@@ -3,7 +3,7 @@
 
 ## CAR-RO cable
 ### Suplier
-[Samtec HDR Series Flat Ribbon Cable, 500mm Length](https://ro.rsdelivers.com/product/samtec/hdr-169470-02/samtec-hdr-series-flat-ribbon-cable-500mm-length/2088640)
+[Samtec HDR Series Flat Ribbon Cable, 500mm Length](https://eu.mouser.com/ProductDetail/Samtec/HDR-169470-02?qs=82jvyl5dHWeuwqWceWFjxw%3D%3D)
 
 ### Modification
 Disconect pins D29-D35. Most probably JTAG(D29 -D31) would have been enough  
