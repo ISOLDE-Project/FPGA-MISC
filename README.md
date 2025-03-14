@@ -1,3 +1,5 @@
+# FMC connector
+[Chip2Chip/doc/README.md](./Chip2Chip/doc/README.md)
 # Linux Vivado/Vitis settings
 ## Cable drivers
 ```sh
