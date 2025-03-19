@@ -1,9 +1,12 @@
 # Generated file!! DO NOT edit!!
 
+# 300MHZ clock
 set_property PACKAGE_PIN AL8 [get_ports {CLK_IN1_D_0_clk_p}]
 set_property PACKAGE_PIN AL7 [get_ports {CLK_IN1_D_0_clk_n}]
 set_property IOSTANDARD DIFF_SSTL12 [get_ports {CLK_IN1_D_0_clk_p}]
 set_property IOSTANDARD DIFF_SSTL12 [get_ports {CLK_IN1_D_0_clk_n}]
+
+#GPIO LEDs (Active High)
 set_property PACKAGE_PIN AG14 [get_ports {GPIO_LED_0}]
 set_property PACKAGE_PIN AF13 [get_ports {GPIO_LED_1}]
 set_property PACKAGE_PIN AE13 [get_ports {GPIO_LED_2}]
@@ -12,12 +15,18 @@ set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_LED_0}]
 set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_LED_1}]
 set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_LED_2}]
 set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_LED_3}]
+
+
 set_property IOSTANDARD LVCMOS18 [get_ports {axi_c2c_selio_rx_data*}]
 set_property IOSTANDARD LVCMOS18 [get_ports {axi_c2c_selio_tx_data*}]
+
 set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_tx_diff_clk_out_n_0}]
 set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_tx_diff_clk_out_p_0}]
 set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_rx_diff_clk_in_n_0}]
 set_property IOSTANDARD DIFF_SSTL18_I [get_ports {axi_c2c_selio_rx_diff_clk_in_p_0}]
+
+
+# RX pins
 set_property PACKAGE_PIN AA7 [get_ports {axi_c2c_selio_rx_diff_clk_in_p_0}]
 set_property PACKAGE_PIN AA6 [get_ports {axi_c2c_selio_rx_diff_clk_in_n_0}]
 set_property PACKAGE_PIN V1 [get_ports {axi_c2c_selio_rx_data_in_0[0]}]
@@ -42,6 +51,9 @@ set_property PACKAGE_PIN AB5 [get_ports {axi_c2c_selio_rx_data_in_0[18]}]
 set_property PACKAGE_PIN AB6 [get_ports {axi_c2c_selio_rx_data_in_0[19]}]
 set_property PACKAGE_PIN W6 [get_ports {axi_c2c_selio_rx_data_in_0[20]}]
 set_property PACKAGE_PIN W7 [get_ports {axi_c2c_selio_rx_data_in_0[21]}]
+
+
+# TX pins
 set_property PACKAGE_PIN T8 [get_ports {axi_c2c_selio_tx_diff_clk_out_p_0}]
 set_property PACKAGE_PIN R8 [get_ports {axi_c2c_selio_tx_diff_clk_out_n_0}]
 set_property PACKAGE_PIN AC8 [get_ports {axi_c2c_selio_tx_data_out_0[0]}]
