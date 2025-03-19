@@ -7,3 +7,8 @@ vivado-ip/
 *.jou
 *.log
 *_pid*.str
+Packages/
+workspace/
+xapp1160.zip
+xapp1160/
+xsa/
