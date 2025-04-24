@@ -1,0 +1,10 @@
+.autopilot
+.debug
+*.log
+csim
+impl
+sim
+syn
+*.directive
+*.json
+build/
