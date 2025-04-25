@@ -80,7 +80,7 @@ template<typename MemIntfType>
 struct _TensorIO {
   using addr_type=typename MemIntfType::addr_type;
   using data_type=typename MemIntfType::data_type;
-  static constexpr uint32_t wr_cache_size   = 512;
+  static constexpr uint32_t wr_cache_size   = 540 * 960;
   DataUnion write_cache[wr_cache_size];
   addr_type wr_addr;
   uint32_t  wr_size;

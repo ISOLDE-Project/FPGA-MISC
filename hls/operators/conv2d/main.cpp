@@ -11,7 +11,7 @@
 
 
 
-float y[1][1][3][3];
+float y[1][1][540][960];
 
 
 
@@ -22,11 +22,11 @@ int main() {
   shape_type shape_y, shape_x, shape_w, pads, strides;
 
   NumpyModule numpy_module;
-  
-  NumpyArray np_x = numpy_load("conv2d/models/x.npy", numpy_module);
+
+  NumpyArray np_x = numpy_load("conv2d/test/x.npy", numpy_module);
   shape_x.set(np_x.shape);
 
-  NumpyArray np_w = numpy_load("conv2d/models/w.npy", numpy_module);
+  NumpyArray np_w = numpy_load("conv2d/test/w.npy", numpy_module);
   shape_w.set(np_w.shape);
 
   pads.set(1, 1, 1, 1);
@@ -50,18 +50,18 @@ int main() {
                               ptr_w, shape_w, pads, strides, ptr_bias);
   io.flush_wr_cache(mem_phy);
 
-  FILE *trace = stdout;
+//   FILE *trace = stdout;
 
-  py_pretty_print<float>(trace, "x", ptr_x, shape_x, io, mem_phy);
+//   py_pretty_print<float>(trace, "x", ptr_x, shape_x, io, mem_phy);
 
-  py_pretty_print<float>(trace, "w", ptr_w, shape_w, io, mem_phy);
+//   py_pretty_print<float>(trace, "w", ptr_w, shape_w, io, mem_phy);
 
-  py_pretty_print<float>(trace, "y", ptr_y, shape_y, io, mem_phy);
+//   py_pretty_print<float>(trace, "y", ptr_y, shape_y, io, mem_phy);
 
   NumpyArray np_y;
   np_y.set_data((float*)y);
   np_y.set_shape(shape_y);
-  numpy_save("y.npy",np_y, numpy_module);
+  numpy_save("conv2d/test/y_cpp.npy",np_y, numpy_module);
 
   return 0;
 }

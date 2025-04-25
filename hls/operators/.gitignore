@@ -9,3 +9,6 @@ syn
 *.json
 build/
 *.npy
+*.jpg
+*.png
+*.onnx
