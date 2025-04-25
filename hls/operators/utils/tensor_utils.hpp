@@ -38,6 +38,14 @@ template <uint32_t N> struct dim_t {
 
   dim_t() { memset((void *)data, 0, N); }
 
+template<typename shape_t>
+void set( const shape_t new_shape){
+  assert(new_shape.size()< rank+1);
+  uint32_t i = 0;
+  for (auto val : new_shape)   
+    data[i++] = val;
+}
+
   template <typename... A> void set(const A... vals) {
     // lambda expressions
     // https://en.cppreference.com/w/cpp/language/lambda

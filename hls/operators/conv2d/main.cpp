@@ -17,18 +17,18 @@ float y[1][1][3][3];
 
 int main() {
 
-  NumpyModule numpy_module;
-  NumpyArray np_x = numpy_load("conv2d/models/x.npy", numpy_module);
-  
-  NumpyArray np_w = numpy_load("conv2d/models/w.npy", numpy_module);
- 
 
-  
   typedef dim_t<4> shape_type;
-
   shape_type shape_y, shape_x, shape_w, pads, strides;
-  shape_x.set(1, 1, 5, 5);
-  shape_w.set(1, 1, 3, 3);
+
+  NumpyModule numpy_module;
+  
+  NumpyArray np_x = numpy_load("conv2d/models/x.npy", numpy_module);
+  shape_x.set(np_x.shape);
+
+  NumpyArray np_w = numpy_load("conv2d/models/w.npy", numpy_module);
+  shape_w.set(np_w.shape);
+
   pads.set(1, 1, 1, 1);
   strides.set(2, 2, 1, 1);
 
@@ -43,7 +43,7 @@ int main() {
       reinterpret_cast<arch::addr_type>(reinterpret_cast<const void *>(y));
   arch::addr_type ptr_bias = 0;
 
-  // for compatibility with hls
+  // for compatibility with HLS
   io_type::addr_type *mem_phy = 0;
 
   conv2d<float, float, float>(io, mem_phy, ptr_y, shape_y, ptr_x, shape_x,
