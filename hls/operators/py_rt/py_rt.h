@@ -36,6 +36,17 @@ struct NumpyArray {
     template<typename T>
     T* as();
 
+     template<typename T>
+     void set_data(T* newdata);
+
+     template<typename dim_t>
+     void set_shape(dim_t new_shape){
+        assert(shape.size()==0);
+        for(int i=0;i<dim_t::rank;++i)
+            shape.push_back(new_shape[i]);
+     }
+
+
     size_t num_elements() const {
         size_t n = 1;
         for (auto s : shape) n *= s;
@@ -50,7 +61,7 @@ inline float* NumpyArray::as<float>() {
     return static_cast<float*>(data);
 }
 
-// Specialization for int32_t (optional)
+// Specialization for int32_t 
 template <>
 inline int32_t* NumpyArray::as<int32_t>() {
     assert(numpy_type == NPY_INT32);
@@ -58,4 +69,14 @@ inline int32_t* NumpyArray::as<int32_t>() {
     return static_cast<int32_t*>(data);
 }
 
+
+template<>
+   inline void NumpyArray::set_data(float* newdata){
+        numpy_type = NPY_FLOAT32;
+        data=newdata;
+        assert(data);
+    }
+
+
 NumpyArray numpy_load(std::string fname, PyObject *numpy_module);
+bool numpy_save(const std::string& filename, const NumpyArray& arr, PyObject* numpy_module);

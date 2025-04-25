@@ -21,6 +21,8 @@ int main() {
   NumpyArray np_x = numpy_load("conv2d/models/x.npy", numpy_module);
   
   NumpyArray np_w = numpy_load("conv2d/models/w.npy", numpy_module);
+ 
+
   
   typedef dim_t<4> shape_type;
 
@@ -55,6 +57,11 @@ int main() {
   py_pretty_print<float>(trace, "w", ptr_w, shape_w, io, mem_phy);
 
   py_pretty_print<float>(trace, "y", ptr_y, shape_y, io, mem_phy);
+
+  NumpyArray np_y;
+  np_y.set_data((float*)y);
+  np_y.set_shape(shape_y);
+  numpy_save("y.npy",np_y, numpy_module);
 
   return 0;
 }

@@ -52,3 +52,42 @@ PyObject *numpy_init() {
     Py_DECREF(numpy_load);
     return result;
   }
+
+  bool numpy_save(const std::string& filename, const NumpyArray& arr, PyObject* numpy_module) {
+    assert(numpy_module);
+    
+    PyObject* numpy_save = PyObject_GetAttrString(numpy_module, "save");
+    if (!numpy_save || !PyCallable_Check(numpy_save)) {
+        PyErr_Print();
+        std::cerr << "Could not find or call numpy.save\n";
+        return false;
+    }
+
+    PyObject* ndarray = PyArray_SimpleNewFromData(arr.shape.size(), arr.shape.data(), arr.numpy_type, arr.data);
+
+    if (!ndarray) {
+        PyErr_Print();
+        std::cerr << "Failed to create NumPy array from C++ data\n";
+        return false;
+    }
+
+    PyObject* py_filename = PyUnicode_FromString(filename.c_str());
+    PyObject* args = PyTuple_Pack(2, py_filename, ndarray);
+
+    PyObject* result = PyObject_CallObject(numpy_save, args);
+
+
+    if (!result) {
+        PyErr_Print();
+        std::cerr << "Failed to save NumPy array to file\n";
+        return false;
+    }
+
+    Py_DECREF(result);
+    Py_DECREF(args);
+    Py_DECREF(py_filename);
+    Py_DECREF(ndarray);
+    Py_DECREF(numpy_save);
+   
+    return true;
+}
