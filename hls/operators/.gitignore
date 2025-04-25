@@ -8,3 +8,4 @@ syn
 *.directive
 *.json
 build/
+*.npy

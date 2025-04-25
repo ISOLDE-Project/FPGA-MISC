@@ -15,9 +15,22 @@ endif()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
 
-# define build folder for tosa_utils
-#set(tosa_utils_build_dir ${CMAKE_CURRENT_SOURCE_DIR}/tosa_utils/build)
-#add_subdirectory(tosa_utils ${tosa_utils_build_dir})
+# Check for the CONDA_PREFIX environment variable
+if(DEFINED ENV{CONDA_PREFIX})
+    set(CONDA_PREFIX $ENV{CONDA_PREFIX})
+    message(STATUS "Conda environment detected at: ${CONDA_PREFIX}")
+else()
+    message(FATAL_ERROR "CONDA_PREFIX not found. Please activate your conda environment before running CMake.")
+endif()
+
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+
+execute_process(
+    COMMAND python3 -c "import numpy; print(numpy.get_include())"
+    OUTPUT_VARIABLE NUMPY_INCLUDE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "numpy includes: ${NUMPY_INCLUDE}")
 
 file(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
 
