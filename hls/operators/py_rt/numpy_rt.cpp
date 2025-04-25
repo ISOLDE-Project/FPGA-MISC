@@ -15,8 +15,15 @@ PyObject *numpy_init() {
     }
     return numpy_module;
   }
-  float *numpy_load_float32(std::string fname, PyObject *numpy_module) {
+
+  void numpy_release(PyObject *numpy_module){
+    if(numpy_module) Py_DECREF(numpy_module);
+    Py_Finalize();
+  }
+
+  NumpyArray numpy_load(std::string fname, PyObject *numpy_module) {
     assert(numpy_module);
+    NumpyArray result;
     PyObject *numpy_load = PyObject_GetAttrString(numpy_module, "load");
     PyObject *py_filename = PyUnicode_FromString(fname.c_str());
     PyObject *args = PyTuple_Pack(1, py_filename);
@@ -26,11 +33,22 @@ PyObject *numpy_init() {
       PyErr_Print();
       std::cerr
           << "Failed to load NumPy array or object is not a valid ndarray.\n";
-      return nullptr;
+    
     }
     // Cast to PyArrayObject
     PyArrayObject *np_array = reinterpret_cast<PyArrayObject *>(np_array_obj);
-    // Get raw pointer
-    float *data = static_cast<float *>(PyArray_DATA(np_array));
-    return data;
+    result.numpy_type = PyArray_TYPE(np_array);
+    result.data = PyArray_DATA(np_array);
+
+    int ndim = PyArray_NDIM(np_array);
+    npy_intp* dims = PyArray_SHAPE(np_array);
+    result.shape.assign(dims, dims + ndim);
+
+    result.array_obj = np_array_obj; // Keep reference alive
+    return result;
+    //
+    Py_DECREF(args);
+    Py_DECREF(py_filename);
+    Py_DECREF(numpy_load);
+    return result;
   }

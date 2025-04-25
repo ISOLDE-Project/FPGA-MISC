@@ -17,11 +17,11 @@ float y[1][1][3][3];
 
 int main() {
 
-  PyObject *numpy_module = numpy_init();
-  float *x = numpy_load_float32("conv2d/models/x.npy", numpy_module);
-  assert(x);
-  float *w = numpy_load_float32("conv2d/models/w.npy", numpy_module);
-  assert(w);
+  NumpyModule numpy_module;
+  NumpyArray np_x = numpy_load("conv2d/models/x.npy", numpy_module);
+  
+  NumpyArray np_w = numpy_load("conv2d/models/w.npy", numpy_module);
+  
   typedef dim_t<4> shape_type;
 
   shape_type shape_y, shape_x, shape_w, pads, strides;
@@ -35,8 +35,8 @@ int main() {
 
   
   
-  arch::addr_type ptr_x = reinterpret_cast<arch::addr_type>(x);
-  arch::addr_type ptr_w = reinterpret_cast<arch::addr_type>(w);
+  arch::addr_type ptr_x = reinterpret_cast<arch::addr_type>(np_x.as<float>());
+  arch::addr_type ptr_w = reinterpret_cast<arch::addr_type>(np_w.as<float>());
   arch::addr_type ptr_y =
       reinterpret_cast<arch::addr_type>(reinterpret_cast<const void *>(y));
   arch::addr_type ptr_bias = 0;
