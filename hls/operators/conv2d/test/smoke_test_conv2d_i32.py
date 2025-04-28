@@ -4,10 +4,10 @@ from numpy.testing import assert_allclose
 import os
 
 current_dir = os.getcwd()
-output_tensor = np.load("conv2d/test/y_int32.npy")
+output_tensor = np.load("conv2d/test/y_int32_cpp.npy")
 output_ref = np.load("conv2d/test/y_int32.npy")
 print("Output shape:", output_tensor.shape)
-#assert_allclose(output_ref, output_tensor,rtol=1e-3,atol=1e-3)
+assert_allclose(output_ref, output_tensor,rtol=1e-6,atol=1e-6)
 print("\n****************")
 print("* Test passed! *")
 print("****************\n")

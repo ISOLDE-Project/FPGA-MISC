@@ -43,7 +43,7 @@ int main() {
   io.flush_wr_cache(mem_phy);
 
   FILE *trace = stdout;
-  py_pretty_print<float>(trace, "w", ptr_w, shape_w, io, mem_phy);
+  py_pretty_print<int32_t>(trace, "w", ptr_w, shape_w, io, mem_phy);
 
   NumpyArray np_y;
   np_y.set_data((int32_t *)y);

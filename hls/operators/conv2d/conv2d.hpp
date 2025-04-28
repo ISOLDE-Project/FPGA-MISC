@@ -200,7 +200,7 @@ void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy, addr
             acc += val;
           }
           // dim_t offset_y = {n, oc, oy, ox};
-          io.cache_tensor_write_next(mem_phy, output, offset_y, acc);
+          io.cache_tensor_write_next(mem_phy, output, offset_y, acc/256);
         }
       } // oy
     }   // oc
