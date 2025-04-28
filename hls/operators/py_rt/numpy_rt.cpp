@@ -45,7 +45,6 @@ PyObject *numpy_init() {
     result.shape.assign(dims, dims + ndim);
 
     result.array_obj = np_array_obj; // Keep reference alive
-    return result;
     //
     Py_DECREF(args);
     Py_DECREF(py_filename);
