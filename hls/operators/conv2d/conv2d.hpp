@@ -77,34 +77,7 @@ fprintf(stderr,"y_start=%d,slice_tensor_2_vector_cnt=%d\n",y_start,++slice_tenso
   }
 }
 
-/*
-in_t* flatten(in_t lists[]) {
-    in_t output = [];
-    for_each(list in lists) {
-        for_each(element in list) {
-            output.append(element);
-        }
-    }
-}
-*/
-/*
-** input_shape = [N x C x H x W], where
-*                       N is the batch size,
-*                       C is the number of channels,
-*                       and H and W are the height and width.
-*
-** weight_shape= [M x C/group x kH x kW],
-                     where C is the number of channels,
-                    and kH and kW are the height and width of the kernel,
-                    and M is the number of feature maps.
-*
-**output_shape= [N x M x OH x OW]
-*** Examples:
-input_shape  = [1,1,10,10]
-weight_shape = [4,1,3,3], group=1
-output_shape = [1,4,8,8]
-*/
-// typedef int32_t index_t;
+
 template <typename out_t, typename in_t, typename weight_t, typename addr_type,
           typename dim_t, typename tensor_io>
 void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy, addr_type output,
