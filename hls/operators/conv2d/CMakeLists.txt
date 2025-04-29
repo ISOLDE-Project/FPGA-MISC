@@ -3,6 +3,7 @@ add_executable(conv2d
                scratchpad_memory.cpp
                )
 
+target_compile_definitions(conv2d PRIVATE DTYPE_F32)
 target_include_directories(conv2d PRIVATE ${Python3_INCLUDE_DIRS} ${NUMPY_INCLUDE})             
 target_link_libraries(conv2d PRIVATE py_runtime)
 
@@ -11,6 +12,7 @@ add_executable(conv2d_i32
                scratchpad_memory.cpp
                )
 
+target_compile_definitions(conv2d_i32 PRIVATE DTYPE_I32 SCALE=256)
 target_include_directories(conv2d_i32 PRIVATE ${Python3_INCLUDE_DIRS} ${NUMPY_INCLUDE})             
 target_link_libraries(conv2d_i32 PRIVATE py_runtime)
 
@@ -29,4 +31,17 @@ add_custom_target(test-conv2d_i32
     DEPENDS conv2d_i32
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running Python smoke test for conv2d_i32"
+)
+
+add_custom_target(test-generate
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/generate.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running Python to generate test data"
+)
+
+add_custom_target(test-clean
+    COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/test/*.npy
+    COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/test/output*.png
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running Python to generate test data"
 )

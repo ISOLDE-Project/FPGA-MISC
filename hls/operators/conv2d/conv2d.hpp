@@ -1,8 +1,6 @@
 #ifndef CONV2D_OP_HEADER
 #define CONV2D_OP_HEADER
 
-
-
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -10,10 +8,11 @@
 #include "../utils/tensor_utils.hpp"
 #include "scratchpad_memory.h"
 
-
 template <typename io_t, typename addr_type, typename dim_t, typename tensor_io>
-void kernel_2_vector(tensor_io &io, volatile typename tensor_io::addr_type* mem_phy, addr_type src,
-                     const dim_t shape, dim_t &index, volatile io_t *v) {
+void kernel_2_vector(tensor_io &io,
+                     volatile typename tensor_io::addr_type *mem_phy,
+                     addr_type src, const dim_t shape, dim_t &index,
+                     volatile io_t *v) {
   using index_t = int32_t;
   using tensor_index = dim_t;
 
@@ -30,34 +29,36 @@ void kernel_2_vector(tensor_io &io, volatile typename tensor_io::addr_type* mem_
     v[offset_y] = val;
     offset_y += 1;
   }
- #ifdef _DEBUG_OPERATORS_CONV2D
-  static int kernel_2_vector_cnt =0;
-  fprintf(stderr,"kernel_2_vector_cnt=%d\n",++kernel_2_vector_cnt);
-#endif  
+#ifdef _DEBUG_OPERATORS_CONV2D
+  static int kernel_2_vector_cnt = 0;
+  fprintf(stderr, "kernel_2_vector_cnt=%d\n", ++kernel_2_vector_cnt);
+#endif
 }
 
-
-
 template <typename io_t, typename addr_type, typename dim_t, typename tensor_io>
-void slice_tensor_2_vector(tensor_io &io, volatile typename tensor_io::addr_type* mem_phy,
+void slice_tensor_2_vector(tensor_io &io,
+                           volatile typename tensor_io::addr_type *mem_phy,
                            addr_type src, const dim_t shape, int32_t y_start,
                            dim_t &size, volatile io_t *v) {
   using index_t = int32_t;
   using tensor_index = dim_t;
 
-static int32_t old_y_start=-1;
+  static int32_t old_y_start = -1;
 #ifdef _DEBUG_OPERATORS_CONV2D
-static int slice_tensor_2_vector_cnt =0;
-//fprintf(stderr,"y_start=%d, offset_y=%ld\n",y_start,offset_y);dump(stderr,idx);fprintf(stderr,"\n");dump(stderr,size);fprintf(stderr,"\n");dump(stderr,shape);
+  static int slice_tensor_2_vector_cnt = 0;
+// fprintf(stderr,"y_start=%d,
+// offset_y=%ld\n",y_start,offset_y);dump(stderr,idx);fprintf(stderr,"\n");dump(stderr,size);fprintf(stderr,"\n");dump(stderr,shape);
 #endif
-if(old_y_start == y_start){
+  if (old_y_start == y_start) {
 #ifdef _DEBUG_OPERATORS_CONV2D
-  fprintf(stderr,"y_start=%d,slice_tensor_2_vector_cnt=%d, cached\n",y_start,slice_tensor_2_vector_cnt);
-#endif  
-  return;
-}
+    fprintf(stderr, "y_start=%d,slice_tensor_2_vector_cnt=%d, cached\n",
+            y_start, slice_tensor_2_vector_cnt);
+#endif
+    return;
+  }
 #ifdef _DEBUG_OPERATORS_CONV2D
-fprintf(stderr,"y_start=%d,slice_tensor_2_vector_cnt=%d\n",y_start,++slice_tensor_2_vector_cnt);
+  fprintf(stderr, "y_start=%d,slice_tensor_2_vector_cnt=%d\n", y_start,
+          ++slice_tensor_2_vector_cnt);
 #endif
   old_y_start = y_start;
   size_t offset_y = 0;
@@ -67,8 +68,8 @@ fprintf(stderr,"y_start=%d,slice_tensor_2_vector_cnt=%d\n",y_start,++slice_tenso
   tensor_index idx;
   // fprintf(stderr,"cpy_idx");dump(stderr,x_idx);
   for (index_t c = 0; c < size[1]; ++c) {
-    idx.set(0,c,y_start,0);
-    offset_x = tensor_index_to_offset(shape,idx);
+    idx.set(0, c, y_start, 0);
+    offset_x = tensor_index_to_offset(shape, idx);
     for (index_t idx = 0; idx < max_x_y; ++idx) {
       val = io.template tensor_read_next<io_t>(mem_phy, src, offset_x);
       v[offset_y] = val;
@@ -77,13 +78,12 @@ fprintf(stderr,"y_start=%d,slice_tensor_2_vector_cnt=%d\n",y_start,++slice_tenso
   }
 }
 
-
 template <typename out_t, typename in_t, typename weight_t, typename addr_type,
           typename dim_t, typename tensor_io>
-void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy, addr_type output,
-            dim_t &output_shape, addr_type input, const dim_t input_shape,
-            addr_type weight, const dim_t weight_shape, const dim_t pads,
-            const dim_t strides_dilations, addr_type bias) {
+void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy,
+            addr_type output, dim_t &output_shape, addr_type input,
+            const dim_t input_shape, addr_type weight, const dim_t weight_shape,
+            const dim_t pads, const dim_t strides_dilations, addr_type bias) {
   using index_t = int32_t;
   using tensor_index = dim_t;
   // calculate output size
@@ -149,14 +149,14 @@ void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy, addr
       for (index_t oy = 0; oy < output_shape[OH]; ++oy) {
         index_t iy = oy * strides_dilations[strides_y] - pads[pad_top];
         for (index_t ky = 0; ky < weight_shape[KH]; ++ky) {
-              index_t y = iy + ky * strides_dilations[dilation_y];
-              if (0 > y || y >= input_shape[IH])
-                continue;
-              slice_tensor_2_vector(io, mem_phy, input, input_shape, y,
-                              x_slice_size, scratchpad_1);
-              y_cpy.set(0,0,y,0);
-              break;
-        }    
+          index_t y = iy + ky * strides_dilations[dilation_y];
+          if (0 > y || y >= input_shape[IH])
+            continue;
+          slice_tensor_2_vector(io, mem_phy, input, input_shape, y,
+                                x_slice_size, scratchpad_1);
+          y_cpy.set(0, 0, y, 0);
+          break;
+        }
 
         for (index_t ox = 0; ox < output_shape[OW]; ++ox) {
           out_t acc = 0;
@@ -192,15 +192,16 @@ void conv2d(tensor_io &io, volatile typename tensor_io::addr_type *mem_phy, addr
             shuffle_ic += k_size;
           }
           if (bias) {
-            //offset_b = oc;
+            // offset_b = oc;
             // dim_t offset_b = {0, 0, 0, oc};
-            out_t val =
-              scratchpad_2[oc];
-              //  io.template tensor_read_next<out_t>(mem_phy, bias, offset_b);
+            out_t val = scratchpad_2[oc];
+            //  io.template tensor_read_next<out_t>(mem_phy, bias, offset_b);
             acc += val;
           }
-          // dim_t offset_y = {n, oc, oy, ox};
-          io.cache_tensor_write_next(mem_phy, output, offset_y, acc/256);
+#ifdef SCALE
+          acc /= SCALE;
+#endif
+          io.cache_tensor_write_next(mem_phy, output, offset_y, acc );
         }
       } // oy
     }   // oc

@@ -1,9 +1,9 @@
-# Build using make
+# Build using make/cmake
 This uses CMAKE, and it's just a convenient way to call cmake
 ```sh
 . ./eth.sh
 make 
-make -C build test-conv2d
+make -C build clean test-clean test-generate test-conv2d_i32
 ```
 The output should look like:
 ```
@@ -20,7 +20,7 @@ make[3]: Leaving directory '/home/uic52463/hdd1/FPGA-MISC/hls/operators/build'
 [100%] Built target test-conv2d
 ```
 
-# Build using CMake
+# Build using cmake only
 ```sh
 . ./eth.sh
 mkdir build && cd build
