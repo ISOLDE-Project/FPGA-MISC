@@ -4,7 +4,7 @@ add_executable(conv2d
                )
 
 target_compile_definitions(conv2d PRIVATE DTYPE_F32)
-target_include_directories(conv2d PRIVATE ${Python3_INCLUDE_DIRS} ${NUMPY_INCLUDE})             
+add_include_directories (conv2d )
 target_link_libraries(conv2d PRIVATE py_runtime)
 
 add_executable(conv2d_i32 
@@ -13,7 +13,7 @@ add_executable(conv2d_i32
                )
 
 target_compile_definitions(conv2d_i32 PRIVATE DTYPE_I32 SCALE=256)
-target_include_directories(conv2d_i32 PRIVATE ${Python3_INCLUDE_DIRS} ${NUMPY_INCLUDE})             
+add_include_directories (conv2d_i32 )
 target_link_libraries(conv2d_i32 PRIVATE py_runtime)
 
 # Add a "test-conv2d" target that runs the Python smoke test

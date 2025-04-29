@@ -58,5 +58,27 @@ struct ArrayMemory {
     *pData = src.i32;
   }
 };
+#else
+struct BoardMemory {
+  typedef uint32_t index_type;
+  typedef arch::addr_type addr_type;
+  typedef arch::int32_type data_type;
+
+  static inline data_type *addr_to_pointer(const addr_type addr_) {
+    return reinterpret_cast<int32_t *>(addr_);
+  }
+
+  static void fetchData(volatile addr_type *data, const addr_type addr_,
+                        DataUnion &dst) {
+    data_type *pData = addr_to_pointer(addr_);
+    dst.i32 = *pData;
+  }
+
+  static void pushData(volatile addr_type *data, const addr_type addr_,
+                       DataUnion &src) {
+    data_type *pData = addr_to_pointer(addr_);
+    *pData = src.i32;
+  }
+};
 #endif
 #endif //__MEMORY_INTERFACE_H__

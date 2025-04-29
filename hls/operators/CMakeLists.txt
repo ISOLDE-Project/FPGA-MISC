@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" )
 	message("debug version")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++17 -O0  -D_NO_SYNTH_ -D_NO_CSIM_ -D_NO_COSIM_")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++17 -O0  ")
 else()
 	message("optimised version")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++17 -O3  -D_NO_SYNTH_ -D_NO_CSIM_ -D_NO_COSIM_")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++17 -O3  ")
 endif()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
@@ -32,6 +32,11 @@ execute_process(
 )
 message(STATUS "numpy includes: ${NUMPY_INCLUDE}")
 
+function(add_include_directories target)
+    target_include_directories(${target} PUBLIC  ${CMAKE_SOURCE_DIR})
+    target_include_directories(${target} PRIVATE ${Python3_INCLUDE_DIRS} ${NUMPY_INCLUDE})  
+endfunction()
+
 file(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
 
 # parse all subdirectories from operators
@@ -41,3 +46,4 @@ foreach(child ${children})
         add_subdirectory(${child})
     endif()
 endforeach()
+

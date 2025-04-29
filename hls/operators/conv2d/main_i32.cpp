@@ -1,10 +1,10 @@
 
 
-#include "../py_rt/py_rt.h"
-#include "../utils/memoryInterface.h"
-#include "../utils/tensor_io.hpp"
-#include "../utils/trace.hpp"
-#include "conv2d.hpp"
+#include "py_rt/py_rt.h"
+#include "utils/memoryInterface.h"
+#include "utils/tensor_io.hpp"
+#include "utils/trace.hpp"
+#include "conv2d/conv2d.hpp"
 #include <cstdint>
 #include <cstdio>
 

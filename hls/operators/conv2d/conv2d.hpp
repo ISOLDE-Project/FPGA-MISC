@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "../utils/tensor_utils.hpp"
+#include "utils/tensor_utils.hpp"
 #include "scratchpad_memory.h"
 
 template <typename io_t, typename addr_type, typename dim_t, typename tensor_io>

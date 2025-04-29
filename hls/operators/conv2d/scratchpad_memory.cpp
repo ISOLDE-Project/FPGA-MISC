@@ -1,5 +1,5 @@
 
-#include "../utils/memoryInterface.h"
+#include "utils/memoryInterface.h"
 
 #ifdef DTYPE_I32
 arch::uint32_type scratchpad_0[3*128*128];
