@@ -117,7 +117,7 @@ namespace{
 
 
 template<typename elem_type, typename shape_type, typename io_type>
-void py_pretty_print(FILE* trace ,std::string name, const typename io_type::addr_type ptr_w,const shape_type& shape_w, io_type& io,volatile typename io_type::addr_type* mem){
+void py_pretty_print(FILE* trace ,std::string name, volatile elem_type* ptr_w,const shape_type& shape_w, io_type& io){
   using index_t = int32_t;
     fprintf(trace,"%s = np.array([\n", name.c_str());
     for (index_t m=0;m<shape_w[0];++m){
@@ -132,7 +132,7 @@ void py_pretty_print(FILE* trace ,std::string name, const typename io_type::addr
                         //addr = ptr_w+offset;
                         //core.im->fetchData(addr,value);
                         elem_type elem;
-                        elem = io.template tensor_read<elem_type>(mem,ptr_w, shape_w, index);
+                        elem = io.template tensor_read(ptr_w, shape_w, index);
                         fprintf(trace,py_print_format<elem_type>(w,shape_w[3]),elem);
                         //offset+=sizeof(pType);
                     }

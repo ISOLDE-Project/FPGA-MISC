@@ -1,9 +1,9 @@
 
 
-#include "../utils/memoryInterface.h"
-#include "../utils/tensor_io.hpp"
-#include "../utils/trace.hpp"
-#include "../py_rt/py_rt.h"
+
+#include "utils/tensor_io.hpp"
+#include "utils/trace.hpp"
+#include "py_rt/py_rt.h"
 #include "conv2d.hpp"
 #include <cstdio>
 
@@ -32,31 +32,22 @@ int main() {
   pads.set(1, 1, 1, 1);
   strides.set(2, 2, 1, 1);
 
-  typedef tensor_io::_TensorIO<ArrayMemory> io_type;
+  typedef tensor_io::_TensorIO io_type;
   io_type io;
 
+  float* ptr_x = (np_x.as<float>());
+  float* ptr_w = (np_w.as<float>());
+  float* ptr_y =
+      reinterpret_cast<float*>((y));
+  float* ptr_bias = 0;
+
   
+  conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
+                                    ptr_w, shape_w, pads, strides, ptr_bias);
   
-  arch::addr_type ptr_x = reinterpret_cast<arch::addr_type>(np_x.as<float>());
-  arch::addr_type ptr_w = reinterpret_cast<arch::addr_type>(np_w.as<float>());
-  arch::addr_type ptr_y =
-      reinterpret_cast<arch::addr_type>(reinterpret_cast<const void *>(y));
-  arch::addr_type ptr_bias = 0;
 
-  // for compatibility with HLS
-  io_type::addr_type *mem_phy = 0;
-
-  conv2d<float, float, float>(io, mem_phy, ptr_y, shape_y, ptr_x, shape_x,
-                              ptr_w, shape_w, pads, strides, ptr_bias);
-  io.flush_wr_cache(mem_phy);
-
-//   FILE *trace = stdout;
-
-//   py_pretty_print<float>(trace, "x", ptr_x, shape_x, io, mem_phy);
-
-//   py_pretty_print<float>(trace, "w", ptr_w, shape_w, io, mem_phy);
-
-//   py_pretty_print<float>(trace, "y", ptr_y, shape_y, io, mem_phy);
+  FILE *trace = stdout;
+  py_pretty_print<float>(trace, "w", ptr_w, shape_w, io);
 
   NumpyArray np_y;
   np_y.set_data((float*)y);
