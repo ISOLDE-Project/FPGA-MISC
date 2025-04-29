@@ -66,7 +66,7 @@ proc build_solution {__prj_name __sol_name hls_exec } {
     } elseif {$hls_exec == 3} { 
         # Run Synthesis, RTL Simulation
         csynth_design
-        cosim_design -argv ${__cosim_argv}
+        cosim_design 
         
     } elseif {$hls_exec == 4} { 
 
@@ -105,14 +105,18 @@ proc create_project { __prj_name __files __tb_files __top_function } {
     # Get the project directory
     set __proj_dir [get_project -directory]
 
+
     # Define compiler flags
-    set __C__FLAGS "-I${__proj_dir} -I${__proj_dir}/../../include -DAC_IGNORE_BUILTINS -std=c++14"
+    set __COMPILE_DEFINITIONS_ "-DDTYPE_I32 -DSCALE=256"
+    set __INCLUDE_DIRECTORIES_ "-I${__proj_dir}/.. -I${__proj_dir}/../../include  -I${__proj_dir}/../../operators"
+    set __C__FLAGS " $__INCLUDE_DIRECTORIES_  $__COMPILE_DEFINITIONS_ -std=c++17"
+    set __SIM_C__FLAGS " "
 
     # Add source files with compiler flags
     add_files ${__files} -cflags $__C__FLAGS -csimflags $__C__FLAGS
 
     # Add testbench files with compiler flags
-    add_files ${__tb_files} -tb -cflags $__C__FLAGS -csimflags $__C__FLAGS
+    add_files ${__tb_files} -tb -cflags $__C__FLAGS -csimflags $__SIM_C__FLAGS
 
     # Set the top-level function
     set_top ${__top_function}
