@@ -3,7 +3,7 @@
 
 source prj_config.tcl
 source ../tcl/isolde_common.tcl
-
+source make_sol.tcl
 
 #erase previous versions
 file delete -force -- ./${__prj_name}

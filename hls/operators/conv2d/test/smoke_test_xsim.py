@@ -18,7 +18,7 @@ print("* Test passed! *")
 print("****************\n")
 output_tensor = np.squeeze(output_tensor)  # Remove batch dim → [C, H, W]
 img = Image.fromarray(output_tensor.astype(np.uint8), mode='L')  # 'L' = 8-bit pixels, black and white
-img.save('output_xsim.png')
+img.save(f"{current_dir}/output_xsim.png")
 
 
 

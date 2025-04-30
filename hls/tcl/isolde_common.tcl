@@ -89,6 +89,7 @@ proc build_solution {__prj_name __sol_name hls_exec } {
         #we are done 
         mkdir [get_solution -directory] ../../../../vivado-ip
     }
+    close_solution
     close_project
 }   
 
