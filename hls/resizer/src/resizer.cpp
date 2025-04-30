@@ -19,7 +19,7 @@ extern void execute(volatile int32_t y_bram[Y_SIZE],
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
 
-  shape_x.set(1, 3, 1080, 1920);
+  shape_x.set(1, CHANNELS_I, HEIGHT_I, WIDTH_I );
 
   shape_w.set(1, 3, 3, 3);
 

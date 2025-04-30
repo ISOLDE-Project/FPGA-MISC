@@ -19,8 +19,8 @@ export ROOT_DIR=$(git rev-parse --show-toplevel)
 # export PULP_RISCV_GCC_TOOLCHAIN=$ROOT_DIR/install/riscv
 # export GCC_TOOLCHAIN=$ROOT_DIR/install/riscv-gcc/bin
 # export LLVM_TOOLCHAIN=$ROOT_DIR/install/riscv-llvm/bin
-export CC=gcc-10
-export CXX=g++-10
+#export CC=gcc-10
+#export CXX=g++-10
 #
 # export CV_SIMULATOR=verilator
 # export CV_SW_TOOLCHAIN=$ROOT_DIR/install/riscv-gcc

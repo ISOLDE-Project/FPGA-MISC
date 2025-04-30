@@ -2,11 +2,12 @@
 import os
 
 
-image_fname="1920x1080-full-hd-nature-landscape.jpg"
+#image_fname="1920x1080-full-hd-nature-landscape.jpg"
 #image_fname="testpattern-hd-1080.png"
+image_fname="image_00002.jpg"
 
-current_dir = f"{os.getcwd()}/conv2d/test"
-image_path=f"{current_dir}/{image_fname}"
+output_dir = f"{os.getcwd()}/conv2d/test"
+image_path=f"{output_dir}/{image_fname}"
 
 # %%
 
@@ -83,9 +84,9 @@ def exec_conv2d(np_x,np_w,stride=2,padding=1):
     return output
 
 def serialize(y,x,w,sufix=""):
-    np.save(f"{current_dir}/y{sufix}",y)
-    np.save(f"{current_dir}/x{sufix}",x)
-    np.save(f"{current_dir}/w{sufix}",w)
+    np.save(f"{output_dir}/y{sufix}",y)
+    np.save(f"{output_dir}/x{sufix}",x)
+    np.save(f"{output_dir}/w{sufix}",w)
 
 
 # %%
@@ -112,6 +113,8 @@ output = exec_conv2d(np_x_q,mean_kernel_q)
 output =output/(pow(2, 8))
 output = output.to(torch.int32)
 serialize(y=output.numpy(),x=np_x_q,w=mean_kernel_q,sufix="_int32")
+np_x_q.tofile(f"{output_dir}/x_int32.bin")
+mean_kernel_q.tofile(f"{output_dir}/w_int32.bin")
 #save jpg
 output = T.ToPILImage()(output.squeeze(0).to(torch.uint8))
 output.save("output_downsampled_q.jpg")
