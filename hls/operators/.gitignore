@@ -13,3 +13,4 @@ build/
 *.png
 *.onnx
 *.bin
+shapes.inc

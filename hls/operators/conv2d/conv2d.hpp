@@ -75,8 +75,18 @@ void slice_tensor_2_vector(tensor_io &io,
     }
   }
 }
-
-template <typename out_t, typename in_t, typename weight_t, 
+#ifdef CONST_WEIGTHS
+template <typename out_t, typename in_t, 
+          typename dim_t, typename tensor_io>
+void conv2d(tensor_io &io, 
+            volatile out_t*  output, dim_t &output_shape, 
+            volatile in_t*  input,  const dim_t input_shape, 
+            const dim_t pads, const dim_t strides_dilations, 
+            volatile out_t* bias) {
+dim_t weight_shape;
+weight_shape.set(1,3,3,3);
+ #else
+ template <typename out_t, typename in_t, typename weight_t, 
           typename dim_t, typename tensor_io>
 void conv2d(tensor_io &io, 
             volatile out_t*  output, dim_t &output_shape, 
@@ -84,6 +94,8 @@ void conv2d(tensor_io &io,
             volatile weight_t*  weight, const dim_t weight_shape,
             const dim_t pads, const dim_t strides_dilations, 
             volatile out_t* bias) {
+
+ #endif             
   using index_t = int32_t;
   using tensor_index = dim_t;
   // calculate output size
@@ -136,16 +148,18 @@ void conv2d(tensor_io &io,
 
   k_cpy.set(0, 0, 0, 0);
   // kernel_2_vector(io,mem_phy,input,input_shape,k_cpy,scratchpad_1);
-
+#ifndef NO_BIAS
   if (bias) {
     kernel_2_vector(io,  bias, bias_shape, k_cpy, scratchpad_2);
   }
+#endif
 
-  for (index_t n = 0; n < output_shape[ON]; ++n)
     for (index_t oc = 0; oc < output_shape[OC]; ++oc) {
       // load kernel in scratchpad memory
       k_cpy.set(oc, 0, 0, 0);
+#ifndef CONST_WEIGTHS   
       kernel_2_vector(io,  weight, weight_shape, k_cpy, scratchpad_0);
+#endif
       for (index_t oy = 0; oy < output_shape[OH]; ++oy) {
         index_t iy = oy * strides_dilations[strides_y] - pads[pad_top];
         for (index_t ky = 0; ky < weight_shape[KH]; ++ky) {
@@ -164,7 +178,7 @@ void conv2d(tensor_io &io,
           index_t ix = ox * strides_dilations[strides_x] - pads[pad_left];
           shuffle_ic = 0;
           for (index_t ic = 0; ic < weight_shape[KC]; ++ic) {
-            x_idx.set(n, ic, 0, 0);
+            x_idx.set(0, ic, 0, 0);
             size_t base_x = tensor_index_to_offset(input_shape, x_idx);
             for (index_t ky = 0; ky < weight_shape[KH]; ++ky) {
               index_t y = iy + ky * strides_dilations[dilation_y];
@@ -175,15 +189,10 @@ void conv2d(tensor_io &io,
                 index_t x = ix + kx * strides_dilations[dilation_x];
                 if (0 > x || x >= input_shape[IW])
                   continue;
-#if 0
-                x_idx.set(n, ic, y, x);
-                in_t in_value = io.template tensor_read_with_offset<in_t, 3>(
-                    mem_phy, input, input_shape, base_x, x_idx);
-#else
-                size_t offset_x = ic * x_slice_size[IW] * x_slice_size[IH] +
+
+                  size_t offset_x = ic * x_slice_size[IW] * x_slice_size[IH] +
                                   (y - y_cpy[2]) * x_slice_size[IW] + x;
                 in_t in_value = scratchpad_1[offset_x];
-#endif
                 offset_w = shuffle_ic + shuffle_ky + kx;
                 weight_t w_value = scratchpad_0[offset_w];
                 acc += in_value * w_value;
@@ -191,6 +200,7 @@ void conv2d(tensor_io &io,
             }
             shuffle_ic += k_size;
           }
+#ifndef NO_BIAS          
           if (bias) {
             // offset_b = oc;
             // dim_t offset_b = {0, 0, 0, oc};
@@ -198,6 +208,7 @@ void conv2d(tensor_io &io,
             //  io.template tensor_read_next<out_t>(mem_phy, bias, offset_b);
             acc += val;
           }
+#endif          
 #ifdef SCALE
           acc /= SCALE;
 #endif

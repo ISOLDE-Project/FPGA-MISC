@@ -5,10 +5,12 @@ import numpy as np
 from numpy.testing import assert_allclose 
 from PIL import Image
 
-current_dir = f"{os.getcwd()}/conv2d/test"
 
-output_ref = np.load(f"{current_dir}/y_int32.npy")
-output_tensor = np.fromfile(f"{current_dir}/y_xsim_int32.bin", dtype=np.int32).reshape(output_ref.shape)
+work_dir = 'conv2d/test'
+current_dir = os.getcwd()
+
+output_ref = np.load(f"{work_dir}/y_int32.npy")
+output_tensor = np.fromfile(f"{work_dir}/y_xsim_int32.bin", dtype=np.int32).reshape(output_ref.shape)
 
 
 print(f"Output shape: {output_tensor.shape}, MIN: {output_tensor.min()}, MAX:{output_tensor.max()}\n" )
@@ -18,7 +20,8 @@ print("* Test passed! *")
 print("****************\n")
 output_tensor = np.squeeze(output_tensor)  # Remove batch dim → [C, H, W]
 img = Image.fromarray(output_tensor.astype(np.uint8), mode='L')  # 'L' = 8-bit pixels, black and white
-img.save(f"{current_dir}/output_xsim.png")
-
+save_path=f"{current_dir}/{work_dir}/output_xsim.png"
+img.save(save_path)
+print(f"output: {save_path}\n")
 
 

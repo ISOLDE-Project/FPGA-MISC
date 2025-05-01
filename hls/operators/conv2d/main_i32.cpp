@@ -34,10 +34,13 @@ int main() {
       reinterpret_cast<int32_t*>((y));
   int32_t* ptr_bias = 0;
 
-  
+  #ifdef CONST_WEIGTHS
   conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
-                                    ptr_w, shape_w, pads, strides, ptr_bias);
-  
+                                     pads, strides, ptr_bias);
+  #else
+  conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
+    ptr_w, shape_w, pads, strides, ptr_bias);
+  #endif
 
   FILE *trace = stdout;
   py_pretty_print<int32_t>(trace, "w", ptr_w, shape_w, io);

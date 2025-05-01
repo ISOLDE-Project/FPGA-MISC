@@ -4,7 +4,9 @@ import os
 
 #image_fname="1920x1080-full-hd-nature-landscape.jpg"
 #image_fname="testpattern-hd-1080.png"
-image_fname="image_00002.jpg"
+#image_fname="image_00002.jpg"
+#image_fname="image_00371.jpg"
+image_fname="image_00462.jpg"
 
 output_dir = f"{os.getcwd()}/conv2d/test"
 image_path=f"{output_dir}/{image_fname}"
@@ -88,6 +90,47 @@ def serialize(y,x,w,sufix=""):
     np.save(f"{output_dir}/x{sufix}",x)
     np.save(f"{output_dir}/w{sufix}",w)
 
+def image_to_RGB(path,image_fname):
+    # === LOAD AND CONVERT IMAGE TO RGB ===
+    img = Image.open(f"{path}/{image_fname}").convert('RGB') 
+    img_np = np.array(img)  # Shape: (H, W, 3), dtype=uint8
+
+    # === PACK RGB TO INT32 ===
+    # Format: 0x00RRGGBB (most significant byte can be 0)
+    r = img_np[:, :, 0].astype(np.uint32)
+    g = img_np[:, :, 1].astype(np.uint32)
+    b = img_np[:, :, 2].astype(np.uint32)
+    rgb_packed = (r << 16) | (g << 8) | b  # Shape: (H, W)
+
+    rgb_flat = rgb_packed.flatten().astype(np.uint32)
+
+    # === SAVE TO BINARY FILE ===
+    #rgb_flat.tofile(f"{path}/{image_fname}_{rgb_packed.shape[0]}x{rgb_packed.shape[1]}_RGB.bin")
+    rgb_flat.tofile(f"{path}/x_xsim_int32.bin")
+
+def write_shape_defines(np_o, np_i,np_w, path,fname="shapes.inc"):
+    """
+    Writes shape macros to a text file based on the shapes of np_i and np_o.
+    
+    Assumes shapes are in the form (channels, height, width).
+    """
+    if np_i.ndim != 4 or np_o.ndim != 4:
+        raise ValueError("Both np_i and np_o must be 3-dimensional (N, C, H, W).")
+    if np_w.ndim != 4 :
+        raise ValueError("np_w must be 4-dimensional (M, C, H, W).")
+
+    with open(f"{path}/{fname}", 'w') as f:
+        f.write(f"/*\n* GENERATED FILE! \n*/\n")
+        f.write(f"#define CHANNELS_I  {np_i.shape[1]}\n")
+        f.write(f"#define HEIGHT_I    {np_i.shape[2]}\n")
+        f.write(f"#define WIDTH_I     {np_i.shape[3]}\n\n")
+        f.write(f"#define CHANNELS_O  {np_o.shape[1]}\n")
+        f.write(f"#define HEIGHT_O    {np_o.shape[2]}\n")
+        f.write(f"#define WIDTH_O     {np_o.shape[3]}\n\n")
+        f.write(f"#define FEATURES_W  {np_w.shape[0]}\n")
+        f.write(f"#define CHANNELS_W  {np_w.shape[1]}\n")
+        f.write(f"#define HEIGHT_W    {np_w.shape[2]}\n")
+        f.write(f"#define WIDTH_W     {np_w.shape[3]}\n")
 
 # %%
 import torch
@@ -105,7 +148,7 @@ output = exec_conv2d(np_x,mean_kernel)
 serialize(y=output.numpy(),x=np_x,w=mean_kernel)
 #save jpg
 output = T.ToPILImage()(output.squeeze(0))
-output.save("output_downsampled.jpg")
+output.save(f"{output_dir}/output_downsampled.jpg")
 
 #
 output = exec_conv2d(np_x_q,mean_kernel_q)
@@ -115,9 +158,9 @@ output = output.to(torch.int32)
 serialize(y=output.numpy(),x=np_x_q,w=mean_kernel_q,sufix="_int32")
 np_x_q.tofile(f"{output_dir}/x_int32.bin")
 mean_kernel_q.tofile(f"{output_dir}/w_int32.bin")
+#xsim test values
+image_to_RGB(path=output_dir,image_fname=image_fname)
+write_shape_defines( output, np_x_q, mean_kernel_q,path=f"{output_dir}/..")
 #save jpg
 output = T.ToPILImage()(output.squeeze(0).to(torch.uint8))
-output.save("output_downsampled_q.jpg")
-
-
-
+output.save(f"{output_dir}/output_downsampled_q.jpg")

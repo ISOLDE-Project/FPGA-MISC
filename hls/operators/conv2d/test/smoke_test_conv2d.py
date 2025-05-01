@@ -3,9 +3,10 @@ from PIL import Image
 from numpy.testing import assert_allclose 
 import os
 
+work_dir = 'conv2d/test'
 current_dir = os.getcwd()
-output_tensor = np.load("conv2d/test/y_cpp.npy")
-output_ref = np.load("conv2d/test/y.npy")
+output_tensor = np.load(f"{work_dir}/y_cpp.npy")
+output_ref = np.load(f"{work_dir}/y.npy")
 print("Output shape:", output_tensor.shape)
 assert_allclose(output_ref, output_tensor,rtol=1e-6,atol=1e-7)
 print("\n****************")
@@ -16,8 +17,10 @@ output_tensor = np.squeeze(output_tensor)  # Remove batch dim → [C, H, W]
 # If single-channel (grayscale)
 if output_tensor.ndim == 2:
     img = Image.fromarray((output_tensor * 255).astype(np.uint8), mode='L')
-    img.save("output.png")
-    print(f"output image: {current_dir}/output.png\n")
+    save_path=f"{current_dir}/{work_dir}/output_conv2d.png"
+    img.save(save_path)
+    print(f"output: {save_path}\n")
+
 
 # If 3 channels (RGB)
 elif output_tensor.shape[0] == 3:

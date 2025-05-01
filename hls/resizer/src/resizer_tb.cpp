@@ -10,13 +10,15 @@
 
 #include "resizer.h"
 
+#include"shapes.inc"
+
 int32_t rgb_x[HEIGHT_I][WIDTH_I];
 int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
-int32_t np_w[1][3][3][3];
+
 
 const char *y_bin = "../../../../../operators/conv2d/test/y_xsim_int32.bin";
-const char *x_bin = "../../../../../operators/conv2d/test/image_00002.jpg_100x125_RGB.bin";
-const char *w_bin = "../../../../../operators/conv2d/test/w_int32.bin";
+const char *x_bin = "../../../../../operators/conv2d/test/x_xsim_int32.bin";
+
 
 int main()
 {
@@ -36,16 +38,6 @@ int main()
     infile.close();
   }
 
-  {
-    std::ifstream infile(w_bin, std::ios::binary);
-    if (!infile)
-    {
-      std::cerr << "Error opening w_bin input file " << std::endl;
-      exit(1);
-    }
-    infile.read(reinterpret_cast<char *>(np_w), sizeof(np_w));
-    infile.close();
-  }
 
   // === Stream image into AXI4-Stream ===
   for (int i = 0; i < HEIGHT_I; ++i)
@@ -63,11 +55,10 @@ int main()
       input_stream << px;
     }
   }
-  int32_t *ptr_w = reinterpret_cast<int32_t *>(np_w);
+
 
   execute(output_stream,
-          input_stream,
-          ptr_w);
+          input_stream);
   //
 
   for (int i = 0; i < HEIGHT_O; ++i)

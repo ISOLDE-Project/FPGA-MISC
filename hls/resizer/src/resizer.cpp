@@ -6,12 +6,13 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "shapes.inc"
+
 int32_t x_bram[1][CHANNELS_I][HEIGHT_I][WIDTH_I];
 int32_t y_bram[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
 
 void execute(stream_t &stream_o,
-             stream_t &stream_i,
-             volatile int32_t w_bram[W_SIZE]
+             stream_t &stream_i
 
 )
 {
@@ -80,7 +81,7 @@ void execute(stream_t &stream_o,
   volatile int32_t *ptr_x = reinterpret_cast<int32_t *>(x_bram);
   volatile int32_t *ptr_y = reinterpret_cast<int32_t *>(y_bram);
   //
-  conv2d(io, ptr_y, shape_y, ptr_x, shape_x, w_bram, shape_w, pads, strides,
+  conv2d(io, ptr_y, shape_y, ptr_x, shape_x,  pads, strides,
          ptr_bias);
 
   // === Stream result into AXI4-Stream ===
