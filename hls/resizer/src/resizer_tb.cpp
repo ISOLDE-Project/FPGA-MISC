@@ -10,15 +10,13 @@
 
 #include "resizer.h"
 
-#include"shapes.inc"
+#include "shapes.inc"
 
 int32_t rgb_x[HEIGHT_I][WIDTH_I];
 int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
 
-
 const char *y_bin = "../../../../../operators/conv2d/test/y_xsim_int32.bin";
 const char *x_bin = "../../../../../operators/conv2d/test/x_xsim_int32.bin";
-
 
 int main()
 {
@@ -38,7 +36,6 @@ int main()
     infile.close();
   }
 
-
   // === Stream image into AXI4-Stream ===
   for (int i = 0; i < HEIGHT_I; ++i)
   {
@@ -55,12 +52,26 @@ int main()
       input_stream << px;
     }
   }
+  // just to signal the end of streaming
+  pixel_pkg_t px;
+  px.data = 0xAABBCC;
+  px.keep = 0; // All bytes invalid
+  px.strb = 0x1;
+  px.id = 0;
+  px.dest = 0;
+  px.last = 0 px.user = 1; // Start of frame only
+  input_stream << px;
 
-
+   int M,C,H,W;
   execute(output_stream,
-          input_stream);
+          input_stream
+          ,M
+          ,C
+          ,H
+          ,W
+        );
   //
-
+  std::cerr << "(M,C,H,W)= (" << M << "," << C <<"," << H <<","<<W<<")"<<std::endl;
   for (int i = 0; i < HEIGHT_O; ++i)
   {
     for (int j = 0; j < WIDTH_O; ++j)

@@ -4,9 +4,9 @@ import os
 
 #image_fname="1920x1080-full-hd-nature-landscape.jpg"
 #image_fname="testpattern-hd-1080.png"
-#image_fname="image_00002.jpg"
+image_fname="image_00002.jpg"
 #image_fname="image_00371.jpg"
-image_fname="image_00462.jpg"
+#image_fname="image_00462.jpg"
 
 output_dir = f"{os.getcwd()}/conv2d/test"
 image_path=f"{output_dir}/{image_fname}"

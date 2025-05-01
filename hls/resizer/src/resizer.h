@@ -24,8 +24,13 @@ typedef ap_uint< 32 >              pixel_t;
 typedef ap_axiu< 32,1,1,1 >        pixel_pkg_t;
 typedef hls::stream< pixel_pkg_t > stream_t;
 
-void execute(       stream_t& stream_o,
-                    stream_t& stream_i
+void execute(       stream_t& stream_o
+                    ,stream_t& stream_i
+                    ,int& M_o
+                    ,int& C_o
+                    ,int& H_o
+                    ,int& W_o
+
                    
 );
 
