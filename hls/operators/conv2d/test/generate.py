@@ -107,6 +107,7 @@ def image_to_RGB(path,image_fname):
     # === SAVE TO BINARY FILE ===
     #rgb_flat.tofile(f"{path}/{image_fname}_{rgb_packed.shape[0]}x{rgb_packed.shape[1]}_RGB.bin")
     rgb_flat.tofile(f"{path}/x_xsim_int32.bin")
+    np.save(f"{path}/x_linux_sim_int32",rgb_flat)
 
 def write_shape_defines(np_o, np_i,np_w, path,fname="shapes.inc"):
     """

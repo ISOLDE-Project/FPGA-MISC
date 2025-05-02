@@ -59,6 +59,13 @@ template <> inline int32_t *NumpyArray::as<int32_t>() {
   return static_cast<int32_t *>(data);
 }
 
+// Specialization for int32_t
+template <> inline uint32_t *NumpyArray::as<uint32_t>() {
+  assert(numpy_type == NPY_UINT32);
+  assert(data);
+  return static_cast<uint32_t *>(data);
+}
+
 template <> inline void NumpyArray::set_data(float *newdata) {
   numpy_type = NPY_FLOAT32;
   data = newdata;

@@ -1,4 +1,15 @@
-all:
+BUILD_DIR   := build
+
+all: build/Makefile
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+build/Makefile:$(BUILD_DIR)
+	cd $(BUILD_DIR) && \
+	cmake -DCMAKE_BUILD_TYPE="Debug" ..
+
+cosim:
 	vitis_hls -f run_cosim.tcl
 	cd ../operators && python conv2d/test/smoke_test_xsim.py
 

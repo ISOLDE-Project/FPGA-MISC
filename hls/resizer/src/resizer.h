@@ -1,11 +1,8 @@
 #ifndef INCLUDE_RESIZER_HPP
 #define INCLUDE_RESIZER_HPP
+#ifndef LINUX_APP
 #include "axis/axis_helper.hpp"
 #include <cstdint>
-
-
-
-
 
 /**
 template <int D, int U, int TI, int TD>
@@ -20,18 +17,19 @@ struct ap_axiu {
 };
  */
 
-typedef ap_uint< 32 >              pixel_t;
-typedef ap_axiu< 32,1,1,1 >        pixel_pkg_t;
-typedef hls::stream< pixel_pkg_t > stream_t;
+typedef ap_uint<32> pixel_t;
+typedef ap_axiu<32, 1, 1, 1> pixel_pkg_t;
+typedef hls::stream<pixel_pkg_t> stream_t;
+#else
+#include "ap_data.hpp"
+#include "stream.hpp"
+typedef uint32_t pixel_t;
+typedef isolde::ap_axiu <pixel_t, bool, bool, bool> pixel_pkg_t;
+typedef isolde::stream<pixel_pkg_t> stream_t;
+#endif
 
-void execute(       stream_t& stream_o
-                    ,stream_t& stream_i
-                    ,int& M_o
-                    ,int& C_o
-                    ,int& H_o
-                    ,int& W_o
+void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o, int &H_o, int &W_o
 
-                   
 );
 
 #endif
