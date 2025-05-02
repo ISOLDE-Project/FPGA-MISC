@@ -34,7 +34,7 @@ int main() {
       reinterpret_cast<int32_t*>((y));
   int32_t* ptr_bias = 0;
 
-  #ifdef CONST_WEIGTHS
+  #ifdef GRAYING
   conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
                                      pads, strides, ptr_bias);
   #else

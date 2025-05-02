@@ -75,7 +75,7 @@ void slice_tensor_2_vector(tensor_io &io,
     }
   }
 }
-#ifdef CONST_WEIGTHS
+#ifdef GRAYING
 template <typename out_t, typename in_t, 
           typename dim_t, typename tensor_io>
 void conv2d(tensor_io &io, 
@@ -98,7 +98,7 @@ void conv2d(tensor_io &io,
  #endif             
   using index_t = int32_t;
   using tensor_index = dim_t;
-  // calculate output size
+  
   // input
   enum { IN = 0, IC = 1, IH = 2, IW = 3 };
 
@@ -142,22 +142,21 @@ void conv2d(tensor_io &io,
   size_t k_size = weight_shape[KW] * weight_shape[KH];
   size_t shuffle_ky;
   size_t shuffle_ic;
-  // x_slice_size.set(0,weight_shape[KC],weight_shape[KH],input_shape[IW]);
   x_slice_size.set(1, input_shape[KC], weight_shape[KH], input_shape[IW]);
   size_t x_k_size = x_slice_size[IH] * x_slice_size[IW];
 
-  k_cpy.set(0, 0, 0, 0);
-  // kernel_2_vector(io,mem_phy,input,input_shape,k_cpy,scratchpad_1);
+  
 #ifndef NO_BIAS
+  k_cpy.set(0, 0, 0, 0);
   if (bias) {
     kernel_2_vector(io,  bias, bias_shape, k_cpy, scratchpad_2);
   }
 #endif
-
-    for (index_t oc = 0; oc < output_shape[OC]; ++oc) {
-      // load kernel in scratchpad memory
+      
+#ifndef GRAYING   
+for (index_t oc = 0; oc < output_shape[OC]; ++oc) {
+// load kernel in scratchpad memory
       k_cpy.set(oc, 0, 0, 0);
-#ifndef CONST_WEIGTHS   
       kernel_2_vector(io,  weight, weight_shape, k_cpy, scratchpad_0);
 #endif
       for (index_t oy = 0; oy < output_shape[OH]; ++oy) {
@@ -202,10 +201,7 @@ void conv2d(tensor_io &io,
           }
 #ifndef NO_BIAS          
           if (bias) {
-            // offset_b = oc;
-            // dim_t offset_b = {0, 0, 0, oc};
             out_t val = scratchpad_2[oc];
-            //  io.template tensor_read_next<out_t>(mem_phy, bias, offset_b);
             acc += val;
           }
 #endif          
@@ -215,7 +211,9 @@ void conv2d(tensor_io &io,
           io.tensor_write_next( output, offset_y, acc );
         }
       } // oy
+#ifndef GRAYING      
     }   // oc
+#endif    
 }
 
 #endif

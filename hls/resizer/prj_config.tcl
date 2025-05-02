@@ -18,7 +18,7 @@ proc set_optimizations {} {
 # Add design files
 set __files {
 	src/resizer.cpp
-    src/scratchpad_memory.cpp
+    ../operators/conv2d/scratchpad_memory.cpp
 }
 
 # Add test bench files

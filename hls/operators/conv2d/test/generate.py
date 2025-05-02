@@ -127,10 +127,10 @@ def write_shape_defines(np_o, np_i,np_w, path,fname="shapes.inc"):
         f.write(f"#define CHANNELS_O  {np_o.shape[1]}\n")
         f.write(f"#define HEIGHT_O    {np_o.shape[2]}\n")
         f.write(f"#define WIDTH_O     {np_o.shape[3]}\n\n")
-        f.write(f"#define FEATURES_W  {np_w.shape[0]}\n")
-        f.write(f"#define CHANNELS_W  {np_w.shape[1]}\n")
-        f.write(f"#define HEIGHT_W    {np_w.shape[2]}\n")
-        f.write(f"#define WIDTH_W     {np_w.shape[3]}\n")
+        # f.write(f"#define FEATURES_W  {np_w.shape[0]}\n")
+        # f.write(f"#define CHANNELS_W  {np_w.shape[1]}\n")
+        # f.write(f"#define HEIGHT_W    {np_w.shape[2]}\n")
+        # f.write(f"#define WIDTH_W     {np_w.shape[3]}\n")
 
 # %%
 import torch

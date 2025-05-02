@@ -22,7 +22,7 @@ add_executable(resizer
                scratchpad_memory.cpp
                )
 
-target_compile_definitions(resizer PRIVATE DTYPE_I32 SCALE=256 CONST_WEIGTHS NO_BIAS)
+target_compile_definitions(resizer PRIVATE DTYPE_I32 SCALE=256 GRAYING NO_BIAS)
 add_include_directories (resizer )
 target_link_libraries(resizer PRIVATE py_runtime)
 
@@ -55,7 +55,7 @@ add_custom_target(test-resizer
 
 add_custom_target(test-generate
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/generate.py
-    COMMAND cp conv2d/*.inc ../resizer/src/
+    COMMAND cp conv2d/shapes.inc ../resizer/src/
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running Python to generate test data"
 )
@@ -63,7 +63,8 @@ add_custom_target(test-generate
 add_custom_target(test-clean
     COMMAND rm -f conv2d/test/*.npy
     COMMAND rm -f conv2d/test/*.bin
-    COMMAND rm -f conv2d/test/../*.inc
+    COMMAND rm -f conv2d/shapes.inc
+    COMMAND rm -f ../resizer/src/shapes.inc
     COMMAND rm -f conv2d/test/output*.png
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running Python to generate test data"
