@@ -142,4 +142,5 @@ proc create_project { __prj_name __files __tb_files __top_function } {
         # Close the solution
         close_solution
     }
+    close_project
 }
