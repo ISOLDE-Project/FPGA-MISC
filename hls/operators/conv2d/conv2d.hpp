@@ -81,8 +81,8 @@ template <typename out_t, typename in_t,
 void conv2d(tensor_io &io, 
             volatile out_t*  output, dim_t &output_shape, 
             volatile in_t*  input,  const dim_t input_shape, 
-            const dim_t pads, const dim_t strides_dilations, 
-            volatile out_t* bias) {
+            const dim_t pads, const dim_t strides_dilations
+          ) {
 dim_t weight_shape;
 weight_shape.set(1,3,3,3);
  #else

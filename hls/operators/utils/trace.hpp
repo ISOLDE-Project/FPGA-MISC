@@ -46,6 +46,13 @@ inline void dump( FILE* trace,  float* ptr,  uint32_t size=4){
     fprintf(trace," ]\n ");     
 
 }
+inline void dump(FILE* trace, const uint32_t (&ptr)[4]) {
+  fprintf(trace, "[ %u", ptr[0]);
+  for (int i = 1; i < 4; ++i) {
+      fprintf(trace, ", %u", ptr[i]);
+  }
+  fprintf(trace, " ]\n");
+}
 
 namespace{
 

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include "utils/tensor_utils.hpp"
+#include "utils/trace.hpp"
 
 #include "resizer.h"
 
@@ -27,8 +28,11 @@ int main()
 
   int ret = 0;
 
+  FILE *trace = stdout;
+
   typedef dim_t<4> shape_type;
-  shape_type shape_y, shape_x, shape_w, pads, strides;
+  shape_type  shape_x, x_index;
+  uint32_t offset_x;
 
   stream_t input_stream;
   stream_t output_stream;
@@ -37,16 +41,19 @@ int main()
 
   NumpyArray np_x = numpy_load(x_bin, numpy_module);
   shape_x.set(np_x.shape);
+  dump(trace,shape_x.data);
 
   uint32_t* flat_data = np_x.as<uint32_t>();
-  uint32_t (&rgb_x)[HEIGHT_I][WIDTH_I] = *reinterpret_cast<uint32_t (*)[HEIGHT_I][WIDTH_I]>(flat_data);
+  offset_x =0;
   // === Stream image into AXI4-Stream ===
   for (int i = 0; i < HEIGHT_I; ++i)
   {
+    x_index.set(0,0,i,0);
+    offset_x = tensor_index_to_offset(shape_x,x_index);
     for (int j = 0; j < WIDTH_I; ++j)
     {
       pixel_pkg_t px;
-      px.data = rgb_x[i][j];
+      px.data = flat_data[offset_x++];
       px.keep = -1; // All bytes valid
       px.strb = -1;
       px.id = 0;
