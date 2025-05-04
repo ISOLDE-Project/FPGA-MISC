@@ -81,7 +81,8 @@ template <typename out_t, typename in_t,
 void conv2d(tensor_io &io, 
             volatile out_t*  output, dim_t &output_shape, 
             volatile in_t*  input,  const dim_t input_shape, 
-            const dim_t pads, const dim_t strides_dilations
+            const dim_t pads, const dim_t strides_dilations,
+            int32_t Hlast = 0
           ) {
 dim_t weight_shape;
 weight_shape.set(1,3,3,3);
@@ -93,7 +94,8 @@ void conv2d(tensor_io &io,
             volatile in_t*  input,  const dim_t input_shape, 
             volatile weight_t*  weight, const dim_t weight_shape,
             const dim_t pads, const dim_t strides_dilations, 
-            volatile out_t* bias) {
+            volatile out_t* bias,
+            int32_t Hlast = 0) {
 
  #endif             
   using index_t = int32_t;
@@ -122,11 +124,13 @@ void conv2d(tensor_io &io,
   dim_t bias_shape;
   bias_shape.set(1, 1, 1, weight_shape[M]);
 
+  //
+  index_t y_max_i= Hlast?Hlast:input_shape[IH];
   // compute output shape
   output_shape[ON] = input_shape[IN]; // batch size
   output_shape[OC] = weight_shape[M]; // output channels
   output_shape[OH] =
-      (input_shape[IH] - weight_shape[KH] + pads[pad_top] + pads[pad_bottom]) /
+      (y_max_i - weight_shape[KH] + pads[pad_top] + pads[pad_bottom]) /
           strides_dilations[strides_y] +
       1; // output H
   output_shape[OW] =
@@ -163,7 +167,7 @@ for (index_t oc = 0; oc < output_shape[OC]; ++oc) {
         index_t iy = oy * strides_dilations[strides_y] - pads[pad_top];
         for (index_t ky = 0; ky < weight_shape[KH]; ++ky) {
           index_t y = iy + ky * strides_dilations[dilation_y];
-          if (0 > y || y >= input_shape[IH])
+          if (0 > y || y >= y_max_i)
             continue;
           slice_tensor_2_vector(io,  input, input_shape, y,
                                 x_slice_size, scratchpad_1);
@@ -181,7 +185,7 @@ for (index_t oc = 0; oc < output_shape[OC]; ++oc) {
             size_t base_x = tensor_index_to_offset(input_shape, x_idx);
             for (index_t ky = 0; ky < weight_shape[KH]; ++ky) {
               index_t y = iy + ky * strides_dilations[dilation_y];
-              if (0 > y || y >= input_shape[IH])
+              if (0 > y || y >= y_max_i)
                 continue;
               shuffle_ky = ky * weight_shape[KW];
               for (index_t kx = 0; kx < weight_shape[KW]; ++kx) {

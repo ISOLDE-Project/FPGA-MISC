@@ -39,7 +39,7 @@ int main()
   // === Stream image into AXI4-Stream ===
   for (int i = 0; i < HEIGHT_I; ++i)
   {
-    for (int j = 0; j < WIDTH_I; ++j)
+    for (int j = 0; j < 5; ++j)
     {
       pixel_pkg_t px;
       px.data = rgb_x[i][j];
@@ -73,7 +73,7 @@ int main()
         );
   //
   std::cerr << "(M,C,H,W)= (" << M << "," << C <<"," << H <<","<<W<<")"<<std::endl;
-  for (int i = 0; i < HEIGHT_O; ++i)
+  for (int i = 0; i < 538; ++i)
   {
     for (int j = 0; j < WIDTH_O; ++j)
     {

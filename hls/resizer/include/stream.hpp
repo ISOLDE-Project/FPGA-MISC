@@ -13,7 +13,7 @@ namespace isolde
         std::queue<T> q;
         size_t capacity;
 
-        static constexpr size_t DEFAULT_CAPACITY = 1920 * 1080; // Full HD pixels
+        static constexpr size_t DEFAULT_CAPACITY = 1920 * 1080+1; // Full HD pixels
 
     public:
         // Default constructor uses Full HD capacity

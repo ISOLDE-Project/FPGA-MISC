@@ -3,8 +3,8 @@ import os
 
 
 #image_fname="1920x1080-full-hd-nature-landscape.jpg"
-#image_fname="testpattern-hd-1080.png"
-image_fname="image_00002.jpg"
+image_fname="testpattern-hd-1080.jpg"
+#image_fname="image_00002.jpg"
 #image_fname="image_00371.jpg"
 #image_fname="image_00462.jpg"
 

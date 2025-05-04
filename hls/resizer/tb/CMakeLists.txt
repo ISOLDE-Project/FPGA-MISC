@@ -10,6 +10,7 @@ target_link_libraries(py_runtime PRIVATE ${Python3_LIBRARIES})
 add_executable(resizer 
                ../src/resizer.cpp
                resizer_tb.cpp
+               utils.cpp
                ../../operators/conv2d/scratchpad_memory.cpp
                )
 
