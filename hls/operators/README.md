@@ -3,7 +3,7 @@ This uses CMAKE, and it's just a convenient way to call cmake
 ```sh
 . ./eth.sh
 make 
-make -C build clean test-clean test-generate test-conv2d_i32
+make -C build clean test-clean test-generate test-conv2d test-conv2d_i32 test-resizer
 ```
 The output should look like:
 ```

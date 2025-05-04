@@ -68,7 +68,7 @@ import torchvision.transforms as T
 from PIL import Image
 import torch.nn.functional as F
 
-def exec_conv2d(np_x,np_w,stride=2,padding=1):
+def exec_conv2d(np_x,np_w,stride=2,padding=0):
     torch_type= torch.float32
     match np_x.dtype:            
         case np.int32:

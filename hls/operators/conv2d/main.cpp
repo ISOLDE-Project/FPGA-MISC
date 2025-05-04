@@ -29,7 +29,7 @@ int main() {
   NumpyArray np_w = numpy_load("conv2d/test/w.npy", numpy_module);
   shape_w.set(np_w.shape);
 
-  pads.set(1, 1, 1, 1);
+  pads.set(0, 0, 0, 0);
   strides.set(2, 2, 1, 1);
 
   typedef tensor_io::_TensorIO io_type;

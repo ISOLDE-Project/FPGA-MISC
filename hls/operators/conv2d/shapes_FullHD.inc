@@ -12,9 +12,9 @@
 #define HEIGHT_W    3
 #define WIDTH_W     3
 /*
-* output conv 
+* output conv, stride=2, padding=0 
 */
 #define FHD_CHANNELS_O  1
-#define FHD_HEIGHT_O    540
-#define FHD_WIDTH_O     960
+#define FHD_HEIGHT_O    539
+#define FHD_WIDTH_O     959
 

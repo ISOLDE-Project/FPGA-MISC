@@ -22,7 +22,7 @@ int main() {
   NumpyArray np_w = numpy_load("conv2d/test/w_int32.npy", numpy_module);
   shape_w.set(np_w.shape);
 
-  pads.set(1, 1, 1, 1);
+  pads.set(0, 0, 0, 0);
   strides.set(2, 2, 1, 1);
 
   typedef tensor_io::_TensorIO io_type;
@@ -36,7 +36,7 @@ int main() {
 
   #ifdef GRAYING
   conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
-                                     pads, strides, ptr_bias);
+                                     pads, strides);
   #else
   conv2d(io, ptr_y, shape_y, ptr_x, shape_x,
     ptr_w, shape_w, pads, strides, ptr_bias);
@@ -48,7 +48,7 @@ int main() {
   NumpyArray np_y;
   np_y.set_data((int32_t *)y);
   np_y.set_shape(shape_y);
-  numpy_save("conv2d/test/y_int32_cpp.npy", np_y, numpy_module);
+  numpy_save("conv2d/test/y_cpp_int32.npy", np_y, numpy_module);
 
   return 0;
 }
