@@ -1,9 +1,11 @@
 #ifndef INCLUDE_RESIZER_HPP
 #define INCLUDE_RESIZER_HPP
 #ifndef LINUX_APP
-#include "axis/axis_helper.hpp"
-#include <cstdint>
 
+#include <cstdint>
+#include "ap_axi_sdata.h"
+#include "ap_int.h"
+#include "hls_stream.h"
 /**
 template <int D, int U, int TI, int TD>
 struct ap_axiu {

@@ -109,7 +109,7 @@ proc create_project { __prj_name __files __tb_files __top_function } {
 
     # Define compiler flags
     set __COMPILE_DEFINITIONS_ "-DDTYPE_I32 -DSCALE=256 -DGRAYING -DNO_BIAS"
-    set __INCLUDE_DIRECTORIES_ "-I${__proj_dir}/.. -I${__proj_dir}/../../include  -I${__proj_dir}/../../operators"
+    set __INCLUDE_DIRECTORIES_ "-I${__proj_dir}/../include -I${__proj_dir}/../../include  -I${__proj_dir}/../../operators"
     set __C__FLAGS " $__INCLUDE_DIRECTORIES_  $__COMPILE_DEFINITIONS_ -std=c++17"
     set __SIM_C__FLAGS " "
 
