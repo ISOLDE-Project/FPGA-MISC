@@ -12,8 +12,13 @@
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 #endif
 
-#define N_KNOB 20
-#define CHUNK_HEIGHT (2 * N_KNOB + 3)
+constexpr int N_KNOB = 15;
+constexpr int CHUNK_HEIGHT = (2 * N_KNOB + 3);
+constexpr int _HLAST__ = CHUNK_HEIGHT - (FHD_HEIGHT_I % CHUNK_HEIGHT);
+/**
+ * since stride=0, the last block shall be larger then 2 rows
+ */
+static_assert(_HLAST__ > 2, "_HLAST__ must be greater than 2, please modify N_KNOB");
 
 #define BRAM_C_I FHD_CHANNELS_I
 // #define BRAM_H_I FHD_HEIGHT_I
@@ -34,7 +39,8 @@ uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
 
 void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
-             int &H_o, int &W_o) {
+             int &H_o, int &W_o)
+{
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
   shape_type frame_i_shape;
@@ -67,7 +73,8 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
   //
   volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(x_bram);
   volatile uint32_t *ptr_y = reinterpret_cast<uint32_t *>(y_bram);
-  while (!endOfFrame) {
+  while (!endOfFrame)
+  {
 
 #ifdef LINUX_APP
 
@@ -84,10 +91,12 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
     serialize(fname.c_str(), x_bram, sizeof(x_bram));
 #endif
 
-    if (endOfFrame) {
+    if (endOfFrame)
+    {
       row_abs = 0;
       endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
-      if (row_q == 0) {
+      if (row_q == 0)
+      {
 #ifdef LINUX_APP
         std::cerr << "|** nada ** |\n";
 #endif
@@ -127,22 +136,10 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
 #endif
 
     // === Stream result into AXI4-Stream ===
-    offset_y = 0;
-    for (int i = 0; i < shape_y[2]; ++i) {
-      y_index.set(0, 0, i, 0);
-      offset_y = tensor_index_to_offset(shape_y, y_index);
-      for (int j = 0; j < shape_y[3]; ++j) {
-        pixel_pkg_t px;
-        px.data = y_bram[offset_y++];
-        px.keep = -1; // All bytes valid
-        px.strb = -1;
-        px.id = 0;
-        px.dest = 0;
-        px.last = (j == shape_y[3] - 1) ? 1 : 0; // End of each line
-        px.user = (i == 0 && j == 0) ? 1 : 0;    // Start of frame only
-        stream_o.write(px);
-      }
-    }
+
+    matrix_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o,
+                                          y_bram,
+                                          shape_y[2]);
   }
   // just to signal the end of streaming
   pixel_pkg_t px;

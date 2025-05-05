@@ -11,6 +11,7 @@
 #include "resizer.h"
 
 #include "shapes.inc"
+#include "axis_helper.hpp"
 
 int32_t rgb_x[HEIGHT_I][WIDTH_I];
 int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];

@@ -133,3 +133,83 @@ void axis_read_lines(
     row_q = row;
     chunk_cnt += 1;
 }
+
+// === matrix to axis ===
+
+template <
+    typename pixel_pkg_t,
+    int BRAM_W,
+    typename stream_t>
+void matrix_to_axis(stream_t &stream_o,
+                    volatile uint32_t *y_bram,
+                    int last_row)
+{
+    uint32_t offset = 0;
+    for (int i = 0; i < last_row; ++i)
+    {
+
+        offset = i * BRAM_W;
+        for (int j = 0; j < BRAM_W; ++j)
+        {
+            pixel_pkg_t px;
+            px.data = y_bram[offset++];
+            px.keep = -1; // All bytes valid
+            px.strb = -1;
+            px.id = 0;
+            px.dest = 0;
+            px.last = (j == BRAM_W - 1) ? 1 : 0;  // End of each line
+            px.user = (i == 0 && j == 0) ? 1 : 0; // Start of frame only
+            stream_o.write(px);
+        }
+    }
+}
+
+// === axis to matrix ===
+template <
+    typename pixel_pkg_t,
+    int ELEMS_MAX,
+    typename stream_t>
+void axis_read_frame(stream_t &stream_i, volatile uint32_t *x_bram, int &row_q, int &col_q)
+{
+
+    // === Read one frame ===
+    int row = 0, col = 0;
+    size_t elems = 0;
+    bool frame_started = false;
+    uint32_t offset = 0;
+    while (elems < ELEMS_MAX)
+    {
+
+        pixel_pkg_t px_in = stream_i.read();
+        // === Detect start of frame
+        if (px_in.user == 1 && !frame_started)
+        {
+
+            frame_started = true;
+            px_in.user = 0;
+        }
+
+        if (!frame_started)
+            continue;
+
+        if (px_in.user == 1)
+        {
+
+            frame_started = false;
+            break; // // End of frame
+        }
+
+        x_bram[offset++] = px_in.data;
+
+        // === Update coordinates ===
+        col++;
+        if (px_in.last == 1)
+        {
+
+            row++;
+            col_q = col;
+            row_q = row;
+            col = 0;
+        }
+    }
+}

@@ -14,6 +14,7 @@
 #include "resizer.h"
 
 #include "shapes.inc"
+#include "axis_helper.hpp"
 
 void serialize(const char *fname, uint32_t* buffer, std::streamsize _n);
 
