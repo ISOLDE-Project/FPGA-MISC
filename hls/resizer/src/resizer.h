@@ -30,8 +30,6 @@ typedef isolde::ap_axiu <pixel_t, bool, bool, bool> pixel_pkg_t;
 typedef isolde::stream<pixel_pkg_t> stream_t;
 #endif
 
-void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o, int &H_o, int &W_o
-
-);
+void execute(stream_t &stream_o, stream_t &stream_i);
 
 #endif

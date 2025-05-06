@@ -38,8 +38,7 @@ static_assert(_HLAST__ > 2, "_HLAST__ must be greater than 2, please modify N_KN
 uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
 
-void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
-             int &H_o, int &W_o)
+void execute(stream_t &stream_o, stream_t &stream_i)
 {
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
@@ -56,13 +55,12 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
   bool frame_started = false;
   bool endOfFrame = false;
   int row_q = 0, col_q = 0, row_abs = 0;
-  ;
+  
   int chunk_cnt = 0;
   pixel_pkg_t px_in_q;
   px_in_q.user = 0;
 
-  H_o = 0;
-  W_o = 0;
+  
 
 #ifdef LINUX_APP
   FILE *trace = stdout;
@@ -78,7 +76,7 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
 
 #ifdef LINUX_APP
 
-    std::cerr << "input [" << row_abs << ":";
+    std::cerr << chunk_cnt<<": input [" << row_abs << ":";
 #endif
     axis_read_lines<BRAM_H_I, BRAM_W_I>(stream_i, frame_i_shape, px_in_q, ptr_x,
                                         row_abs, row_q, col_q, chunk_cnt,
@@ -94,6 +92,7 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
     if (endOfFrame)
     {
       row_abs = 0;
+      chunk_cnt =0;
       endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
       if (row_q == 0)
       {
@@ -112,12 +111,7 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);
-
-    M_o = shape_y[0];
-    C_o = shape_y[1];
-    H_o += shape_y[2];
-    W_o = shape_y[3];
-
+    
 #ifdef LINUX_APP
     std::cerr << row_q << " -> ";
     std::cerr << "[" << shape_x[0] << ", " << shape_x[1] << ",";
@@ -139,7 +133,8 @@ void execute(stream_t &stream_o, stream_t &stream_i, int &M_o, int &C_o,
 
     matrix_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o,
                                           y_bram,
-                                          shape_y[2]);
+                                          shape_y[2],
+                                        (chunk_cnt==1));
   }
   // just to signal the end of streaming
   pixel_pkg_t px;

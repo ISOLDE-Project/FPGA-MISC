@@ -21,7 +21,7 @@ target_link_libraries(resizer PRIVATE py_runtime)
 # Add a "test-conv2d" target that runs the Python smoke test
 add_custom_target(test-resizer
     COMMAND $<TARGET_FILE:resizer>
-    COMMAND ${Python3_EXECUTABLE} conv2d/test/smoke_test_xsim.py
+    #COMMAND ${Python3_EXECUTABLE} conv2d/test/smoke_test_conv2d_i32.py
     DEPENDS resizer
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Running Python smoke test for resizer"

@@ -16,14 +16,34 @@
 #include "shapes.inc"
 #include "axis_helper.hpp"
 
-void serialize(const char *fname, uint32_t* buffer, std::streamsize _n);
+void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 
 // int32_t rgb_x[HEIGHT_I][WIDTH_I];
 // int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
 uint32_t y[1 * CHANNELS_O * HEIGHT_O * WIDTH_O];
 
-const char *y_bin = "conv2d/test/y_xsim_int32.bin";
+const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32.npy";
+const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
+
+void check_frame(stream_t &os, pixel_pkg_t px_in_q, NumpyModule &numpy_module)
+{
+  typedef dim_t<4> shape_type;
+  shape_type shape_y;
+  int H = 0, W = 0;
+  std::memset(y, 0, sizeof(y));
+
+  axis_read_frame<(HEIGHT_O * WIDTH_O)>(os, px_in_q, y, H, W);
+  std::cerr << "read frame (H,W)= (" << H << "," << W << ")" << std::endl;
+
+  NumpyArray np_y;
+  shape_y.set(1, 1, H, W);
+  np_y.set_data((int32_t *)y);
+  np_y.set_shape(shape_y);
+  numpy_save(y_bin, np_y, numpy_module);
+  PythonScriptRunner runner;
+  runner(smoke_test);
+}
 
 int main()
 {
@@ -36,10 +56,7 @@ int main()
   shape_type shape_x, x_index;
   uint32_t offset_x;
 
-  shape_type shape_y, y_index;
-  uint32_t offset_y;
-
-  stream_t input_stream;
+  stream_t input_stream(3 * 1920 * 1080 + 1);
   stream_t output_stream;
 
   NumpyModule numpy_module;
@@ -51,24 +68,21 @@ int main()
   uint32_t *flat_data = np_x.as<uint32_t>();
   offset_x = 0;
   // === Stream image into AXI4-Stream ===
-  for (int i = 0; i < HEIGHT_I; ++i)
-  {
-    x_index.set(0, 0, i, 0);
-    offset_x = tensor_index_to_offset(shape_x, x_index);
-    for (int j = 0; j < WIDTH_I; ++j)
-    {
-      pixel_pkg_t px;
-      px.data = flat_data[offset_x++];
-      px.keep = -1; // All bytes valid
-      px.strb = -1;
-      px.id = 0;
-      px.dest = 0;
-      px.last = (j == WIDTH_I - 1) ? 1 : 0; // End of each line
-      px.user = (i == 0 && j == 0) ? 1 : 0; // Start of frame only
-      input_stream.write(px);
-    }
-  }
-  // just to signal the end of streaming
+  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
+                                       flat_data,
+                                       shape_x[2],
+                                       true);
+  // === Stream 2nd image into AXI4-Stream ===
+  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
+                                       flat_data,
+                                       shape_x[2],
+                                       true);
+  // === Stream 3rd image into AXI4-Stream ===
+  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
+                                       flat_data,
+                                       shape_x[2],
+                                       true);
+  // === just to signal the end of streaming
   pixel_pkg_t px;
   px.data = 0xAABBCC;
   px.keep = 0; // All bytes invalid
@@ -79,38 +93,21 @@ int main()
   px.user = 1; // Start of frame only
   input_stream.write(px);
 
-  int M, C, H, W;
   execute(output_stream,
-          input_stream, M, C, H, W);
-  //
-  std::cerr << "(M,C,H,W)= (" << M << "," << C << "," << H << "," << W << ")" << std::endl;
+          input_stream);
 
-  shape_y.set(M,C,H,W);
-  for (int i = 0; i < H; ++i)
+  try
   {
-    y_index.set(0, 0, i, 0);
-    offset_y = tensor_index_to_offset(shape_y, y_index);
-    for (int j = 0; j < W; ++j)
-    {
-      pixel_pkg_t px = output_stream.read();
-      
-      y[offset_y++] = px.data;
-      
-    }
+    pixel_pkg_t px_in_q;
+    px_in_q.user = 0;
+    check_frame(output_stream, px_in_q, numpy_module);
+    check_frame(output_stream, px_in_q, numpy_module);
+    check_frame(output_stream, px_in_q, numpy_module);
   }
-
-   serialize(y_bin, y, sizeof(y));
-  //
-  // {
-  //   std::ofstream outfile(y_bin, std::ios::binary);
-  //   if (!outfile)
-  //   {
-  //     std::cerr << "Error opening outfile file " << std::endl;
-  //     exit(1);
-  //   }
-  //   outfile.write(reinterpret_cast<char *>(y), sizeof(y));
-  //   outfile.close();
-  // }
+  catch (const std::exception &e)
+  {
+    std::cerr << "\nError: " << e.what() << std::endl;
+  }
 
   return ret;
 }

@@ -92,7 +92,7 @@ void axis_read_lines(
         // === Check for frame end ===
         if (px_in.user == 1)
         {
-            // End of frame detected mid-stream (next frame starting)
+            
             px_in_q = px_in;
             frame_started = false;
             endOfFrame = true;
@@ -142,7 +142,8 @@ template <
     typename stream_t>
 void matrix_to_axis(stream_t &stream_o,
                     volatile uint32_t *y_bram,
-                    int last_row)
+                    int last_row,
+                   bool en_SOF=false)
 {
     uint32_t offset = 0;
     for (int i = 0; i < last_row; ++i)
@@ -158,7 +159,7 @@ void matrix_to_axis(stream_t &stream_o,
             px.id = 0;
             px.dest = 0;
             px.last = (j == BRAM_W - 1) ? 1 : 0;  // End of each line
-            px.user = (i == 0 && j == 0) ? 1 : 0; // Start of frame only
+            px.user = en_SOF && (i == 0 && j == 0) ? 1 : 0; // Start of frame only
             stream_o.write(px);
         }
     }
@@ -166,26 +167,27 @@ void matrix_to_axis(stream_t &stream_o,
 
 // === axis to matrix ===
 template <
-    typename pixel_pkg_t,
     int ELEMS_MAX,
-    typename stream_t>
-void axis_read_frame(stream_t &stream_i, volatile uint32_t *x_bram, int &row_q, int &col_q)
+    typename stream_t,
+    typename pixel_pkg_t>
+void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t *x_bram, int &row_q, int &col_q)
 {
 
     // === Read one frame ===
     int row = 0, col = 0;
-    size_t elems = 0;
     bool frame_started = false;
     uint32_t offset = 0;
-    while (elems < ELEMS_MAX)
+    while (offset < ELEMS_MAX)
     {
 
-        pixel_pkg_t px_in = stream_i.read();
+        pixel_pkg_t px_in = px_in_q.user ? px_in_q : stream_i.read();
         // === Detect start of frame
         if (px_in.user == 1 && !frame_started)
         {
 
             frame_started = true;
+            std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<"\n";
+            px_in_q.user = 0;
             px_in.user = 0;
         }
 
@@ -193,10 +195,10 @@ void axis_read_frame(stream_t &stream_i, volatile uint32_t *x_bram, int &row_q, 
             continue;
 
         if (px_in.user == 1)
-        {
-
+        {   
+            px_in_q = px_in;
             frame_started = false;
-            break; // // End of frame
+            break; // End of frame
         }
 
         x_bram[offset++] = px_in.data;
@@ -208,8 +210,10 @@ void axis_read_frame(stream_t &stream_i, volatile uint32_t *x_bram, int &row_q, 
 
             row++;
             col_q = col;
-            row_q = row;
             col = 0;
         }
     }
+    row_q = row;
+    std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
+    std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
 }
