@@ -186,7 +186,7 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
         {
 
             frame_started = true;
-            std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<"\n";
+            // std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<"\n";
             px_in_q.user = 0;
             px_in.user = 0;
         }
@@ -214,6 +214,6 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
         }
     }
     row_q = row;
-    std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
-    std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
+    // std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
+    // std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
 }
