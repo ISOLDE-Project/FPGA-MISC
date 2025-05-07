@@ -8,9 +8,9 @@ set __top_function execute
 proc set_optimizations {} {
     global __top_function
 #pragma HLS INTERFACE bram port=w_bram
- set_directive_interface  -mode axis        ${__top_function} stream_o
- set_directive_interface  -mode axis        ${__top_function} stream_i
- set_directive_interface  -mode ap_memory   ${__top_function} w_bram
+ set_directive_interface  -mode axis          ${__top_function} stream_o
+ set_directive_interface  -mode axis          ${__top_function} stream_i
+ set_directive_interface  -mode ap_ctrl_none  ${__top_function}
 }
 
 
