@@ -18,7 +18,8 @@ constexpr int _HLAST__ = CHUNK_HEIGHT - (FHD_HEIGHT_I % CHUNK_HEIGHT);
 /**
  * since stride=0, the last block shall be larger then 2 rows
  */
-static_assert(_HLAST__ > 2, "_HLAST__ must be greater than 2, please modify N_KNOB");
+static_assert(_HLAST__ > 2,
+              "_HLAST__ must be greater than 2, please modify N_KNOB");
 
 #define BRAM_C_I FHD_CHANNELS_I
 // #define BRAM_H_I FHD_HEIGHT_I
@@ -38,8 +39,7 @@ static_assert(_HLAST__ > 2, "_HLAST__ must be greater than 2, please modify N_KN
 uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
 
-void execute(stream_t &stream_o, stream_t &stream_i)
-{
+void execute(stream_t &stream_o, stream_t &stream_i) {
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
   shape_type frame_i_shape;
@@ -55,12 +55,10 @@ void execute(stream_t &stream_o, stream_t &stream_i)
   bool frame_started = false;
   bool endOfFrame = false;
   int row_q = 0, col_q = 0, row_abs = 0;
-  
+  int row_out = 0;
   int chunk_cnt = 0;
   pixel_pkg_t px_in_q;
   px_in_q.user = 0;
-
-  
 
 #ifdef LINUX_APP
   FILE *trace = stdout;
@@ -71,12 +69,11 @@ void execute(stream_t &stream_o, stream_t &stream_i)
   //
   volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(x_bram);
   volatile uint32_t *ptr_y = reinterpret_cast<uint32_t *>(y_bram);
-  while (!endOfFrame)
-  {
+  while (!endOfFrame) {
 
 #ifdef LINUX_APP
 
-    std::cerr << chunk_cnt<<": input [" << row_abs << ":";
+    std::cerr << chunk_cnt << ": input [" << row_abs << ":";
 #endif
     axis_read_lines<BRAM_H_I, BRAM_W_I>(stream_i, frame_i_shape, px_in_q, ptr_x,
                                         row_abs, row_q, col_q, chunk_cnt,
@@ -89,13 +86,11 @@ void execute(stream_t &stream_o, stream_t &stream_i)
     serialize(fname.c_str(), x_bram, sizeof(x_bram));
 #endif
 
-    if (endOfFrame)
-    {
+    if (endOfFrame) {
       row_abs = 0;
-      chunk_cnt =0;
+      chunk_cnt = 0;
       endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
-      if (row_q == 0)
-      {
+      if (row_q == 0) {
 #ifdef LINUX_APP
         std::cerr << "|** nada ** |\n";
 #endif
@@ -111,7 +106,7 @@ void execute(stream_t &stream_o, stream_t &stream_i)
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);
-    
+
 #ifdef LINUX_APP
     std::cerr << row_q << " -> ";
     std::cerr << "[" << shape_x[0] << ", " << shape_x[1] << ",";
@@ -130,11 +125,8 @@ void execute(stream_t &stream_o, stream_t &stream_i)
 #endif
 
     // === Stream result into AXI4-Stream ===
-
-    matrix_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o,
-                                          y_bram,
-                                          shape_y[2],
-                                        (chunk_cnt==1));
+   
+    vga_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
   }
   // just to signal the end of streaming
   pixel_pkg_t px;

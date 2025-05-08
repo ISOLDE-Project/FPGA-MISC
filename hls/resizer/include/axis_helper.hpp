@@ -164,7 +164,53 @@ void matrix_to_axis(stream_t &stream_o,
         }
     }
 }
+// === crop to vga
 
+
+// === matrix to axis ===
+static constexpr int VGA_H =480;
+static constexpr int VGA_W =640;
+
+template <
+    typename pixel_pkg_t,
+    int BRAM_W,
+    typename stream_t>
+void vga_to_axis(stream_t &stream_o,
+                    volatile uint32_t *y_bram,
+                    int last_row)
+{
+    static constexpr int j_start= (BRAM_W -VGA_W)/2;
+    static constexpr int j_end = j_start+ VGA_W;
+    static_assert(j_end<BRAM_W,"Crop not possible allong y axis");
+    static constexpr int top_row = 30;
+    static constexpr int bottom_row = top_row+VGA_H -1;
+    static int row_out =0;
+    uint32_t offset = 0;
+    for (int i = 0; i < last_row; ++i)
+    {
+        row_out ++;
+        if(row_out<top_row || row_out > bottom_row){
+            if(row_out ==539) row_out =0;
+            continue;
+        }
+        offset = i * BRAM_W + j_start;
+        for (int j = 0; j < VGA_W; ++j)
+        {
+            pixel_pkg_t px;
+           // offset+=j;
+            px.data = y_bram[offset++];
+            px.keep = -1; // All bytes valid
+            px.strb = -1;
+            px.id = 0;
+            px.dest = 0;
+            px.last = (j == VGA_W - 1) ? 1 : 0;  // End of each line
+            px.user = (row_out == top_row && j == 0) ? 1 : 0; // Start of frame only
+            //if(px.user) std::cerr<<"*** start of frame\n\n";
+            stream_o.write(px);
+        }
+       
+    }
+}
 // === axis to matrix ===
 template <
     int ELEMS_MAX,
@@ -186,7 +232,7 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
         {
 
             frame_started = true;
-            // std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<"\n";
+            // std::cerr<<"@ offset="<<offset<<"/ "<<stream_i.size()<<", frame_started:"<<frame_started<<"\n";
             px_in_q.user = 0;
             px_in.user = 0;
         }
@@ -214,6 +260,6 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
         }
     }
     row_q = row;
-    // std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
-    // std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
+     //std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
+     //std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
 }

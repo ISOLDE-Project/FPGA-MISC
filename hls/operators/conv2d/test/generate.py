@@ -2,21 +2,23 @@
 import os
 
 
-image_fname="1920x1080-full-hd-nature-landscape.jpg"
-#image_fname="testpattern-hd-1080.jpg"
+#image_fname="1920x1080-full-hd-nature-landscape.jpg"
+image_fname="testpattern-hd-1080.jpg"
+image_fname_01="testpattern-hd-1080.jpg"
 #image_fname="image_00002.jpg"
 #image_fname="image_00371.jpg"
 #image_fname="image_00462.jpg"
 
 output_dir = f"{os.getcwd()}/conv2d/test"
-image_path=f"{output_dir}/{image_fname}"
+
 
 # %%
 
 from PIL import Image
 import numpy as np
 
-def image_to_tensor(filepath, dtype=np.float32, normalize=True):
+def image_to_tensor(image_fname, dtype=np.float32, normalize=True):
+    filepath=f"{output_dir}/{image_fname}"
     # Open image and convert to RGB
     image = Image.open(filepath).convert('RGB')  # ensures 3 channels
 
@@ -90,7 +92,7 @@ def serialize(y,x,w,sufix=""):
     np.save(f"{output_dir}/x{sufix}",x)
     np.save(f"{output_dir}/w{sufix}",w)
 
-def image_to_RGB(path,image_fname):
+def image_to_RGB(path,image_fname,suffix):
     # === LOAD AND CONVERT IMAGE TO RGB ===
     img = Image.open(f"{path}/{image_fname}").convert('RGB') 
     img_np = np.array(img)  # Shape: (H, W, 3), dtype=uint8
@@ -106,8 +108,8 @@ def image_to_RGB(path,image_fname):
 
     # === SAVE TO BINARY FILE ===
     #rgb_flat.tofile(f"{path}/{image_fname}_{rgb_packed.shape[0]}x{rgb_packed.shape[1]}_RGB.bin")
-    rgb_flat.tofile(f"{path}/x_xsim_int32.bin")
-    np.save(f"{path}/x_linux_sim_int32",np.expand_dims(np.expand_dims(rgb_packed, axis=0), axis=0))
+    rgb_flat.tofile(f"{path}/x_xsim_int32_{suffix}.bin")
+    np.save(f"{path}/x_linux_sim_int32{suffix}",np.expand_dims(np.expand_dims(rgb_packed, axis=0), axis=0))
 
 def write_shape_defines(np_o, np_i,np_w, path,fname="shapes.inc"):
     """
@@ -142,8 +144,7 @@ import torch.nn.functional as F
 
 
 mean_kernel,mean_kernel_q = create_kernel()
-np_x= image_to_tensor(image_path)
-np_x_q= image_to_tensor(image_path,dtype=np.int32)
+np_x= image_to_tensor(image_fname)
 output = exec_conv2d(np_x,mean_kernel)
 #output =output.clamp(0, 1)
 serialize(y=output.numpy(),x=np_x,w=mean_kernel)
@@ -152,16 +153,22 @@ output = T.ToPILImage()(output.squeeze(0))
 output.save(f"{output_dir}/output_downsampled.jpg")
 
 #
-output = exec_conv2d(np_x_q,mean_kernel_q)
-#de-scale the kernel values
-output =output/(pow(2, 8))
-output = output.to(torch.int32)
-serialize(y=output.numpy(),x=np_x_q,w=mean_kernel_q,sufix="_int32")
-np_x_q.tofile(f"{output_dir}/x_int32.bin")
-mean_kernel_q.tofile(f"{output_dir}/w_int32.bin")
-#xsim test values
-image_to_RGB(path=output_dir,image_fname=image_fname)
-write_shape_defines( output, np_x_q, mean_kernel_q,path=f"{output_dir}/..")
-#save jpg
-output = T.ToPILImage()(output.squeeze(0).to(torch.uint8))
-output.save(f"{output_dir}/output_downsampled_q.jpg")
+def gen_test_i32(image_path,suffix):
+    np_x_q= image_to_tensor(image_path,dtype=np.int32)
+    _,mean_kernel_q = create_kernel()
+    output = exec_conv2d(np_x_q,mean_kernel_q)
+    #de-scale the kernel values
+    output =output/(pow(2, 8))
+    output = output.to(torch.int32)
+    serialize(y=output.numpy(),x=np_x_q,w=mean_kernel_q,sufix=f"_int32{suffix}")
+    np_x_q.tofile(f"{output_dir}/x_int32{suffix}.bin")
+    mean_kernel_q.tofile(f"{output_dir}/w_int32.bin")
+    #xsim test values
+    image_to_RGB(path=output_dir,image_fname=image_fname,suffix=suffix)
+    write_shape_defines( output, np_x_q, mean_kernel_q,path=f"{output_dir}/..")
+    #save jpg
+    output = T.ToPILImage()(output.squeeze(0).to(torch.uint8))
+    output.save(f"{output_dir}/output_q_{suffix}.jpg")
+
+gen_test_i32(image_fname,'')
+gen_test_i32(image_fname_01,'_01')

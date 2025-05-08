@@ -3,18 +3,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "py_rt/py_rt.h"
+#include "utils/tensor_utils.hpp"
+#include "utils/trace.hpp"
 #include <cstdint>
-#include <string>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include "utils/tensor_utils.hpp"
-#include "utils/trace.hpp"
+#include <string>
 
 #include "resizer.h"
 
-#include "shapes.inc"
 #include "axis_helper.hpp"
+#include "shapes.inc"
+
+/*
+ * Full HD input
+ */
+
+static constexpr int VGA_CHANNELS = 1;
+static constexpr int VGA_HEIGHT = 480;
+static constexpr int VGA_WIDTH = 640;
 
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 
@@ -24,17 +32,22 @@ uint32_t y[1 * CHANNELS_O * HEIGHT_O * WIDTH_O];
 
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32.npy";
+const char *x01_bin = "conv2d/test/x_linux_sim_int32_01.npy";
 const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
 
-void check_frame(stream_t &os, pixel_pkg_t px_in_q, NumpyModule &numpy_module)
-{
+void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
+                 NumpyModule &numpy_module) {
   typedef dim_t<4> shape_type;
   shape_type shape_y;
   int H = 0, W = 0;
   std::memset(y, 0, sizeof(y));
 
   axis_read_frame<(HEIGHT_O * WIDTH_O)>(os, px_in_q, y, H, W);
-  std::cerr << "read frame (H,W)= (" << H << "," << W << ")" << std::endl;
+  size_t remaining_frames =
+      os.size() ? (os.size() - 1) / (VGA_HEIGHT * VGA_WIDTH) : 0;
+  std::cerr << "read frame (H,W)= (" << H << "," << W
+            << "), remainig frames: " << remaining_frames << " " << os.size()
+            << std::endl;
 
   NumpyArray np_y;
   shape_y.set(1, 1, H, W);
@@ -45,8 +58,7 @@ void check_frame(stream_t &os, pixel_pkg_t px_in_q, NumpyModule &numpy_module)
   runner(smoke_test);
 }
 
-int main()
-{
+int main() {
 
   int ret = 0;
 
@@ -61,27 +73,34 @@ int main()
 
   NumpyModule numpy_module;
 
-  NumpyArray np_x = numpy_load(x_bin, numpy_module);
-  shape_x.set(np_x.shape);
-  dump(trace, shape_x.data);
-
-  uint32_t *flat_data = np_x.as<uint32_t>();
   offset_x = 0;
   // === Stream image into AXI4-Stream ===
-  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
-                                       flat_data,
-                                       shape_x[2],
-                                       true);
+  {
+    NumpyArray np_x = numpy_load(x_bin, numpy_module);
+    shape_x.set(np_x.shape);
+    dump(trace, shape_x.data);
+    uint32_t *flat_data = np_x.as<uint32_t>();
+    matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
+                                         true);
+  }
   // === Stream 2nd image into AXI4-Stream ===
-  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
-                                       flat_data,
-                                       shape_x[2],
-                                       true);
+  {
+    NumpyArray np_x = numpy_load(x_bin, numpy_module);
+    shape_x.set(np_x.shape);
+    dump(trace, shape_x.data);
+    uint32_t *flat_data = np_x.as<uint32_t>();
+    matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
+                                         true);
+  }
   // === Stream 3rd image into AXI4-Stream ===
-  matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream,
-                                       flat_data,
-                                       shape_x[2],
-                                       true);
+  {
+    NumpyArray np_x = numpy_load(x_bin, numpy_module);
+    shape_x.set(np_x.shape);
+    dump(trace, shape_x.data);
+    uint32_t *flat_data = np_x.as<uint32_t>();
+    matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
+                                         true);
+  }
   // === just to signal the end of streaming
   pixel_pkg_t px;
   px.data = 0xAABBCC;
@@ -93,19 +112,18 @@ int main()
   px.user = 1; // Start of frame only
   input_stream.write(px);
 
-  execute(output_stream,
-          input_stream);
+  execute(output_stream, input_stream);
 
-  try
-  {
+  try {
     pixel_pkg_t px_in_q;
     px_in_q.user = 0;
+    std::cerr << "available frames: "
+              << (output_stream.size() - 1) / (VGA_HEIGHT * VGA_WIDTH) << " "
+              << output_stream.size() << std::endl;
     check_frame(output_stream, px_in_q, numpy_module);
     check_frame(output_stream, px_in_q, numpy_module);
     check_frame(output_stream, px_in_q, numpy_module);
-  }
-  catch (const std::exception &e)
-  {
+  } catch (const std::exception &e) {
     std::cerr << "\nError: " << e.what() << std::endl;
   }
 
