@@ -11,13 +11,14 @@
 set configs { \
 {"zcu102" "xczu9eg-ffvb1156-2-e" 50} \
 {"zcu104" "xczu7ev-ffvc1156-2-e" 15} \
+{"vcu118" "xcvu9p-flga2104-2L-e" 15} \
 {"vmk180" "xcvm1802-vsva2197-2MP-e-S" 15} \
 }
 
 
 # ########################################################
 #set active solution
-set config_index 1
+set config_index 2
 
 # helpers ########################################################
 proc listconfigs {configs} {

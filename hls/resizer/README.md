@@ -6,12 +6,19 @@ make
 make -C build clean test-clean test-generate  test-resizer
 ```
 # HLS synthesis
-
+## Linux  
 ```sh
 . ./vitis_hls.sh
 ```
+## Windows  
+In a Vivado Tcl shell
+```
+vitis_hls create_proj.tcl -i
+```
+
 In the console:
 ```
 % config
 % make 4
 ```
+# Windows

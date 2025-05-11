@@ -13,7 +13,17 @@ source ../tcl/isolde_common.tcl
 
 proc make {hls_exec} {
     global  configs config_index __prj_name
-    #set hls_exec [lindex $args 0]  
+    if {$hls_exec eq "help"} {
+        puts "Usage: make <hls_exec>"
+        puts "Possible values for hls_exec:"
+        puts "  1   =>  only checks source code, no synthesis"
+        puts "  2   =>  csynth_design"
+        puts "  3   =>  csynth_design + cosimulation"
+        puts "  4   =>  csynth_design + export_design: RTL synthesis"
+        puts "  5   =>  csynth_design + export_design: RTL synthesis and implementation, including a detailed place and route of the RTL netlist"
+        puts " >5   =>  nothing..."
+        return
+    }
     
     puts "**** INFO: active configuration:  [lindex $configs $config_index]"
 
