@@ -5,3 +5,11 @@ you have to run :
 . ./download.sh
 . ./unzip.sh
 ```
+# using  make
+```sh
+make clean 
+make
+ make unzip
+ ```
+ 
+
