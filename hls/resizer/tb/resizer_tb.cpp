@@ -42,9 +42,9 @@ void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
   int H = 0, W = 0;
   std::memset(y, 0, sizeof(y));
 
-  axis_read_frame<(HEIGHT_O * WIDTH_O)>(os, px_in_q, y, H, W);
+  axis_read_frame<(HEIGHT_O * (WIDTH_O/4))>(os, px_in_q, y, H, W);
   size_t remaining_frames =
-      os.size() ? (os.size() - 1) / (VGA_HEIGHT * VGA_WIDTH) : 0;
+      os.size() ? (os.size() - 1) / (VGA_HEIGHT * (VGA_WIDTH/4)) : 0;
   std::cerr << "read frame (H,W)= (" << H << "," << W
             << "), remainig frames: " << remaining_frames << " " << os.size()
             << std::endl;
