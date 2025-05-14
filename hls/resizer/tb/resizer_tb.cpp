@@ -35,7 +35,7 @@ const char *x_bin = "conv2d/test/x_linux_sim_int32.npy";
 const char *x01_bin = "conv2d/test/x_linux_sim_int32_01.npy";
 const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
 
-void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
+void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
                  NumpyModule &numpy_module) {
   typedef dim_t<4> shape_type;
   shape_type shape_y;
@@ -69,7 +69,7 @@ int main() {
   uint32_t offset_x;
 
   stream_t input_stream(3 * 1920 * 1080 + 1);
-  stream_t output_stream;
+  stream_vga_t output_stream;
 
   NumpyModule numpy_module;
 

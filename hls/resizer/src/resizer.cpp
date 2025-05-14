@@ -39,7 +39,7 @@ static_assert(_HLAST__ > 2,
 uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
 
-void execute(stream_t &stream_o, stream_t &stream_i) {
+void execute(stream_vga_t &stream_o, stream_t &stream_i) {
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
   shape_type frame_i_shape;
