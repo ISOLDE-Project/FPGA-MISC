@@ -211,7 +211,7 @@ void vga_to_axis(stream_t &stream_o,
             uint32_t p3 = y_bram[offset++] & 0xFF;
 
             uint32_t packed = (p3 << 24) | (p2 << 16) | (p1 << 8) | p0;
-            pixel_pkg_t px;
+            pixel4_pkg_t px;
             px.data = packed;
             px.keep = -1; // All bytes valid
             px.strb = -1;

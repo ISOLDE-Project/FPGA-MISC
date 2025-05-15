@@ -129,7 +129,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     vga_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
   }
   // just to signal the end of streaming
-  pixel_pkg_t px;
+  pixel4_pkg_t px;
   px.data = 0xAABBCC;
   px.keep = 0; // All bytes invalid
   px.strb = 0x1;

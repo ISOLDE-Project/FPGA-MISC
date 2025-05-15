@@ -22,3 +22,6 @@ In the console:
 % make 4
 ```
 # Windows
+## vitis
+```
+mrd -bin -file /home/uidl7286/FPGA-MISC/hls/operators/conv2d/test/vga.bin 0x81000000 76800
