@@ -16,7 +16,25 @@ current_dir = os.getcwd()
 
 output_ref = np.load(f"{work_dir}/y_int32.npy")
 output_ref =  output_ref[:,:,29:29+480,159:799]
-output_tensor = np.load(f"{work_dir}/y_cpp_int32.npy")
+
+packed = np.load(f"{work_dir}/y_cpp_int32.npy")
+print(f"packed: {packed.shape}, dtype:{packed.dtype}")
+_, _, H, W_packed = packed.shape  # (480, 160)
+W = W_packed * 4            # Unpacked width = 640
+output_tensor = np.zeros((1,1,H, W), dtype=np.uint8)
+
+# Loop explicitly over pixels
+for i in range(H):
+    for j in range(W_packed):
+        word = packed[0,0,i, j]
+        base_idx = j * 4
+
+        # Extract bytes explicitly
+        output_tensor[0,0,i, base_idx + 0] = (word >> 0)  & 0xFF  # p0
+        output_tensor[0,0,i, base_idx + 1] = (word >> 8)  & 0xFF  # p1
+        output_tensor[0,0,i, base_idx + 2] = (word >> 16) & 0xFF  # p2
+        output_tensor[0,0,i, base_idx + 3] = (word >> 24) & 0xFF  # p3
+
 print(f"\nOutput    shape: {output_tensor.shape}, MIN: {output_tensor.min()}, MAX:{output_tensor.max()}" )
 print(f"Reference shape: {output_ref.shape}, MIN: {output_ref.min()}, MAX:{output_ref.max()}\n" )
 

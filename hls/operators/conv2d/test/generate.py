@@ -3,7 +3,9 @@ import os
 
 
 #image_fname="1920x1080-full-hd-nature-landscape.jpg"
+#image_fname="color_bars_1920x1080.png"
 image_fname="testpattern-hd-1080.jpg"
+#image_fname="2562973.png"
 image_fname_01="testpattern-hd-1080.jpg"
 #image_fname="image_00002.jpg"
 #image_fname="image_00371.jpg"

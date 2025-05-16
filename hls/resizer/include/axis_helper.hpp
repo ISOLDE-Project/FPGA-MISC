@@ -92,7 +92,7 @@ void axis_read_lines(
         // === Check for frame end ===
         if (px_in.user == 1)
         {
-            
+
             px_in_q = px_in;
             frame_started = false;
             endOfFrame = true;
@@ -143,7 +143,7 @@ template <
 void matrix_to_axis(stream_t &stream_o,
                     volatile uint32_t *y_bram,
                     int last_row,
-                   bool en_SOF=false)
+                    bool en_SOF = false)
 {
     uint32_t offset = 0;
     for (int i = 0; i < last_row; ++i)
@@ -158,7 +158,7 @@ void matrix_to_axis(stream_t &stream_o,
             px.strb = -1;
             px.id = 0;
             px.dest = 0;
-            px.last = (j == BRAM_W - 1) ? 1 : 0;  // End of each line
+            px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
             px.user = en_SOF && (i == 0 && j == 0) ? 1 : 0; // Start of frame only
             stream_o.write(px);
         }
@@ -166,49 +166,63 @@ void matrix_to_axis(stream_t &stream_o,
 }
 // === crop to vga
 
-
 // === matrix to axis ===
-static constexpr int VGA_H =480;
-static constexpr int VGA_W =640;
+static constexpr int VGA_H = 480;
+static constexpr int VGA_W = 640;
+
+union pixels_4
+{
+    uint32_t ui32;
+    uint8_t ui8[4];
+    /* data */
+};
 
 template <
     typename pixel_pkg_t,
     int BRAM_W,
     typename stream_t>
 void vga_to_axis(stream_t &stream_o,
-                    volatile uint32_t *y_bram,
-                    int last_row)
+                 volatile uint32_t *y_bram,
+                 int last_row)
 {
-    static constexpr int j_start= (BRAM_W -VGA_W)/2;
-    static constexpr int j_end = j_start+ VGA_W;
-    static_assert(j_end<BRAM_W,"Crop not possible allong y axis");
+    static constexpr int j_start = (BRAM_W - VGA_W) / 2;
+    static constexpr int j_end = j_start + VGA_W;
+    static_assert(j_end < BRAM_W, "Crop not possible allong y axis");
     static constexpr int top_row = 30;
-    static constexpr int bottom_row = top_row+VGA_H -1;
-    static int row_out =0;
+    static constexpr int bottom_row = top_row + VGA_H - 1;
+    static int row_out = 0;
     uint32_t offset = 0;
     for (int i = 0; i < last_row; ++i)
     {
-        row_out ++;
-        if(row_out<top_row || row_out > bottom_row){
-            if(row_out ==539) row_out =0;
+        row_out++;
+        if (row_out < top_row || row_out > bottom_row)
+        {
+            if (row_out == 539)
+                row_out = 0;
             continue;
         }
         offset = i * BRAM_W + j_start;
-        for (int j = 0; j < VGA_W; ++j)
+        for (int j = 0; j < VGA_W; j += 4)
         {
-            pixel_pkg_t px;
-           // offset+=j;
-            px.data = y_bram[offset++];
+
+            uint32_t p0 = y_bram[offset++] & 0xFF;
+            uint32_t p1 = y_bram[offset++] & 0xFF;
+            uint32_t p2 = y_bram[offset++] & 0xFF;
+            uint32_t p3 = y_bram[offset++] & 0xFF;
+
+            uint32_t packed = (p3 << 24) | (p2 << 16) | (p1 << 8) | p0;
+            pixel4_pkg_t px;
+            px.data = packed;
             px.keep = -1; // All bytes valid
             px.strb = -1;
             px.id = 0;
             px.dest = 0;
-            px.last = (j == VGA_W - 1) ? 1 : 0;  // End of each line
+            px.last = (j == VGA_W - 4) ? 1 : 0; // End of each line
+            // if(px.last) std::cerr<<"*** end of line\n\n";
             px.user = (row_out == top_row && j == 0) ? 1 : 0; // Start of frame only
-            //if(px.user) std::cerr<<"*** start of frame\n\n";
+            // if(px.user) std::cerr<<"*** start of frame\n\n";
             stream_o.write(px);
         }
-       
     }
 }
 // === axis to matrix ===
@@ -216,7 +230,7 @@ template <
     int ELEMS_MAX,
     typename stream_t,
     typename pixel_pkg_t>
-void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t *x_bram, int &row_q, int &col_q)
+void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q, volatile uint32_t *x_bram, int &row_q, int &col_q)
 {
 
     // === Read one frame ===
@@ -241,7 +255,7 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
             continue;
 
         if (px_in.user == 1)
-        {   
+        {
             px_in_q = px_in;
             frame_started = false;
             break; // End of frame
@@ -260,6 +274,6 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q,volatile uint32_t 
         }
     }
     row_q = row;
-     //std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
-     //std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
+    // std::cerr<<"@ offset="<<offset<<", frame_started:"<<frame_started<<", ";
+    // std::cerr<<"offset < ELEMS_MAX: "<<(offset < ELEMS_MAX)<<"\n";
 }
