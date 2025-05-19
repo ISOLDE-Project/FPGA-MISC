@@ -55,16 +55,19 @@
 #define C2C_BASE_ADDR_INIT      		0xA0000000  // Replace with actual address from Vivado
 #define C2C_BASE_ADDR_INPUT_VALUE     	0xA0000010
 #define C2C_BASE_ADDR_OUTPUT_OFFSET    	0xA0000018
-#define C2C_BASE_ADDR_OUTPUT_VALUE  	0xFFFC0004 //0x00000000  // Output Address
+#define C2C_BASE_ADDR_OUTPUT_VALUE  	0xFFFC0004  // 0x00000000  // Output Address
 
-#define XEXECUTE_CFG_PORT1_ADDR_AP_CTRL        0x00
-#define XEXECUTE_CFG_PORT1_ADDR_GIE            0x04
-#define XEXECUTE_CFG_PORT1_ADDR_IER            0x08
-#define XEXECUTE_CFG_PORT1_ADDR_ISR            0x0c
-#define XEXECUTE_CFG_PORT1_ADDR_CFG_PORT1_DATA 0x10
-#define XEXECUTE_CFG_PORT1_BITS_CFG_PORT1_DATA 32
-#define XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA 0x18
-#define XEXECUTE_CFG_PORT1_BITS_DATA_PORT_DATA 64
+#define XEXECUTE_CFG_PORT1_ADDR_AP_CTRL             0x00
+#define XEXECUTE_CFG_PORT1_ADDR_GIE                 0x04
+#define XEXECUTE_CFG_PORT1_ADDR_IER                 0x08
+#define XEXECUTE_CFG_PORT1_ADDR_ISR                 0x0c
+#define XEXECUTE_CFG_PORT1_ADDR_CFG_PORT1_DATA      0x10
+#define XEXECUTE_CFG_PORT1_BITS_CFG_PORT1_DATA      32
+#define XEXECUTE_CFG_PORT1_ADDR_CFG_PORT1_ECHO_DATA 0x18
+#define XEXECUTE_CFG_PORT1_BITS_CFG_PORT1_ECHO_DATA 32
+#define XEXECUTE_CFG_PORT1_ADDR_CFG_PORT1_ECHO_CTRL 0x1c
+#define XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA      0x28
+#define XEXECUTE_CFG_PORT1_BITS_DATA_PORT_DATA      32
 
 int main()
 {
@@ -75,15 +78,21 @@ int main()
     init_platform();
     print("Hello World\n\r");
 
-    u32 addr_high = (u32) ((u64)C2C_BASE_ADDR_OUTPUT_VALUE >> 32);
+    //u32 addr_high = (u32) ((u64)C2C_BASE_ADDR_OUTPUT_VALUE >> 32);
     u32 addr_low  = (u32) (C2C_BASE_ADDR_OUTPUT_VALUE & 0xFFFFFFFF);
     Xil_Out32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA,     addr_low);
-    Xil_Out32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA+0x4, addr_high);
+    //Xil_Out32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA+0x4, addr_high);
     Xil_DCacheFlush();  // Ensure write goes through
 
+    if (addr_low != Xil_In32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA))
+    		xil_printf("Bad address low!!!!\n\r");
+    xil_printf("0x%08X\n\r", Xil_In32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA));
+    //if (addr_high != Xil_In32(C2C_BASE_ADDR_INIT + XEXECUTE_CFG_PORT1_ADDR_DATA_PORT_DATA+0x4))
+    		//xil_printf("Bad address high!!!!\n\r");
+
     // Test output memory mapping
-    Xil_Out32(C2C_BASE_ADDR_OUTPUT_VALUE, 0xBADBAD);
-    if (Xil_In32(C2C_BASE_ADDR_OUTPUT_VALUE) != 0xBADBAD) {
+    Xil_Out32(C2C_BASE_ADDR_OUTPUT_VALUE, 0xDEADBEEF);
+    if (Xil_In32(C2C_BASE_ADDR_OUTPUT_VALUE) != 0xDEADBEEF) {
         print("Wrong memory map!!!!!!!!!!\n");
         cleanup_platform();
         return -1;
@@ -112,7 +121,7 @@ int main()
     read_value = Xil_In32(C2C_BASE_ADDR_OUTPUT_VALUE);
     xil_printf("HLS Output = 0x%08X\n\r", read_value);
     if (read_value == (0x40 + test_value)) {
-        print("Success! :) \n\r");
+        print("You rock! :) \n\r");
     } else {
         print("You suck! :( \n\r");
     }
