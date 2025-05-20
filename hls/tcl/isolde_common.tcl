@@ -35,17 +35,21 @@ proc listconfigs {configs} {
     }
 }
 
-proc info { } {
-    global configs config_index
+proc welcome {} {
+    global configs config_index tcl_dir
     
     listconfigs $configs
 
     if {$config_index < [llength $configs]} {
         puts "**** INFO: active configuration: [lindex $configs $config_index]"
+        puts "**** INFO: change 'config_index' here:  [file join $tcl_dir isolde_common.tcl]"
     } else {
         puts "**** ERROR: config_index $config_index is out of range"
         return
     }
+    puts "****   1. : config         --> creates the vitis_hls project"
+    puts "****   2. : make <target>  --> builds the active solution"
+    puts "****        make help      --> lists available targets"
 }
 
 proc mkdir { base_dir suffix_dir} {
@@ -165,4 +169,4 @@ proc create_project { __prj_name __files __tb_files __top_function } {
     close_project
 }
 
-info
+welcome
