@@ -126,7 +126,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
 
     // === Stream result into AXI4-Stream ===
    
-    vga_to_axis<pixel_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
+    vga_to_axis<pixel4_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
   }
   // just to signal the end of streaming
   pixel4_pkg_t px;

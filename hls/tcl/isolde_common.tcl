@@ -6,6 +6,12 @@
 
 
 
+
+
+source [file join $tcl_dir create_proj.tcl]
+source [file join $tcl_dir make_sol.tcl]
+
+
 #tuple's layout:
 #{solution part_name clock}
 set configs { \
@@ -18,14 +24,27 @@ set configs { \
 
 # ########################################################
 #set active solution
-set config_index 2
+set config_index 0
 
 # helpers ########################################################
 proc listconfigs {configs} {
     set i 0
     foreach j $configs {
-        puts "([lindex $j 0 ],[lindex $j 1 ]) is configuration number $i "
+        puts "**** INFO: ([lindex $j 0 ],[lindex $j 1 ]) is configuration number $i "
         incr i
+    }
+}
+
+proc info { } {
+    global configs config_index
+    
+    listconfigs $configs
+
+    if {$config_index < [llength $configs]} {
+        puts "**** INFO: active configuration: [lindex $configs $config_index]"
+    } else {
+        puts "**** ERROR: config_index $config_index is out of range"
+        return
     }
 }
 
@@ -96,7 +115,7 @@ proc build_solution {__prj_name __sol_name hls_exec } {
 
 proc create_project { __prj_name __files __tb_files __top_function } {
     # Declare $configs as a global variable
-    global configs
+    global configs config_index
 
     puts "*****************************************"
     puts "create_project prj_name=${__prj_name}, top function=${__top_function}"
@@ -124,10 +143,10 @@ proc create_project { __prj_name __files __tb_files __top_function } {
     set_top ${__top_function}
 
     # Iterate over configurations
-    foreach j $configs {
-        set __sol_name  [lindex $j 0]
-        set _part_name_ [lindex $j 1]
-        set _clock_     [lindex $j 2]
+
+        set __sol_name  [lindex [lindex $configs $config_index] 0 ]
+        set _part_name_ [lindex [lindex $configs $config_index] 1 ]
+        set _clock_     [lindex [lindex $configs $config_index] 2 ]
 
         # Open a solution with the given name and flow target
         open_solution -reset -flow_target vivado ${__sol_name}
@@ -142,6 +161,8 @@ proc create_project { __prj_name __files __tb_files __top_function } {
 
         # Close the solution
         close_solution
-    }
+    
     close_project
 }
+
+info

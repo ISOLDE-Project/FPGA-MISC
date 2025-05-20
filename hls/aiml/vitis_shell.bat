@@ -1,1 +1,1 @@
-vitis_hls create_proj.tcl -i
+vitis_hls prj_config.tcl -i

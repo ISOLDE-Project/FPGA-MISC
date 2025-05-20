@@ -1,7 +1,4 @@
-
-source prj_config.tcl
-source ../tcl/isolde_common.tcl
-
+# Copyleft 2024 ISOLDE
 
 #possible values for hls_exec
 # 1   =>  only checks source code, no synthesis

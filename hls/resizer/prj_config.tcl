@@ -1,8 +1,15 @@
+# Copyleft 2024 ISOLDE
+
+
 set __prj_name        isolde_resizer
 set __ip_description  "downsampling the input stream"
 set __ip_taxonomy     "ISOLDE"
 
 set __top_function execute 
+
+set tcl_dir [file normalize ../tcl]
+puts "**** INFO: tcl folder: $tcl_dir"
+source [file join $tcl_dir isolde_common.tcl]
 
 
 proc set_optimizations {} {

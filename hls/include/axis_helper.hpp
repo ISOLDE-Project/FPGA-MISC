@@ -2,6 +2,7 @@
 
 #include "utils/tensor_utils.hpp"
 
+
 #ifdef LINUX_APP
 #include <iostream>
 #include "utils/trace.hpp"
@@ -136,6 +137,42 @@ void axis_read_lines(
 
 // === matrix to axis ===
 
+namespace {
+// Primary template: applies to all types except bool
+template <typename T>
+struct UserField {
+    static void set(T &user, uint32_t frame_cnt, bool sof) {
+        user = (frame_cnt << 1) | ( sof ? 1 : 0);
+    }
+    static void get(const T user, uint32_t& frame_cnt, bool& sof) {
+        frame_cnt = (user >> 1);
+        sof = user&1;
+    }
+};
+
+// Partial specialization for bool
+template <>
+struct UserField<bool> {
+    static void set(bool &user, uint32_t, bool sof) {
+        user = sof;
+    }
+    static void get(const bool user, uint32_t& frame_cnt, bool& sof) {
+        frame_cnt = 0; //always 0
+        sof = user;
+    }
+};
+}
+template <typename T>
+void set_SOF(T& user, uint32_t frame_cnt, bool sof) {
+    UserField<T>::set(user, frame_cnt,sof);
+}
+
+template <typename T>
+void get_SOF(const T user, uint32_t& frame_cnt, bool& sof) {
+    UserField<T>::get(user, frame_cnt,sof);
+}
+
+
 template <
     typename pixel_pkg_t,
     int BRAM_W,
@@ -143,7 +180,8 @@ template <
 void matrix_to_axis(stream_t &stream_o,
                     volatile uint32_t *y_bram,
                     int last_row,
-                    bool en_SOF = false)
+                    uint32_t frame_cnt ,
+                    bool en_SOF )
 {
     uint32_t offset = 0;
     for (int i = 0; i < last_row; ++i)
@@ -159,7 +197,9 @@ void matrix_to_axis(stream_t &stream_o,
             px.id = 0;
             px.dest = 0;
             px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
-            px.user = en_SOF && (i == 0 && j == 0) ? 1 : 0; // Start of frame only
+            //px.user = en_SOF && (i == 0 && j == 0) ? 1 : 0; // Start of frame only
+            bool sof = en_SOF && ((i == 0 && j == 0) ? 1 : 0); // Start of frame only
+            set_SOF(px.user, frame_cnt, sof);
             stream_o.write(px);
         }
     }
@@ -170,12 +210,6 @@ void matrix_to_axis(stream_t &stream_o,
 static constexpr int VGA_H = 480;
 static constexpr int VGA_W = 640;
 
-union pixels_4
-{
-    uint32_t ui32;
-    uint8_t ui8[4];
-    /* data */
-};
 
 template <
     typename pixel_pkg_t,
@@ -211,7 +245,7 @@ void vga_to_axis(stream_t &stream_o,
             uint32_t p3 = y_bram[offset++] & 0xFF;
 
             uint32_t packed = (p3 << 24) | (p2 << 16) | (p1 << 8) | p0;
-            pixel4_pkg_t px;
+            pixel_pkg_t px;
             px.data = packed;
             px.keep = -1; // All bytes valid
             px.strb = -1;
@@ -240,21 +274,27 @@ void axis_read_frame(stream_t &stream_i, pixel_pkg_t &px_in_q, volatile uint32_t
     while (offset < ELEMS_MAX)
     {
 
-        pixel_pkg_t px_in = px_in_q.user ? px_in_q : stream_i.read();
+        
+        bool sof = 0;
+        uint32_t frame_cnt=0;
+        get_SOF(px_in_q.user,frame_cnt,sof);
+        pixel_pkg_t px_in =  sof ? px_in_q : stream_i.read();
+        get_SOF(px_in.user,frame_cnt,sof);
         // === Detect start of frame
-        if (px_in.user == 1 && !frame_started)
+        if (sof == 1 && !frame_started)
         {
 
             frame_started = true;
             // std::cerr<<"@ offset="<<offset<<"/ "<<stream_i.size()<<", frame_started:"<<frame_started<<"\n";
-            px_in_q.user = 0;
-            px_in.user = 0;
+            sof =0;
+            //set_SOF(px.user, frame_cnt, sof);
+            set_SOF(px_in_q.user, frame_cnt, sof);
+           
         }
 
         if (!frame_started)
             continue;
-
-        if (px_in.user == 1)
+        if (sof == 1)
         {
             px_in_q = px_in;
             frame_started = false;

@@ -1,9 +1,4 @@
-
-
-
-source prj_config.tcl
-source ../tcl/isolde_common.tcl
-source make_sol.tcl
+# Copyleft 2024 ISOLDE
 
 proc config {} {
     global configs config_index __prj_name __files __tb_files __top_function
