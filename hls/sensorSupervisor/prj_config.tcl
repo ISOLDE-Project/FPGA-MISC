@@ -1,28 +1,35 @@
+# Copyleft 2024 ISOLDE
+
+
 set __prj_name        sensorSupervisor
-set __ip_description  "IR sensor supervisor"
+set __ip_description  "returns the TUSER side channel"
 set __ip_taxonomy     "ISOLDE"
 
 set __top_function execute 
-set __m_axi_depth [expr 4*1024]
+
+set tcl_dir [file normalize ../tcl]
+puts "**** INFO: tcl folder: $tcl_dir"
+source [file join $tcl_dir isolde_common.tcl]
+
 
 proc set_optimizations {} {
     global __top_function
-    global __m_axi_depth
-    set_directive_interface -mode ap_ctrl_none ${__top_function}
-    set_directive_interface -bundle status  -mode m_axi      ${__top_function} status  -depth ${::__m_axi_depth}
-    set_directive_interface -bundle cfg     -mode s_axilite  ${__top_function} cfg_port  
 
+    set_directive_interface -bundle ctrl      -mode s_axilite  ${__top_function} frame_no,
+    set_directive_interface                   -mode ap_none    ${__top_function} tuser_in,
+    set_directive_interface                   -mode ap_none    ${__top_function} tvalid,
+    set_directive_interface                   -mode ap_none    ${__top_function} tready
+    set_directive_interface -bundle ctrl      -mode s_axilite  ${__top_function} return
 }
 
 
 
 # Add design files
-## core files list
 set __files {
 	src/sensorSupervisor.cpp
 }
 
 # Add test bench files
 set  __tb_files {
- 	src/sensorSupervisor_tb.cpp
+ 	src/resizer_tb.cpp
  }
