@@ -185,6 +185,10 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.PSU_MIO_0_DIRECTION {out} \
    CONFIG.PSU_MIO_0_INPUT_TYPE {cmos} \
    CONFIG.PSU_MIO_0_POLARITY {Default} \
+   CONFIG.PSU_MIO_10_POLARITY {Default} \
+   CONFIG.PSU_MIO_11_POLARITY {Default} \
+   CONFIG.PSU_MIO_12_INPUT_TYPE {cmos} \
+   CONFIG.PSU_MIO_12_POLARITY {Default} \
    CONFIG.PSU_MIO_14_DIRECTION {inout} \
    CONFIG.PSU_MIO_14_POLARITY {Default} \
    CONFIG.PSU_MIO_15_DIRECTION {inout} \
@@ -339,6 +343,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.PSU_MIO_77_POLARITY {Default} \
    CONFIG.PSU_MIO_7_INPUT_TYPE {cmos} \
    CONFIG.PSU_MIO_7_POLARITY {Default} \
+   CONFIG.PSU_MIO_8_POLARITY {Default} \
+   CONFIG.PSU_MIO_9_POLARITY {Default} \
    CONFIG.PSU_MIO_TREE_PERIPHERALS {Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Feedback Clk########I2C 0#I2C 0#I2C 1#I2C 1#UART 0#UART 0#UART 1#UART 1###CAN 1#CAN 1##DPAUX#DPAUX#DPAUX#DPAUX###############SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#MDIO 3#MDIO 3} \
    CONFIG.PSU_MIO_TREE_SIGNALS {sclk_out#miso_mo1#mo2#mo3#mosi_mi0#n_ss_out#clk_for_lpbk########scl_out#sda_out#scl_out#sda_out#rxd#txd#txd#rxd###phy_tx#phy_rx##dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in###############sdio1_cd_n#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl#gem3_mdc#gem3_mdio_out} \
    CONFIG.PSU_SD1_INTERNAL_BUS_WIDTH {4} \
@@ -813,60 +819,61 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"1.00743",
-   "Default View_TopLeft":"435,59",
+   "Default View_ScaleFactor":"0.465255",
+   "Default View_TopLeft":"-142,-282",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r6  2020-01-29 bk=1.5227 VDI=41 GEI=36 GUI=JA:10.0 non-TLS
 #  -string -flagsOSRD
 preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x -10 -y 600 -defaultsOSRD
 preplace port reset -pg 1 -lvl 0 -x -10 -y 460 -defaultsOSRD
-preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 130 -y 600 -defaultsOSRD
-preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1390 -y 730 -defaultsOSRD
-preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 4 -x 1390 -y 510 -defaultsOSRD
-preplace inst img2axis_0 -pg 1 -lvl 3 -x 810 -y 420 -defaultsOSRD
-preplace inst axi_vdma_0 -pg 1 -lvl 6 -x 2330 -y 570 -defaultsOSRD
-preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 420 -y 480 -defaultsOSRD
-preplace inst ps8_0_axi_periph -pg 1 -lvl 5 -x 1920 -y 160 -defaultsOSRD
-preplace inst xlslice_0 -pg 1 -lvl 4 -x 1390 -y 970 -defaultsOSRD
-preplace inst xlconstant_0 -pg 1 -lvl 4 -x 1390 -y 870 -defaultsOSRD
-preplace inst xlconcat_0 -pg 1 -lvl 5 -x 1920 -y 880 -defaultsOSRD
-preplace inst sensorSupervisor_0 -pg 1 -lvl 6 -x 2330 -y 230 -defaultsOSRD
 preplace inst axi_intc_0 -pg 1 -lvl 4 -x 1390 -y 120 -defaultsOSRD
-preplace netloc clk_wiz_0_clk_out3 1 1 5 NJ 620 NJ 620 1020 30 1760 480 2060J
-preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 2 1100 630 1700
-preplace netloc clk_wiz_0_clk_out1 1 1 5 240 380 600 270 1050 270 1770 410 2120
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 3 1090 210 1750 670 N
-preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 4 590 250 NJ 250 1780 380 2090
-preplace netloc reset_1 1 0 2 NJ 460 NJ
-preplace netloc img2axis_0_stream_o_TUSER 1 3 3 1030 620 N 620 2140
-preplace netloc xlslice_0_Dout 1 4 1 1730J 890n
-preplace netloc xlconstant_0_dout 1 4 1 NJ 870
-preplace netloc xlconcat_0_dout 1 5 1 2080 200n
-preplace netloc img2axis_0_stream_o_TVALID 1 3 3 1030J 360 1740J 420 2110
+preplace inst axi_vdma_0 -pg 1 -lvl 6 -x 2340 -y 570 -defaultsOSRD
+preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 130 -y 600 -defaultsOSRD
+preplace inst img2axis_0 -pg 1 -lvl 3 -x 810 -y 420 -defaultsOSRD
+preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1390 -y 730 -defaultsOSRD
+preplace inst ps8_0_axi_periph -pg 1 -lvl 5 -x 1920 -y 160 -defaultsOSRD
+preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 420 -y 480 -defaultsOSRD
+preplace inst sensorSupervisor_0 -pg 1 -lvl 6 -x 2340 -y 230 -defaultsOSRD
+preplace inst xlconcat_0 -pg 1 -lvl 5 -x 1920 -y 880 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 4 -x 1390 -y 870 -defaultsOSRD
+preplace inst xlslice_0 -pg 1 -lvl 4 -x 1390 -y 970 -defaultsOSRD
+preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 4 -x 1390 -y 510 -defaultsOSRD
 preplace netloc Net 1 3 3 1010J 350 1700J 400 2140
-preplace netloc img2axis_0_stream_o_TLAST 1 3 3 1060J 380 1720J 440 2090
-preplace netloc img2axis_0_stream_o_TKEEP 1 3 3 1070J 390 1690J 430 2100
-preplace netloc img2axis_0_stream_o_TDATA 1 3 3 1080J 400 1680J 490 N
-preplace netloc axi_vdma_0_s2mm_introut 1 3 4 1100 260 1710J 390 NJ 390 2520
 preplace netloc axi_intc_0_irq 1 3 2 1090 220 1700
-preplace netloc ps8_0_axi_periph_M01_AXI 1 2 4 610 280 NJ 280 1720J 350 2070
-preplace netloc ps8_0_axi_periph_M02_AXI 1 5 1 2080 170n
-preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 600
+preplace netloc axi_vdma_0_s2mm_introut 1 3 4 1100 260 1710J 390 NJ 390 2530
+preplace netloc clk_wiz_0_clk_out1 1 1 5 240 380 600 270 1050 270 1770 410 2120
+preplace netloc clk_wiz_0_clk_out3 1 1 5 NJ 620 NJ 620 1020 30 1760 480 2060J
+preplace netloc img2axis_0_stream_o_TDATA 1 3 3 1080J 400 1680J 490 N
+preplace netloc img2axis_0_stream_o_TKEEP 1 3 3 1070J 390 1690J 430 2100
+preplace netloc img2axis_0_stream_o_TLAST 1 3 3 1060J 380 1720J 440 2090
+preplace netloc img2axis_0_stream_o_TUSER 1 3 3 1030 620 N 620 2140
+preplace netloc img2axis_0_stream_o_TVALID 1 3 3 1030J 360 1740J 420 2110
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 3 1090 210 1750 670 N
+preplace netloc reset_1 1 0 2 NJ 460 NJ
+preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 4 590 250 NJ 250 1780 380 2090
+preplace netloc xlconcat_0_dout 1 5 1 2080 200n
+preplace netloc xlconstant_0_dout 1 4 1 NJ 870
+preplace netloc xlslice_0_Dout 1 4 1 1730J 890n
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 2 1100 630 1700
 preplace netloc img2axis_0_m_axi_data_mem 1 3 1 1040 340n
-preplace netloc axi_vdma_0_M_AXI_S2MM 1 3 4 1100 370 NJ 370 NJ 370 2530
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 4 1 1730 40n
-preplace netloc ps8_0_axi_periph_M00_AXI 1 5 1 2130 130n
 preplace netloc ps8_0_axi_periph_M03_AXI 1 3 3 1060 340 NJ 340 2060
-levelinfo -pg 1 -10 130 420 810 1390 1920 2330 2550
-pagesize -pg 1 -db -bbox -sgen -150 -20 2550 1030
+preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 600
+preplace netloc ps8_0_axi_periph_M02_AXI 1 5 1 2080 170n
+preplace netloc ps8_0_axi_periph_M00_AXI 1 5 1 2130 130n
+preplace netloc ps8_0_axi_periph_M01_AXI 1 2 4 610 280 NJ 280 1720J 350 2070
+preplace netloc axi_vdma_0_M_AXI_S2MM 1 3 4 1100 370 NJ 370 NJ 370 2540
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 4 1 1730 40n
+levelinfo -pg 1 -10 130 420 810 1390 1920 2340 2570
+pagesize -pg 1 -db -bbox -sgen -150 -20 2570 1030
 "
 }
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
+common::send_gid_msg -ssname BD::TCL -id 2050 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
+
   close_bd_design $design_name 
 }
 # End of cr_bd_$::_xil_proj_name_()
