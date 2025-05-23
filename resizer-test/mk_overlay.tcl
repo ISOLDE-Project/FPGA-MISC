@@ -1,4 +1,6 @@
 
+source ./board/xilinx.cfg
+
 proc mk_overlay {} {
     # Get project info
     set proj_dir  [ get_property DIRECTORY [current_project] ]
@@ -11,7 +13,16 @@ proc mk_overlay {} {
         puts "ERROR: No block design found!"
         return
     }
-    set bd_name [lindex $bds 0]
+
+    set index [lsearch -exact $bds $::_xil_proj_name_]
+
+    if {$index == -1} {
+        puts "$_xil_proj_name_ is NOT in the list of block designs."
+        return
+    }
+
+
+    set bd_name [lindex $bds $index]
 
     # Create the PYNQ output folder
     set pynq_dir "${proj_dir}/PYNQ"

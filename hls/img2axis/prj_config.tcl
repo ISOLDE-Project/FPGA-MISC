@@ -18,7 +18,7 @@ proc set_optimizations {} {
     # m_AXI
     set_directive_interface -bundle data_mem  -mode m_axi     ${__top_function} data_port  -depth ${::__m_axi_depth}
     # s_AXI
-    set_directive_interface -bundle cfg_port -mode s_axilite  ${__top_function} frame_no  
+    set_directive_interface -bundle cfg_port -mode s_axilite  ${__top_function} frame_cnt  
     set_directive_interface -bundle cfg_port -mode s_axilite  ${__top_function} end_of_stream
     set_directive_interface -bundle cfg_port -mode s_axilite  ${__top_function} return
 
