@@ -20,6 +20,7 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   xilinx.com:ip:clk_wiz:*\
   xilinx.com:hls:img2axis:*\
   xilinx.com:ip:proc_sys_reset:*\
+  xilinx.com:ip:system_ila:*\
   xilinx.com:ip:zynq_ultra_ps_e:*\
   "
 
@@ -107,11 +108,11 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {100.000} \
    CONFIG.CLKOUT2_JITTER {88.577} \
    CONFIG.CLKOUT2_PHASE_ERROR {77.836} \
-   CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200.000} \
+   CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} \
    CONFIG.CLKOUT2_USED {false} \
    CONFIG.CLKOUT3_JITTER {106.018} \
    CONFIG.CLKOUT3_PHASE_ERROR {77.836} \
-   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {80.000} \
+   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} \
    CONFIG.CLKOUT3_USED {false} \
    CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
    CONFIG.CLK_IN2_BOARD_INTERFACE {Custom} \
@@ -148,6 +149,18 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.USE_BOARD_FLOW {true} \
  ] $rst_clk_wiz_0_100M
+
+  # Create instance: system_ila_0, and set properties
+  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila system_ila_0 ]
+  set_property -dict [ list \
+   CONFIG.C_DATA_DEPTH {16384} \
+   CONFIG.C_MON_TYPE {INTERFACE} \
+   CONFIG.C_NUM_MONITOR_SLOTS {1} \
+   CONFIG.C_SLOT_0_APC_EN {1} \
+   CONFIG.C_SLOT_0_AXI_DATA_SEL {1} \
+   CONFIG.C_SLOT_0_AXI_TRIG_SEL {1} \
+   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0} \
+ ] $system_ila_0
 
   # Create instance: zynq_ultra_ps_e_0, and set properties
   set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e zynq_ultra_ps_e_0 ]
@@ -763,6 +776,8 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_intf_net -intf_net axi_vdma_0_M_AXI_S2MM [get_bd_intf_pins axi_vdma_0/M_AXI_S2MM] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP1_FPD]
   connect_bd_intf_net -intf_net img2axis_0_m_axi_data_mem [get_bd_intf_pins img2axis_0/m_axi_data_mem] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
   connect_bd_intf_net -intf_net img2axis_0_stream_o [get_bd_intf_pins axi_vdma_0/S_AXIS_S2MM] [get_bd_intf_pins img2axis_0/stream_o]
+connect_bd_intf_net -intf_net [get_bd_intf_nets img2axis_0_stream_o] [get_bd_intf_pins axi_vdma_0/S_AXIS_S2MM] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets img2axis_0_stream_o]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M00_AXI [get_bd_intf_pins axi_vdma_0/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph/M00_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M01_AXI [get_bd_intf_pins img2axis_0/s_axi_cfg_port] [get_bd_intf_pins ps8_0_axi_periph/M01_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M03_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins ps8_0_axi_periph/M03_AXI]
@@ -772,8 +787,8 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net axi_vdma_0_s2mm_introut [get_bd_pins axi_intc_0/intr] [get_bd_pins axi_vdma_0/s2mm_introut]
   connect_bd_net -net axi_vdma_0_s_axis_s2mm_tready [get_bd_pins axi_vdma_0/s_axis_s2mm_tready] [get_bd_pins img2axis_0/stream_o_TREADY]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_vdma_0/m_axi_s2mm_aclk] [get_bd_pins axi_vdma_0/s_axi_lite_aclk] [get_bd_pins axi_vdma_0/s_axis_s2mm_aclk] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins img2axis_0/ap_clk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/M01_ACLK] [get_bd_pins ps8_0_axi_periph/M02_ACLK] [get_bd_pins ps8_0_axi_periph/M03_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins rst_clk_wiz_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp1_fpd_aclk]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_vdma_0/axi_resetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/M03_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN]
+  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_vdma_0/m_axi_s2mm_aclk] [get_bd_pins axi_vdma_0/s_axi_lite_aclk] [get_bd_pins axi_vdma_0/s_axis_s2mm_aclk] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins img2axis_0/ap_clk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/M01_ACLK] [get_bd_pins ps8_0_axi_periph/M02_ACLK] [get_bd_pins ps8_0_axi_periph/M03_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins rst_clk_wiz_0_100M/slowest_sync_clk] [get_bd_pins system_ila_0/clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp1_fpd_aclk]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_vdma_0/axi_resetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/M03_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins rst_clk_wiz_0_100M/ext_reset_in]
   connect_bd_net -net rst_clk_wiz_0_100M_peripheral_aresetn [get_bd_pins img2axis_0/ap_rst_n] [get_bd_pins ps8_0_axi_periph/M01_ARESETN] [get_bd_pins ps8_0_axi_periph/M02_ARESETN] [get_bd_pins rst_clk_wiz_0_100M/peripheral_aresetn]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
@@ -794,8 +809,8 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.99665",
-   "Default View_TopLeft":"1317,173",
+   "Default View_ScaleFactor":"0.727094",
+   "Default View_TopLeft":"227,-21",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
@@ -809,24 +824,25 @@ preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1460 -y 730 -defaultsOSRD
 preplace inst ps8_0_axi_periph -pg 1 -lvl 5 -x 2020 -y 160 -defaultsOSRD
 preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 430 -y 480 -defaultsOSRD
 preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 4 -x 1460 -y 510 -defaultsOSRD
-preplace netloc axi_intc_0_irq 1 3 2 1100 220 1770
-preplace netloc axi_vdma_0_s2mm_introut 1 3 4 1080 620 NJ 620 2180J 710 2630
-preplace netloc clk_wiz_0_clk_out1 1 1 5 250 380 620 320 1050 30 1790 360 2190
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 3 1100 210 1810 630 N
+preplace inst system_ila_0 -pg 1 -lvl 5 -x 2020 -y 470 -defaultsOSRD
+preplace netloc axi_intc_0_irq 1 3 2 1090 220 1750
+preplace netloc axi_vdma_0_s2mm_introut 1 3 4 1070 630 1770J 710 NJ 710 2620
+preplace netloc axi_vdma_0_s_axis_s2mm_tready 1 3 3 1030 620 N 620 2180
+preplace netloc clk_wiz_0_clk_out1 1 1 5 240 380 610 320 1050 30 1780 370 2170
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 3 1090 210 1790 630 N
 preplace netloc reset_1 1 0 2 NJ 460 NJ
-preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 3 610 310 NJ 310 1800
-preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 2 1110 630 1770
-preplace netloc axi_vdma_0_s_axis_s2mm_tready 1 3 3 1060 390 N 390 2180
+preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 3 600 310 NJ 310 1770
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 2 1100 830 1750
 preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 600
-preplace netloc axi_vdma_0_M_AXI_S2MM 1 3 4 1110 380 NJ 380 NJ 380 2630
+preplace netloc axi_vdma_0_M_AXI_S2MM 1 3 4 1100 380 NJ 380 NJ 380 2620
 preplace netloc img2axis_0_m_axi_data_mem 1 3 1 1040 390n
-preplace netloc ps8_0_axi_periph_M00_AXI 1 5 1 2200 130n
-preplace netloc ps8_0_axi_periph_M01_AXI 1 2 4 630 330 1060J 340 NJ 340 2190
-preplace netloc ps8_0_axi_periph_M03_AXI 1 3 3 1090 350 NJ 350 2170
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 4 1 1780 40n
-preplace netloc img2axis_0_stream_o 1 3 3 1070 400 N 400 2170
+preplace netloc img2axis_0_stream_o 1 3 3 1060 400 1800 390 2160
+preplace netloc ps8_0_axi_periph_M00_AXI 1 5 1 2180 130n
+preplace netloc ps8_0_axi_periph_M01_AXI 1 2 4 620 330 1060J 340 NJ 340 2170
+preplace netloc ps8_0_axi_periph_M03_AXI 1 3 3 1080 350 NJ 350 2160
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 4 1 1760 40n
 levelinfo -pg 1 -10 130 430 840 1460 2020 2430 2650
-pagesize -pg 1 -db -bbox -sgen -160 -20 2650 1030
+pagesize -pg 1 -db -bbox -sgen -140 -20 2650 1030
 "
 }
 
