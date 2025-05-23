@@ -3,7 +3,7 @@ This uses CMAKE, and it's just a convenient way to call cmake
 ```sh
 . ./eth.sh
 make 
-make -C build clean test-clean test-generate  test-resizer
+make -C build clean test-clean test-generate test-img2axis
 ```
 # HLS synthesis
 ## Linux  

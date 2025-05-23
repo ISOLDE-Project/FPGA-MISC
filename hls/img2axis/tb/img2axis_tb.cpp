@@ -69,36 +69,21 @@ int main() {
 
   typedef dim_t<4> shape_type;
   shape_type shape_x, x_index;
-  uint32_t frame_no;
+  static constexpr uint32_t frame_cnt =4;
 
-  stream_t output_stream(3 * 1920 * 1080 + 1);
+  stream_t output_stream(frame_cnt * 1920 * 1080 + 1);
 
   NumpyModule numpy_module;
 
-  frame_no = 0;
-  // === Stream image into AXI4-Stream ===
-  {
-    NumpyArray np_x = numpy_load(x_bin, numpy_module);
-    shape_x.set(np_x.shape);
-    dump(trace, shape_x.data);
-   uint32_t *data_port = np_x.as<uint32_t>();
-    execute(output_stream, data_port, frame_no++);
-  }
-  // === Stream 2nd image into AXI4-Stream ===
+
+
+  // === Stream 3 images on AXI4-Stream ===
   {
     NumpyArray np_x = numpy_load(x_bin, numpy_module);
     shape_x.set(np_x.shape);
     dump(trace, shape_x.data);
     uint32_t *data_port = np_x.as<uint32_t>();
-    execute(output_stream, data_port, frame_no++);
-  }
-  // === Stream 3rd image into AXI4-Stream ===
-  {
-    NumpyArray np_x = numpy_load(x_bin, numpy_module);
-    shape_x.set(np_x.shape);
-    dump(trace, shape_x.data);
-    uint32_t *data_port = np_x.as<uint32_t>();
-    execute(output_stream, data_port, frame_no++, true);
+    execute(output_stream, data_port, frame_cnt, true);
   }
 
   try {

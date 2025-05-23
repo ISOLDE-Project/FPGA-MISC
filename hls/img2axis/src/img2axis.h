@@ -32,6 +32,6 @@ typedef isolde::stream<pixel_pkg_t> stream_t;
 
 #endif
 
-void execute( stream_t &stream_o, volatile uint32_t *data_port, uint32_t frame_no,bool end_of_stream=false);
+void execute( stream_t &stream_o, volatile uint32_t *data_port, uint32_t frame_cnt,bool end_of_stream=false);
 
 #endif
