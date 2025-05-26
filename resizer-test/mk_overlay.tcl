@@ -14,7 +14,7 @@ proc mk_overlay {} {
         return
     }
 
-    set index [lsearch -exact $bds $::_xil_proj_name_]
+    set index [lsearch -exact $bds $::_bd_top_]
 
     if {$index == -1} {
         puts "$_xil_proj_name_ is NOT in the list of block designs."

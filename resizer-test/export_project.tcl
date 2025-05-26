@@ -56,23 +56,33 @@ set fp [open $filename "w+"]
 puts $fp $info
 close $fp
 
+# List of block design names you explicitly created
+set my_bds {"bd_resizer" "bd_top"}
+
 # Loop through each block design
 foreach bd_file $bd_files {
     open_bd_design $bd_file
     set bd_name [get_property NAME [current_bd_design]]
-    puts "Processing block design: $bd_name"
+    # Check if bd_name is in your list
+    if {[lsearch -exact $my_bds $bd_name] >= 0} {
+        puts "Processing block design: $bd_name"
 
-    # Write the BD Tcl
-    set bd_tcl_file $script_folder/${bd_name}-bd.tcl
-    write_bd_tcl -no_ip_version -force -no_project_wrapper -include_layout -bd_name $bd_name $bd_tcl_file
-    puts "[format "%s -- done" $bd_tcl_file]"
+        # Write the BD Tcl
+        set bd_tcl_file $script_folder/${bd_name}-$_platform_board_id_-bd.tcl
+        write_bd_tcl -no_ip_version -force -no_project_wrapper -include_layout -bd_name $bd_name $bd_tcl_file
+        puts "[format "%s -- done" $bd_tcl_file]"
 
-    # Export layouts
-    set pdf_file $script_folder/${bd_name}-layout.pdf
-    write_bd_layout -force -format pdf -orientation portrait $pdf_file
+        # Export layouts
+        set pdf_file $script_folder/${bd_name}-layout.pdf
+        write_bd_layout -force -format pdf -orientation portrait $pdf_file
 
-    set svg_file $script_folder/${bd_name}-layout.svg
-    write_bd_layout -force -format svg -orientation portrait $svg_file
+        set svg_file $script_folder/${bd_name}-layout.svg
+        write_bd_layout -force -format svg -orientation portrait $svg_file
+        } else {
+        puts "Skipping $bd_name (not in explicit BD list)"
+    }
 }
+
+
 
 puts "All block designs exported successfully."

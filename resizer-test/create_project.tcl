@@ -97,9 +97,13 @@ proc load_bd {proj_name tcl_file} {
 ################################################################
 # load block design
 ################################################################
-load_bd "bd_resizer"  "demo_resizer-$_platform_board_id_-bd.tcl"
+load_bd "bd_resizer"  "bd_resizer-$_platform_board_id_-bd.tcl"
 
 ################################################################
 # load block design
 ################################################################
-load_bd "bd_top"      "top-$_platform_board_id_-bd.tcl"
+load_bd "bd_top"      "bd_top-$_platform_board_id_-bd.tcl"
+
+make_wrapper -files [get_files /home/dan/FPGA-MISC/resizer-test/vivado/resizer-zcu102/resizer-zcu102.srcs/sources_1/bd/bd_top/bd_top.bd] -top
+add_files -norecurse /home/dan/FPGA-MISC/resizer-test/vivado/resizer-zcu102/resizer-zcu102.gen/sources_1/bd/bd_top/hdl/bd_top_wrapper.v
+update_compile_order -fileset sources_1
