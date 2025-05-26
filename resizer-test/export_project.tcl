@@ -48,16 +48,31 @@ puts [ format "%s -- %s" $proj_dir $proj_name ]
 
 write_project_tcl -target_proj_dir "$orig_proj_dir" -force $script_folder/$proj_name-export.tcl
 puts [ format "%s -- done" $script_folder/$proj_name-export.tcl ]
-write_bd_tcl  -no_ip_version -force -no_project_wrapper -include_layout -bd_name "\$::_xil_proj_name_" $script_folder/${_block_design_script_}-bd.tcl
-puts [ format "%s -- done" $script_folder/$proj_name-bd.tcl ]
+
 #
 set filename  $script_folder/$proj_name-properties.txt
 set info [report_property -return_string  [current_project] ]
 set fp [open $filename "w+"] 
 puts $fp $info
 close $fp
-#
-set filename  $script_folder/$proj_name-layout.pdf
-write_bd_layout -force -format pdf -orientation landscape $filename
-set filename  $script_folder/$proj_name-layout.svg
-write_bd_layout -force -format svg -orientation landscape $filename
+
+# Loop through each block design
+foreach bd_file $bd_files {
+    open_bd_design $bd_file
+    set bd_name [get_property NAME [current_bd_design]]
+    puts "Processing block design: $bd_name"
+
+    # Write the BD Tcl
+    set bd_tcl_file $script_folder/${bd_name}-bd.tcl
+    write_bd_tcl -no_ip_version -force -no_project_wrapper -include_layout -bd_name $bd_name $bd_tcl_file
+    puts "[format "%s -- done" $bd_tcl_file]"
+
+    # Export layouts
+    set pdf_file $script_folder/${bd_name}-layout.pdf
+    write_bd_layout -force -format pdf -orientation portrait $pdf_file
+
+    set svg_file $script_folder/${bd_name}-layout.svg
+    write_bd_layout -force -format svg -orientation portrait $svg_file
+}
+
+puts "All block designs exported successfully."
