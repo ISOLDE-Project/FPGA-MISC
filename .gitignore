@@ -15,3 +15,7 @@ xsa/
 C2023-HLS/
 hmecs/
 .vscode/
+mipi-vcu118/
+grlib-gpl-mipi/
+grlib-gpl-mipi.*
+*.back/
