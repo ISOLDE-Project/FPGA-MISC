@@ -83,11 +83,17 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set GPIO_LED_0 [ create_bd_port -dir O GPIO_LED_0 ]
   set GPIO_LED_1 [ create_bd_port -dir O GPIO_LED_1 ]
   set axi_c2c_selio_rx_data_in_0 [ create_bd_port -dir I -from 21 -to 0 axi_c2c_selio_rx_data_in_0 ]
-  set axi_c2c_selio_rx_diff_clk_in_n_0 [ create_bd_port -dir I -type clk -freq_hz 80000000 axi_c2c_selio_rx_diff_clk_in_n_0 ]
-  set axi_c2c_selio_rx_diff_clk_in_p_0 [ create_bd_port -dir I -type clk -freq_hz 80000000 axi_c2c_selio_rx_diff_clk_in_p_0 ]
+  set axi_c2c_selio_rx_diff_clk_in_n_0 [ create_bd_port -dir I -type clk -freq_hz 100000000 axi_c2c_selio_rx_diff_clk_in_n_0 ]
+  set axi_c2c_selio_rx_diff_clk_in_p_0 [ create_bd_port -dir I -type clk -freq_hz 100000000 axi_c2c_selio_rx_diff_clk_in_p_0 ]
   set axi_c2c_selio_tx_data_out_0 [ create_bd_port -dir O -from 21 -to 0 axi_c2c_selio_tx_data_out_0 ]
   set axi_c2c_selio_tx_diff_clk_out_n_0 [ create_bd_port -dir O -type clk axi_c2c_selio_tx_diff_clk_out_n_0 ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {100000000} \
+ ] $axi_c2c_selio_tx_diff_clk_out_n_0
   set axi_c2c_selio_tx_diff_clk_out_p_0 [ create_bd_port -dir O -type clk axi_c2c_selio_tx_diff_clk_out_p_0 ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {100000000} \
+ ] $axi_c2c_selio_tx_diff_clk_out_p_0
   set reset [ create_bd_port -dir I -type rst reset ]
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_HIGH} \
@@ -102,11 +108,13 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
    CONFIG.C_AXI_DATA_WIDTH {64} \
    CONFIG.C_AXI_STB_WIDTH {8} \
    CONFIG.C_COMMON_CLK {0} \
+   CONFIG.C_EN_AXI_LINK_HNDLR {false} \
    CONFIG.C_INCLUDE_AXILITE {1} \
    CONFIG.C_INTERFACE_MODE {1} \
    CONFIG.C_MASTER_FPGA {0} \
    CONFIG.C_M_AXI_ID_WIDTH {0} \
    CONFIG.C_M_AXI_WUSER_WIDTH {0} \
+   CONFIG.C_NUM_OF_IO {46} \
    CONFIG.C_USE_DIFF_CLK {true} \
  ] $axi_chip2chip_0
 
@@ -122,23 +130,23 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz clk_wiz_0 ]
   set_property -dict [ list \
    CONFIG.CLKIN1_JITTER_PS {33.330000000000005} \
-   CONFIG.CLKOUT1_JITTER {106.018} \
+   CONFIG.CLKOUT1_JITTER {101.475} \
    CONFIG.CLKOUT1_PHASE_ERROR {77.836} \
-   CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {80.000} \
+   CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {100.000} \
    CONFIG.CLKOUT2_JITTER {88.577} \
    CONFIG.CLKOUT2_PHASE_ERROR {77.836} \
    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200.000} \
    CONFIG.CLKOUT2_USED {true} \
    CONFIG.CLKOUT3_JITTER {106.018} \
    CONFIG.CLKOUT3_PHASE_ERROR {77.836} \
-   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {80.000} \
+   CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} \
    CONFIG.CLKOUT3_USED {false} \
    CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
    CONFIG.CLK_IN2_BOARD_INTERFACE {Custom} \
    CONFIG.MMCM_CLKFBOUT_MULT_F {4.000} \
    CONFIG.MMCM_CLKIN1_PERIOD {3.333} \
    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
-   CONFIG.MMCM_CLKOUT0_DIVIDE_F {15.000} \
+   CONFIG.MMCM_CLKOUT0_DIVIDE_F {12.000} \
    CONFIG.MMCM_CLKOUT1_DIVIDE {6} \
    CONFIG.MMCM_CLKOUT2_DIVIDE {1} \
    CONFIG.NUM_OUT_CLKS {2} \
@@ -229,47 +237,47 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets smartconnect_0_M00_AXI] [get_bd_
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.717936",
-   "Default View_TopLeft":"247,84",
+   "Default View_ScaleFactor":"0.500091",
+   "Default View_TopLeft":"-344,-86",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
-preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x 0 -y 480 -defaultsOSRD
-preplace port GPIO_LED_0 -pg 1 -lvl 6 -x 2160 -y 740 -defaultsOSRD
-preplace port GPIO_LED_1 -pg 1 -lvl 6 -x 2160 -y 760 -defaultsOSRD
-preplace port axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x 0 -y 760 -defaultsOSRD
-preplace port axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x 0 -y 740 -defaultsOSRD
-preplace port axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 6 -x 2160 -y 720 -defaultsOSRD
-preplace port axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 6 -x 2160 -y 700 -defaultsOSRD
-preplace port reset -pg 1 -lvl 0 -x 0 -y 570 -defaultsOSRD
-preplace portBus axi_c2c_selio_rx_data_in_0 -pg 1 -lvl 0 -x 0 -y 720 -defaultsOSRD
-preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 6 -x 2160 -y 680 -defaultsOSRD
-preplace inst axi_chip2chip_0 -pg 1 -lvl 5 -x 1900 -y 700 -defaultsOSRD
-preplace inst axi_interconnect_0 -pg 1 -lvl 4 -x 1350 -y 500 -defaultsOSRD
-preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 140 -y 480 -defaultsOSRD
-preplace inst proc_sys_reset_0 -pg 1 -lvl 3 -x 910 -y 590 -defaultsOSRD
-preplace inst smartconnect_0 -pg 1 -lvl 2 -x 470 -y 350 -defaultsOSRD
-preplace inst system_ila_0 -pg 1 -lvl 4 -x 1350 -y 180 -defaultsOSRD
-preplace inst aiml_stub_0 -pg 1 -lvl 3 -x 910 -y 230 -defaultsOSRD
-preplace netloc M00_ARESETN_1 1 2 3 640 310 1140 660 N
-preplace netloc axi_c2c_selio_rx_data_in_1 1 0 5 NJ 720 NJ 720 NJ 720 NJ 720 NJ
-preplace netloc axi_c2c_selio_rx_diff_clk_in_n_1 1 0 5 NJ 760 NJ 760 NJ 760 NJ 760 NJ
-preplace netloc axi_c2c_selio_rx_diff_clk_in_p_1 1 0 5 NJ 740 NJ 740 NJ 740 NJ 740 NJ
-preplace netloc axi_chip2chip_0_axi_c2c_link_status_out 1 5 1 NJ 740
-preplace netloc axi_chip2chip_0_axi_c2c_multi_bit_error_out 1 5 1 NJ 760
-preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_data_out 1 5 1 NJ 680
-preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n 1 5 1 NJ 720
-preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p 1 5 1 NJ 700
-preplace netloc clk_wiz_0_clk_out1 1 1 4 260 270 630 320 1120 670 1510J
-preplace netloc clk_wiz_0_clk_out2 1 1 4 N 490 NJ 490 1110J 620 1500J
-preplace netloc reset_1 1 0 3 NJ 570 N 570 NJ
-preplace netloc axi_interconnect_0_M00_AXI 1 4 1 1510 500n
-preplace netloc axi_chip2chip_0_m_axi 1 1 5 270 280 620J 330 NJ 330 NJ 330 2140
-preplace netloc smartconnect_0_M00_AXI 1 2 2 610 150 1120
+preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x -310 -y 480 -defaultsOSRD
+preplace port port-id_GPIO_LED_0 -pg 1 -lvl 6 -x 1960 -y 740 -defaultsOSRD
+preplace port port-id_GPIO_LED_1 -pg 1 -lvl 6 -x 1960 -y 760 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x -310 -y 760 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x -310 -y 740 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 6 -x 1960 -y 660 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 6 -x 1960 -y 700 -defaultsOSRD
+preplace port port-id_reset -pg 1 -lvl 0 -x -310 -y 570 -defaultsOSRD
+preplace portBus axi_c2c_selio_rx_data_in_0 -pg 1 -lvl 0 -x -310 -y 720 -defaultsOSRD
+preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 6 -x 1960 -y 680 -defaultsOSRD
+preplace inst axi_interconnect_0 -pg 1 -lvl 4 -x 1121 -y 500 -defaultsOSRD
+preplace inst clk_wiz_0 -pg 1 -lvl 1 -x -150 -y 480 -defaultsOSRD
+preplace inst proc_sys_reset_0 -pg 1 -lvl 3 -x 600 -y 1010 -defaultsOSRD
+preplace inst smartconnect_0 -pg 1 -lvl 2 -x 140 -y 350 -defaultsOSRD
+preplace inst system_ila_0 -pg 1 -lvl 4 -x 1121 -y 180 -defaultsOSRD
+preplace inst aiml_stub_0 -pg 1 -lvl 3 -x 600 -y 570 -defaultsOSRD
+preplace inst axi_chip2chip_0 -pg 1 -lvl 5 -x 1645 -y 700 -defaultsOSRD
+preplace netloc M00_ARESETN_1 1 2 3 310 470 840 660 N
+preplace netloc clk_wiz_0_clk_out1 1 1 4 -30 470 290 480 830 640 1290
+preplace netloc reset_1 1 0 3 NJ 570 N 570 280J
+preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_data_out 1 5 1 N 680
+preplace netloc axi_chip2chip_0_axi_c2c_multi_bit_error_out 1 5 1 N 760
+preplace netloc axi_chip2chip_0_axi_c2c_link_status_out 1 5 1 N 740
+preplace netloc axi_c2c_selio_rx_diff_clk_in_n_1 1 0 5 NJ 760 NJ 760 NJ 760 NJ 760 N
+preplace netloc axi_c2c_selio_rx_diff_clk_in_p_1 1 0 5 NJ 740 NJ 740 NJ 740 NJ 740 N
+preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n 1 5 1 1890 660n
+preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p 1 5 1 N 700
+preplace netloc axi_c2c_selio_rx_data_in_1 1 0 5 NJ 720 NJ 720 NJ 720 NJ 720 N
+preplace netloc clk_wiz_0_clk_out2 1 1 4 NJ 490 NJ 490 810J 630 1280
 preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 480
-preplace netloc aiml_stub_0_m_axi_data_mem 1 3 1 1130 150n
-levelinfo -pg 1 0 140 470 910 1350 1900 2160
-pagesize -pg 1 -db -bbox -sgen -290 0 2460 840
+preplace netloc aiml_stub_0_m_axi_data_mem 1 3 1 800 150n
+preplace netloc smartconnect_0_M00_AXI 1 2 2 300 170 N
+preplace netloc axi_interconnect_0_M00_AXI 1 4 1 1290 500n
+preplace netloc axi_chip2chip_0_m_axi 1 1 5 -20 460 NJ 460 820J 620 1280J 560 1890
+levelinfo -pg 1 -310 -150 140 600 1121 1645 1960
+pagesize -pg 1 -db -bbox -sgen -600 0 2260 1740
 "
 }
 
