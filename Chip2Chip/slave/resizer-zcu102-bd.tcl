@@ -852,6 +852,7 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   assign_bd_address -offset 0xA0010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs axi_vdma_0/S_AXI_LITE/Reg] -force
   assign_bd_address -offset 0xA0020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs img2axis_0/s_axi_cfg_port/Reg] -force
   assign_bd_address -offset 0xA0030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_chip2chip_0/MAXI] [get_bd_addr_segs sensorSupervisor_0/s_axi_ctrl/Reg] -force
+  assign_bd_address -offset 0x1F000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces axi_vdma_0/Data_S2MM] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] -force
   assign_bd_address -offset 0xC0000000 -range 0x20000000 -target_address_space [get_bd_addr_spaces img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI] -force
   assign_bd_address -offset 0xA0000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_intc_0/S_AXI/Reg] -force
@@ -860,41 +861,40 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   assign_bd_address -offset 0xA0030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs sensorSupervisor_0/s_axi_ctrl/Reg] -force
 
   # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces axi_vdma_0/Data_S2MM] [get_bd_addr_segs axi_chip2chip_0/s_axi_lite/Reg]
   exclude_bd_addr_seg -offset 0xFF000000 -range 0x01000000 -target_address_space [get_bd_addr_spaces img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM]
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.450537",
-   "Default View_TopLeft":"-231,-575",
+   "Default View_ScaleFactor":"0.716889",
+   "Default View_TopLeft":"1370,-360",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
 preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x -110 -y 180 -defaultsOSRD
 preplace port port-id_reset -pg 1 -lvl 0 -x -110 -y 240 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 10 -x 3780 -y -180 -defaultsOSRD
-preplace port port-id_axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 10 -x 3780 -y -160 -defaultsOSRD
-preplace port port-id_GPIO_LED_0 -pg 1 -lvl 10 -x 3780 -y -140 -defaultsOSRD
-preplace port port-id_GPIO_LED_1 -pg 1 -lvl 10 -x 3780 -y -120 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 10 -x 3700 -y -180 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 10 -x 3700 -y -160 -defaultsOSRD
+preplace port port-id_GPIO_LED_0 -pg 1 -lvl 10 -x 3700 -y -140 -defaultsOSRD
+preplace port port-id_GPIO_LED_1 -pg 1 -lvl 10 -x 3700 -y -120 -defaultsOSRD
 preplace port port-id_axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x -110 -y -140 -defaultsOSRD
 preplace port port-id_axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x -110 -y -120 -defaultsOSRD
-preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 10 -x 3780 -y -200 -defaultsOSRD
+preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 10 -x 3700 -y -200 -defaultsOSRD
 preplace portBus axi_c2c_selio_rx_data_in_0 -pg 1 -lvl 0 -x -110 -y -160 -defaultsOSRD
-preplace inst axi_intc_0 -pg 1 -lvl 9 -x 3610 -y 470 -defaultsOSRD
-preplace inst axi_vdma_0 -pg 1 -lvl 6 -x 2120 -y 400 -defaultsOSRD
-preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 140 -y 180 -defaultsOSRD
-preplace inst img2axis_0 -pg 1 -lvl 3 -x 930 -y 280 -defaultsOSRD
-preplace inst isolde_resizer_0 -pg 1 -lvl 4 -x 1400 -y 300 -defaultsOSRD
-preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1400 -y 810 -defaultsOSRD
-preplace inst ps8_0_axi_periph -pg 1 -lvl 8 -x 3240 -y 410 -defaultsOSRD
-preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 510 -y 260 -defaultsOSRD
-preplace inst sensorSupervisor_0 -pg 1 -lvl 9 -x 3610 -y 730 -defaultsOSRD
-preplace inst xlslice_0 -pg 1 -lvl 3 -x 930 -y 510 -defaultsOSRD
-preplace inst xlslice_1 -pg 1 -lvl 8 -x 3240 -y 700 -defaultsOSRD -resize 180 88
-preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 7 -x 2680 -y 110 -defaultsOSRD
-preplace inst axi_chip2chip_0 -pg 1 -lvl 7 -x 2680 -y -180 -defaultsOSRD
-preplace inst smartconnect_0 -pg 1 -lvl 5 -x 1740 -y -290 -defaultsOSRD
+preplace inst axi_intc_0 -pg 1 -lvl 9 -x 3530 -y 470 -defaultsOSRD
+preplace inst axi_vdma_0 -pg 1 -lvl 6 -x 2040 -y 400 -defaultsOSRD
+preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 120 -y 180 -defaultsOSRD
+preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1320 -y 810 -defaultsOSRD
+preplace inst ps8_0_axi_periph -pg 1 -lvl 8 -x 3160 -y 410 -defaultsOSRD
+preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 430 -y 260 -defaultsOSRD
+preplace inst xlslice_0 -pg 1 -lvl 3 -x 840 -y 510 -defaultsOSRD
+preplace inst xlslice_1 -pg 1 -lvl 8 -x 3160 -y 700 -defaultsOSRD -resize 180 88
+preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 7 -x 2600 -y 110 -defaultsOSRD
+preplace inst axi_chip2chip_0 -pg 1 -lvl 7 -x 2600 -y -180 -defaultsOSRD
+preplace inst smartconnect_0 -pg 1 -lvl 5 -x 1660 -y -290 -defaultsOSRD
+preplace inst img2axis_0 -pg 1 -lvl 3 -x 840 -y 290 -defaultsOSRD
+preplace inst isolde_resizer_0 -pg 1 -lvl 4 -x 1320 -y 300 -defaultsOSRD
+preplace inst sensorSupervisor_0 -pg 1 -lvl 9 -x 3530 -y 730 -defaultsOSRD
 preplace netloc axi_c2c_selio_rx_data_in_0_1 1 0 7 NJ -160 NJ -160 NJ -160 NJ -160 NJ -160 N -160 NJ
 preplace netloc axi_c2c_selio_rx_diff_clk_in_n_0_1 1 0 7 NJ -120 NJ -120 NJ -120 NJ -120 NJ -120 N -120 NJ
 preplace netloc axi_c2c_selio_rx_diff_clk_in_p_0_1 1 0 7 NJ -140 NJ -140 NJ -140 NJ -140 NJ -140 N -140 NJ
@@ -903,42 +903,41 @@ preplace netloc axi_chip2chip_0_axi_c2c_multi_bit_error_out 1 7 3 NJ -120 NJ -12
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_data_out 1 7 3 NJ -200 NJ -200 NJ
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n 1 7 3 NJ -160 NJ -160 NJ
 preplace netloc axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p 1 7 3 NJ -180 NJ -180 NJ
-preplace netloc axi_intc_0_irq 1 6 4 2370 220 3000 130 N 130 3760
-preplace netloc axi_vdma_0_s2mm_introut 1 6 3 2370 260 3010J 140 3460J
-preplace netloc clk_wiz_0_clk_out1 1 1 8 270 160 690 160 1160 160 1590 160 1890 200 2330 250 3090 150 3450
-preplace netloc clk_wiz_0_clk_out2 1 1 6 260 -180 NJ -180 NJ -180 NJ -180 N -180 NJ
-preplace netloc img2axis_0_stream_o_TUSER 1 2 6 690 400 1170 170 NJ 170 1910 210 2340J 270 3010J
-preplace netloc img2axis_0_stream_o_TVALID 1 3 6 1190 180 N 180 1900 230 N 230 3040 170 3440J
-preplace netloc isolde_resizer_0_stream_i_TREADY 1 3 6 1180 190 N 190 1880 240 N 240 3080 180 3410J
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 4 5 1600 700 1910 280 NJ 280 3030 160 3420
-preplace netloc reset_1 1 0 2 -90J 250 260J
-preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 6 700 390 1150 140 NJ 140 N 140 2360J 290 3070
-preplace netloc xlslice_0_Dout 1 3 1 1200J 310n
+preplace netloc axi_intc_0_irq 1 6 4 2290 220 2920 130 N 130 3680
+preplace netloc axi_vdma_0_s2mm_introut 1 6 3 2290 260 2930J 140 3380J
+preplace netloc clk_wiz_0_clk_out1 1 1 8 250 160 610 160 1080 160 1510 160 1810 200 2250 250 3010 150 3370
+preplace netloc clk_wiz_0_clk_out2 1 1 6 240 -180 NJ -180 NJ -180 NJ -180 N -180 NJ
+preplace netloc img2axis_0_stream_o_TUSER 1 2 6 610 410 1100 170 NJ 170 1830 210 2260J 270 2930J
+preplace netloc img2axis_0_stream_o_TVALID 1 3 6 1070 180 N 180 1820 230 N 230 2960 170 3360J
+preplace netloc isolde_resizer_0_stream_i_TREADY 1 3 6 1110 190 N 190 1800 240 N 240 3000 180 3330J
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 4 5 1520 700 1830 280 NJ 280 2950 160 3340
+preplace netloc reset_1 1 0 2 -90J 250 240J
+preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 6 620 400 1060 140 NJ 140 N 140 2280J 290 2990
+preplace netloc xlslice_0_Dout 1 3 1 1110J 310n
 preplace netloc xlslice_1_Dout 1 8 1 NJ 700
-preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 5 1190 710 NJ 710 N 710 NJ 710 2990
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 5 1110 710 NJ 710 N 710 NJ 710 2910
 preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 180
-preplace netloc img2axis_0_m_axi_data_mem 1 3 4 1140 80 NJ 80 N 80 NJ
-preplace netloc img2axis_0_stream_o 1 3 1 1200 230n
-preplace netloc isolde_resizer_0_stream_o 1 4 2 N 300 1880
-preplace netloc ps8_0_axi_periph_M00_AXI 1 5 4 1920 220 2350J 210 3050J 200 3390
-preplace netloc ps8_0_axi_periph_M01_AXI 1 2 7 700 150 NJ 150 NJ 150 1920 190 2340J 200 3020J 190 3400
-preplace netloc ps8_0_axi_periph_M02_AXI 1 8 1 3430 420n
+preplace netloc img2axis_0_m_axi_data_mem 1 3 4 1050 80 NJ 80 N 80 NJ
+preplace netloc img2axis_0_stream_o 1 3 1 1090 250n
+preplace netloc isolde_resizer_0_stream_o 1 4 2 N 300 1800
+preplace netloc ps8_0_axi_periph_M00_AXI 1 5 4 1840 220 2270J 210 2970J 200 3310
+preplace netloc ps8_0_axi_periph_M01_AXI 1 2 7 620 150 NJ 150 NJ 150 1840 190 2260J 200 2940J 190 3320
+preplace netloc ps8_0_axi_periph_M02_AXI 1 8 1 3350 420n
 preplace netloc ps8_0_axi_periph_M03_AXI 1 8 1 N 440
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 7 1 3060 100n
-preplace netloc axi_chip2chip_0_m_axi 1 7 1 3070 -240n
-preplace netloc smartconnect_0_M00_AXI 1 5 2 N -290 2320
-preplace netloc axi_vdma_0_M_AXI_S2MM 1 4 3 1600 70 N 70 2320
-levelinfo -pg 1 -110 140 510 930 1400 1740 2120 2680 3240 3610 3780
-pagesize -pg 1 -db -bbox -sgen -400 -380 4080 1410
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 7 1 2980 100n
+preplace netloc axi_chip2chip_0_m_axi 1 7 1 2990 -240n
+preplace netloc smartconnect_0_M00_AXI 1 5 2 N -290 2240
+preplace netloc axi_vdma_0_M_AXI_S2MM 1 4 3 1520 70 N 70 2240
+levelinfo -pg 1 -110 120 430 840 1320 1660 2040 2600 3160 3530 3700
+pagesize -pg 1 -db -bbox -sgen -400 -380 4000 1410
 "
 }
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
+  validate_bd_design
   save_bd_design
-common::send_gid_msg -ssname BD::TCL -id 2050 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
-
   close_bd_design $design_name 
 }
 # End of cr_bd_$::_xil_proj_name_()
