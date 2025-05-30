@@ -88,7 +88,7 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 set obj [get_filesets constrs_1]
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize ${origin_dir}/board/${project}.xdc]"
+set file "[file normalize ${origin_dir}/board/${_xdc_file_}.xdc]"
 add_files -norecurse -fileset constrs_1 [list $file]
 set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj
@@ -139,3 +139,5 @@ add_files -norecurse ${wrapper_file_path}
 # automatically assign addresses
 delete_bd_objs [get_bd_addr_segs] [get_bd_addr_segs -excluded]
 assign_bd_address
+validate_bd_design
+save_bd_design

@@ -1,1 +1,2 @@
-source ../../vivado_tcl.sh
+source $HOME/vivado.sh
+vivado -mode tcl
