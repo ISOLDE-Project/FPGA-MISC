@@ -19,3 +19,5 @@ grlib-gpl-mipi/
 grlib-gpl-mipi.*
 *.back/
 *.zip
+*.xlsx
+*.csv
