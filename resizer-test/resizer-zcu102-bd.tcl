@@ -822,48 +822,48 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
    "Default View_ScaleFactor":"0.510429",
-   "Default View_TopLeft":"-141,-390",
+   "Default View_TopLeft":"-141,-376",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
 preplace port CLK_IN1_D_0 -pg 1 -lvl 0 -x 0 -y 180 -defaultsOSRD
 preplace port port-id_reset -pg 1 -lvl 0 -x 0 -y 240 -defaultsOSRD
-preplace inst axi_intc_0 -pg 1 -lvl 8 -x 3140 -y 470 -defaultsOSRD
-preplace inst axi_vdma_0 -pg 1 -lvl 5 -x 1750 -y 400 -defaultsOSRD
+preplace inst axi_intc_0 -pg 1 -lvl 8 -x 3200 -y 470 -defaultsOSRD
+preplace inst axi_vdma_0 -pg 1 -lvl 5 -x 1780 -y 400 -defaultsOSRD
 preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 140 -y 180 -defaultsOSRD
 preplace inst img2axis_0 -pg 1 -lvl 3 -x 860 -y 280 -defaultsOSRD
-preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1320 -y 810 -defaultsOSRD
-preplace inst ps8_0_axi_periph -pg 1 -lvl 7 -x 2800 -y 410 -defaultsOSRD
-preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 440 -y 260 -defaultsOSRD
-preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 6 -x 2310 -y 110 -defaultsOSRD
-preplace inst sensorSupervisor_0 -pg 1 -lvl 8 -x 3140 -y 730 -defaultsOSRD
-preplace inst xlslice_0 -pg 1 -lvl 3 -x 860 -y 510 -defaultsOSRD
-preplace inst xlslice_1 -pg 1 -lvl 7 -x 2800 -y 700 -defaultsOSRD -resize 180 88
 preplace inst isolde_resizer_0 -pg 1 -lvl 4 -x 1320 -y 300 -defaultsOSRD
-preplace netloc axi_intc_0_irq 1 5 4 2000 220 NJ 220 NJ 220 3290
-preplace netloc axi_vdma_0_s2mm_introut 1 5 3 1970 620 NJ 620 2960J
-preplace netloc clk_wiz_0_clk_out1 1 1 7 260 360 630 570 1110 600 1520 580 1990 310 2640 600 2970
-preplace netloc img2axis_0_stream_o_TUSER 1 2 5 650 450 1080 700 NJ 700 NJ 700 NJ
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 4 4 1530 720 NJ 720 2650 610 2980
+preplace inst proc_sys_reset_0 -pg 1 -lvl 4 -x 1320 -y 810 -defaultsOSRD
+preplace inst ps8_0_axi_periph -pg 1 -lvl 7 -x 2840 -y 410 -defaultsOSRD
+preplace inst rst_clk_wiz_0_100M -pg 1 -lvl 2 -x 440 -y 260 -defaultsOSRD
+preplace inst sensorSupervisor_0 -pg 1 -lvl 8 -x 3200 -y 730 -defaultsOSRD
+preplace inst xlslice_0 -pg 1 -lvl 3 -x 860 -y 510 -defaultsOSRD
+preplace inst xlslice_1 -pg 1 -lvl 7 -x 2840 -y 700 -defaultsOSRD -resize 180 88
+preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 6 -x 2310 -y 110 -defaultsOSRD
+preplace netloc axi_intc_0_irq 1 5 4 1990 590 NJ 590 NJ 590 3350
+preplace netloc axi_vdma_0_s2mm_introut 1 5 3 N 420 2630J 190 3040J
+preplace netloc clk_wiz_0_clk_out1 1 1 7 250 160 610 390 1090 450 1520 230 1980 230 2650 600 3020
+preplace netloc img2axis_0_stream_o_TUSER 1 2 5 630 570 1060 580 NJ 580 NJ 580 2610J
+preplace netloc img2axis_0_stream_o_TVALID 1 3 5 1100 420 1500J 240 NJ 240 2620J 210 3000J
+preplace netloc isolde_resizer_0_stream_i_TREADY 1 3 5 1070 440 1540J 250 NJ 250 2610J 200 3010J
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 4 4 1560 280 NJ 280 2620 610 3030
 preplace netloc reset_1 1 0 2 NJ 240 NJ
-preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 5 620 580 1120 610 NJ 610 NJ 610 2630
+preplace netloc rst_clk_wiz_0_100M_peripheral_aresetn 1 2 5 620 400 1110 430 1550J 270 NJ 270 2640
+preplace netloc xlslice_0_Dout 1 3 1 1080J 310n
 preplace netloc xlslice_1_Dout 1 7 1 NJ 700
-preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 4 1120 710 NJ 710 NJ 710 2620
-preplace netloc xlslice_0_Dout 1 3 1 1090J 330n
-preplace netloc img2axis_0_stream_o_TVALID 1 3 5 1100 630 NJ 630 NJ 630 NJ 630 2960J
-preplace netloc isolde_resizer_0_stream_i_TREADY 1 3 5 1070 910 NJ 910 NJ 910 NJ 910 2990J
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 3 4 1110 600 NJ 600 NJ 600 2600
 preplace netloc CLK_IN1_D_0_1 1 0 1 NJ 180
 preplace netloc axi_vdma_0_M_AXI_S2MM 1 5 1 1970 80n
-preplace netloc img2axis_0_m_axi_data_mem 1 3 3 1070 60 NJ 60 NJ
-preplace netloc ps8_0_axi_periph_M00_AXI 1 4 4 1520 220 1980J 230 NJ 230 2950
-preplace netloc ps8_0_axi_periph_M01_AXI 1 2 6 640 590 NJ 590 NJ 590 NJ 590 NJ 590 2950
+preplace netloc img2axis_0_m_axi_data_mem 1 3 3 1060 60 NJ 60 NJ
+preplace netloc img2axis_0_stream_o 1 3 1 N 250
+preplace netloc isolde_resizer_0_stream_o 1 4 1 1530 300n
+preplace netloc ps8_0_axi_periph_M00_AXI 1 4 4 1570 220 NJ 220 NJ 220 2990
+preplace netloc ps8_0_axi_periph_M01_AXI 1 2 6 630 410 NJ 410 1510J 260 NJ 260 2660J 230 2980
 preplace netloc ps8_0_axi_periph_M02_AXI 1 7 1 2990 420n
 preplace netloc ps8_0_axi_periph_M03_AXI 1 7 1 N 440
-preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 6 1 2640 100n
-preplace netloc img2axis_0_stream_o 1 3 1 N 190
-preplace netloc isolde_resizer_0_stream_o 1 4 1 N 300
-levelinfo -pg 1 0 140 440 860 1320 1750 2310 2800 3140 3310
-pagesize -pg 1 -db -bbox -sgen -150 0 3310 920
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 6 1 2670 100n
+levelinfo -pg 1 0 140 440 860 1320 1780 2310 2840 3200 3370
+pagesize -pg 1 -db -bbox -sgen -130 0 3370 920
 "
 }
 

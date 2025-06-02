@@ -1,10 +1,10 @@
 ROOT_DIR            :=  $(shell git rev-parse --show-toplevel)
-REMOTE_HOST         ?=  192.168.100.111
+REMOTE_HOST         ?=  192.168.100.121
 REMOTE_USER         ?=  xilinx
 REMOTE_PATH         ?=  /home/xilinx/jupyter_notebooks/isolde
 DEV_BOARD           ?= zcu102
 PYNQ_FOLDER         := $(ROOT_DIR)/resizer-test/vivado/resizer-$(DEV_BOARD)/PYNQ
-REMOTE_FILES        := image-output.png isolde.ipynb sensorSupervisor.ipynb resizer.ipynb 
+REMOTE_FILES        :=  resizer.ipynb resizer-mmio.ipynb 
 
 %: 
 	@echo password:'xilinx'

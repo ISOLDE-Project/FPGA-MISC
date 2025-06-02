@@ -124,3 +124,5 @@ puts "INFO: Adding HDL wrapper to the project."
 add_files -norecurse ${wrapper_file_path}
 
 ################################################################
+validate_bd_design
+save_bd_design
