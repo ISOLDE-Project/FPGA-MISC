@@ -10,14 +10,11 @@
 #include "xaxivdma.h"
 #include "xil_types.h"
 #include "xcsiss.h"
+#include "xil_io.h"
 
 #include "xv_demosaic.h"
 
-#ifdef XPAR_INTC_0_DEVICE_ID
- #include "xintc.h"
-#else
- #include "xscugic.h"
-#endif
+#include "xintc.h"
 
 typedef uint8_t  u8;
 typedef uint16_t u16;
@@ -31,7 +28,10 @@ typedef uint16_t u16;
 static XIic IicInstance;
 static XIntc Intc;
 
-#define VDMA_BASE XPAR_AXIVDMA_0_BASEADDR
+#define VDMA_BASE 			XPAR_AXIVDMA_0_BASEADDR
+#define VDMA_RESIZER		XPAR_AXIVDMA_1_BASEADDR
+
+#define IMG2AXIS_BASEADDR	XPAR_RESIZER_BD_IMG2AXIS_0_S_AXI_CFG_PORT_BASEADDR
 
 #define XCSIRXSS_DEVICE_ID  XPAR_CSISS_0_DEVICE_ID
 #define DEMOSAIC_DEVICE_ID 	XPAR_XV_DEMOSAIC_0_DEVICE_ID
@@ -40,11 +40,17 @@ static XIntc Intc;
 volatile int TransmitComplete = 0;
 volatile int ReceiveComplete = 0;
 
+/* Definitions for VDMA_0: CAM -> MIPI_PIPELINE -> VDMA */
 #define HORIZONTAL_RESOLUTION	1920 //1280
-
 #define VERTICAL_RESOLUTION		1080 //720
 #define FRAME_COUNTER			3
 #define STRIDE_VDMA_0			1920*3
+
+/* Definitions for VDMA_1 (from Resizer BD): IMG2AXIS -> RESIZER -> VDMA */
+#define HORIZONTAL_RESOLUTION_1		160 //640
+#define VERTICAL_RESOLUTION_1		480
+#define FRAME_COUNTER_1				2
+#define STRIDE_VDMA_1				160*4
 
 /* Debug Constants */
 #define MM2S_HALT_SUCCESS	121
@@ -52,9 +58,10 @@ volatile int ReceiveComplete = 0;
 #define S2MM_HALT_SUCCESS	131
 #define S2MM_HALT_FAILURE	132
 
-#define SET            (0x01)
-#define VDMA_S2MM    (VDMA_BASE + 0x30)
-#define S2MM	1
+#define SET            		(0x01)
+#define VDMA_S2MM    		(VDMA_BASE + 0x30)
+#define VDMA_S2MM_RESIZER	(VDMA_RESIZER + 0x30)
+#define S2MM				1
 
 typedef u8 AddressType;
 
@@ -64,7 +71,63 @@ XCsiSs CsiRxSs;
 XV_demosaic InstancePtr;
 XV_demosaic_Config  *demosaic_Config;
 XAxiVdma AxiVdma;
+XAxiVdma AxiVdmaResizer;
 
+void img2axis_config(){
+
+	Xil_Out32(IMG2AXIS_BASEADDR + 0x10, 0x815EEC00);
+	Xil_Out32(IMG2AXIS_BASEADDR + 0x18, 0x4);
+	Xil_Out32(IMG2AXIS_BASEADDR + 0x20, 0x1);
+	Xil_Out32(IMG2AXIS_BASEADDR + 0x00, 0x1);
+	while(Xil_In32(IMG2AXIS_BASEADDR + 0x00) != 0x4);
+
+}
+
+void vdma_resizer_config(UINTPTR base_addr, UINTPTR phys_addr, int _stride, int _v_size){
+
+//	     ----------------------------------------
+//	    _vdma.write(VDMA_S2MM["S2MM_VDMACR"], 0x00000004);//  # Reset
+	    Xil_Out32(base_addr+0x30, 0x00000004);
+
+//	    #_vdma.write(VDMA_S2MM["S2MM_VDMACR"], 0x00000001)  # Run/Stop = 1, circular mode = 0
+	    Sensor_Delay();
+		Xil_Out32(base_addr+0x30, 0x00000001);
+
+
+//	    # ----------------------------------------
+//	    # Set frame buffer base addresses
+//	    # ----------------------------------------
+//	    _vdma.write(VDMA_S2MM["S2MM_SA1"], _frame_rcv1.physical_address)
+//	    _vdma.write(VDMA_S2MM["S2MM_SA2"], _frame_rcv2.physical_address)
+		Xil_Out32(base_addr+0xAC, phys_addr);
+	    Xil_Out32(base_addr+0xB0, phys_addr);
+
+//	    # ----------------------------------------
+//	    # Set stride (bytes per row)
+//	    # ----------------------------------------
+//	    _vdma.write(VDMA_S2MM["S2MM_STRIDE"], _stride)
+	    Xil_Out32(base_addr+0xA8, _stride);
+
+
+//	    # ----------------------------------------
+//	    # Set horizontal size (in bytes)
+//	    # ----------------------------------------
+//	    _vdma.write(VDMA_S2MM["S2MM_HSIZE"], _stride)
+	    Xil_Out32(base_addr+0xA4, _stride);
+
+//	    # ----------------------------------------
+//	    # Set vertical size (in lines) to trigger transfer
+//	    # ----------------------------------------
+//	    _vdma.write(VDMA_S2MM["S2MM_VSIZE"], _v_size)
+	    Xil_Out32(base_addr+0xA0, _v_size);
+
+}
+
+void vdma_rst(UINTPTR base_addr){
+
+	Xil_Out32(base_addr+0x30, 0x00000004);
+
+}
 
 /******************** Data structure Declarations *****************************/
 
@@ -104,22 +167,8 @@ static unsigned int context_init=0;
 static int WriteSetup(vdma_handle *vdma_context);
 static int StartTransfer(XAxiVdma *InstancePtr);
 
-#define VDMA_BASEADDR	XPAR_AXIVDMA_0_BASEADDR
-
-//volatile u32 *Mm2sStatusReg = (u32*)(VDMA_BASEADDR + 0x4);
-volatile u32 *S2mmStatusReg = (u32*)(VDMA_BASEADDR + 0x34);
-
-volatile u32 *VdmaParkPtrReg = (u32 *)(VDMA_BASEADDR + 0x28);
-
-volatile u32 *VdmaS2MMCrReg = (u32 *)(VDMA_BASEADDR + 0x30);
-volatile u32 *VdmaS2MMStatusReg = (u32 *)(VDMA_BASEADDR + 0x34);
-volatile u32 *VdmaS2MMVertSizeReg = (u32 *)(VDMA_BASEADDR + 0xA0);
-volatile u32 *VdmaS2MMHoriSizeReg = (u32 *)(VDMA_BASEADDR + 0xA4);
-volatile u32 *VdmaS2MMFrmDlrStrideReg = (u32 *)(VDMA_BASEADDR + 0xA8);
-
-volatile u32 *VdmaS2MMFrameBuffer0Reg = (u32 *)(VDMA_BASEADDR + 0xAC);
-
 unsigned int srcBuffer = (0x80000000U + 0x1000000);
+unsigned int dstBufferResizer = (0x80000000U + 0x9000000);
 
 /*****************************************************************************/
 /**
@@ -210,7 +259,7 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   vdma_context[DeviceId].enable_frm_cnt_intr = enable_frm_cnt_intr;
   vdma_context[DeviceId].buffer_address = buf_base_addr;
   vdma_context[DeviceId].number_of_frame_count = number_frame_count;
-  vdma_context[DeviceId].hsize = hsize * (Config->Mm2SStreamWidth>>3);
+  vdma_context[DeviceId].hsize = hsize ;
 
   /* Setup the write channel */
 
@@ -282,7 +331,11 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
     vdma_context->WriteCfg.VertSizeInput = vdma_context->vsize;
     vdma_context->WriteCfg.HoriSizeInput = vdma_context->hsize;
 
-    vdma_context->WriteCfg.Stride = STRIDE_VDMA_0;
+    if(vdma_context->vsize == 1080)
+    	vdma_context->WriteCfg.Stride = STRIDE_VDMA_0;
+    else
+    	vdma_context->WriteCfg.Stride = STRIDE_VDMA_1;
+
     /* This example does not test frame delay */
     vdma_context->WriteCfg.FrameDelay = 0;
 
@@ -361,45 +414,6 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   }
 
-
-
-  /*****************************************************************************/
-  /**
-  *
-  * This function wait until the DMA channel halts
-  *
-  * @param	VdmaChannel specifes VdmaChannel is MM2S or S2MM
-  *.@param	VdmaBaseAddr VDMA base address
-  *
-  * @return
-  *		MM2S_HALT_SUCCESS, S2MM_HALT_SUCCESS in success
-  *		MM2S_HALT_FAILURE, S2MM_HALT_FAILURE on failure
-  *
-  * @note		None.
-  *
-  ******************************************************************************/
-  s32 WaitForCompletion(s32 VdmaChannel, u32 *VdmaBaseAddr)
-  {
-
-  	  if (VdmaChannel == S2MM) {
-      xdbg_printf(XDBG_DEBUG_GENERAL," Poll on s2mm status register\r\n");
-  	while (!(*S2mmStatusReg & 0x1)) {
-        xdbg_printf(XDBG_DEBUG_GENERAL," Waiting for S2MM to halt ..."
-  				"S2MM SR = 0x%x\r\n", *S2mmStatusReg);
-  	}
-  	if((*S2mmStatusReg & 0x1)) {
-        xdbg_printf(XDBG_DEBUG_GENERAL," S2MM_HALT_SUCCESS \r\n");
-        return S2MM_HALT_SUCCESS;
-  	}
-  	else {
-  	  xil_printf(" returning S2MM_HALT_FAILURE \r\n");
-        return S2MM_HALT_FAILURE;
-  	}
-    }
-    return XST_FAILURE;
-  }
-
-
   /***************************************************************************/
   /**
   *
@@ -419,11 +433,10 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   }
 
-  void HaltVDMA()
+  void ResetVDMA_Resizer()
   {
 
-    ResetVDMA();
-    WaitForCompletion(VDMA_S2MM, (u32*)VDMA_BASEADDR);
+    XAxiVdma_Reset(&AxiVdmaResizer,XAXIVDMA_WRITE);
 
   }
 
@@ -503,7 +516,6 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   void resetIp()
   {
 
-	  xil_printf("\n\rReset IN\n\r");
     DisableCSI();
     // HaltVDMA();
     // resetVIP();
@@ -587,6 +599,25 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   void stop_vdma(){
 
   	XAxiVdma_DmaStop(&AxiVdma, XAXIVDMA_WRITE);
+
+  }
+
+  int vdma_resizer(){
+
+//  	ResetVDMA_Resizer();
+
+//  	RunVDMA(&AxiVdmaResizer, XPAR_AXIVDMA_1_DEVICE_ID, HORIZONTAL_RESOLUTION_1, \
+//  			  VERTICAL_RESOLUTION_1, dstBufferResizer, FRAME_COUNTER_1, 0);
+
+  	vdma_resizer_config(VDMA_RESIZER, dstBufferResizer, STRIDE_VDMA_1, VERTICAL_RESOLUTION_1);
+
+  	return XST_SUCCESS;
+
+  }
+
+  void stop_vdma_resizer(){
+
+  	XAxiVdma_DmaStop(&AxiVdmaResizer, XAXIVDMA_WRITE);
 
   }
 
