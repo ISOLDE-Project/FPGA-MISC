@@ -1,10 +1,10 @@
 ROOT_DIR            :=  $(shell git rev-parse --show-toplevel)
-REMOTE_HOST         ?=  192.168.2.99
+REMOTE_HOST         ?=  192.168.100.121
 REMOTE_USER         ?=  xilinx
-REMOTE_PATH         ?=  /home/xilinx/jupyter_notebooks/isolde
+REMOTE_PATH         ?=  /home/xilinx/jupyter_notebooks/s_chip2chip
 DEV_BOARD           ?= zcu102
 PYNQ_FOLDER         := $(ROOT_DIR)/Chip2Chip/slave/vivado/slave-$(DEV_BOARD)/PYNQ
-REMOTE_FILES        := image-output.png isolde.ipynb sensorSupervisor.ipynb resizer.ipynb 
+REMOTE_FILES        := slave-mmio.ipynb
 
 %: 
 	@echo password:'xilinx'
