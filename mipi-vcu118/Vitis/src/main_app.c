@@ -59,10 +59,14 @@
 #include "sensor_config_pcam.h"
 #include "iic_functions.h"
 
+#include "xil_io.h"
+
 int main() {
     int Status;
 
     xil_printf("\n\n*************** MIPI CAM VCU118 *************\r\n");
+    Xil_ICacheDisable();
+    Xil_DCacheDisable();
 
     initIIC();
 
@@ -89,11 +93,28 @@ int main() {
 
 	SensorConfig();
 
+	Sensor_Delay();
+
+
 	Status = vdma();
 		if (Status != XST_SUCCESS) {
 	   xil_printf("\n\rVdma Failed \n\r");
 	   return XST_FAILURE;
 	 }
+
+	xil_printf("\n Wait to store the frame\r\n");
+
+	usleep(3000);
+
+	xil_printf("\n Ready to read the frame\r\n");
+
+	Status = vdma_resizer();
+		if (Status != XST_SUCCESS) {
+	   xil_printf("\n\rVdma Failed \n\r");
+	   return XST_FAILURE;
+	 }
+
+	img2axis_config();
 
 	u8 data = 0;
 

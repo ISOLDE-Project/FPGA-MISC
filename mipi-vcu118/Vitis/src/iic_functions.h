@@ -23,6 +23,9 @@ void DisableCSI(void);
 int demosaic();
 int vdma();
 void stop_vdma();
+int vdma_resizer();
 void CamReset();
+
+void img2axis_config();
 
 #endif
