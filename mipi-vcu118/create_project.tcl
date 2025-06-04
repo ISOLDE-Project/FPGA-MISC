@@ -22,7 +22,7 @@ set current_vivado_version [version -short]
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
   puts ""
   catch { "CRITICAL WARNING: This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado"}
-  return 1
+  #return 1
 }
 
 namespace eval _tcl {
@@ -64,7 +64,7 @@ set_property -name "platform.board_id"  -value ${_platform_board_id_} -objects $
 # Set IP repository paths
 set obj [get_filesets sources_1]
 if { $obj != {} } {
-   set_property "ip_repo_paths" "[file normalize "$proj_dir/../../../vivado-ip"]" $obj
+   set_property "ip_repo_paths" "[file normalize "$proj_dir/../../../vivado-ip/$_platform_board_id_"]" $obj
 
    # Rebuild user ip_repo's index before adding any source files
    update_ip_catalog -rebuild
@@ -140,3 +140,4 @@ add_files -norecurse ${wrapper_file_path}
 # automatically assign addresses
 delete_bd_objs [get_bd_addr_segs] [get_bd_addr_segs -excluded]
 assign_bd_address
+validate_bd_design

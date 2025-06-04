@@ -24,7 +24,7 @@ set configs { \
 
 # ########################################################
 #set active solution
-set config_index 0
+set config_index 2
 
 # helpers ########################################################
 proc listconfigs {configs} {
@@ -96,22 +96,22 @@ proc build_solution {__prj_name __sol_name hls_exec } {
 
         set __out_file  [get_solution -directory]/[get_project  -name]-[get_solution -name].zip
         set __ip_name  [get_project  -name] 
-        mkdir [get_solution -directory] ../../../../vivado-ip
+        mkdir [get_solution -directory] ../../../../vivado-ip/[get_solution -name]
         csynth_design 
         export_design  -description \"${::__ip_description}\" -display_name ${__ip_name} -flow syn -format ip_catalog -ipname ${__ip_name} -output ${__out_file}  -taxonomy \"${::__ip_taxonomy}\"
-        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip	
+        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip/[get_solution -name]	
     } elseif {$hls_exec == 5} { 
                 
         set __out_file  [get_solution -directory]/[get_project  -name]-[get_solution -name].zip
         set __ip_name  [get_project  -name] 
-        mkdir [get_solution -directory] ../../../../vivado-ip
+        mkdir [get_solution -directory] ../../../../vivado-ip/[get_solution -name]
         csynth_design 
         export_design  -description \"${::__ip_description}\" -display_name ${__ip_name} -flow impl -format ip_catalog -ipname ${__ip_name} -output ${__out_file}  -taxonomy \"${::__ip_taxonomy}\"
-        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip	
+        file copy -force ${__out_file} [get_solution -directory]/../../../../vivado-ip/[get_solution -name]	
     } else {
 
         #we are done 
-        mkdir [get_solution -directory] ../../../../vivado-ip
+        mkdir [get_solution -directory] ../../../../vivado-ip/[get_solution -name]
     }
     close_solution
     close_project

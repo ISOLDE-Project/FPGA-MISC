@@ -108,14 +108,20 @@ int main() {
 
 	xil_printf("\n Ready to read the frame\r\n");
 
+	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
 	Status = vdma_resizer();
 		if (Status != XST_SUCCESS) {
 	   xil_printf("\n\rVdma Failed \n\r");
 	   return XST_FAILURE;
 	 }
 
-	img2axis_config();
-
+	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
+	dump_img2axis_status(XPAR_RESIZER_BD_IMG2AXIS_0_S_AXI_CFG_PORT_BASEADDR);
+	//
+	img2axis_start();
+	wait_frame(XPAR_AXIVDMA_1_BASEADDR);
+	//
+	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
 	u8 data = 0;
 
 	WriteToReg(0x3008, 0x02);
