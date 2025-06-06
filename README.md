@@ -1,6 +1,13 @@
 # FMC connector
 [Chip2Chip/doc/README.md](./Chip2Chip/doc/README.md)
 # Linux Vivado/Vitis settings
+## 76585 - Vivado 2020.x - couldn't load file "librdi_commontasks.so": libtinfo.so.5: cannot open shared object file: No such file or directory
+```sh
+sudo apt update
+sudo apt install libtinfo-dev
+sudo ln -s /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5
+```
+[76585 - Vivado 2020.x - couldn't load file "librdi_commontasks.so": libtinfo.so.5: cannot open shared object file: No such file or directory](https://adaptivesupport.amd.com/s/article/76585?language=en_US)
 ## Cable drivers
 ```sh
 cd /tools/Xilinx/Vivado/2022.1/data/xicom/cable_drivers/lin64/install_script/install_drivers
