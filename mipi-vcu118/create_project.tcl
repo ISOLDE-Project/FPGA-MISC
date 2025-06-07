@@ -137,7 +137,4 @@ puts "INFO: Adding HDL wrapper to the project."
 add_files -norecurse ${wrapper_file_path}
 
 ################################################################
-# automatically assign addresses
-delete_bd_objs [get_bd_addr_segs] [get_bd_addr_segs -excluded]
-assign_bd_address
 validate_bd_design

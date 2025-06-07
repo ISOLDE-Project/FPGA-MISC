@@ -22,6 +22,8 @@ proc cr_bd_$::_xil_proj_name_ { parentCell } {
   xilinx.com:ip:microblaze:*\
   xilinx.com:ip:axi_intc:*\
   xilinx.com:ip:xlconcat:*\
+  xilinx.com:ip:axi_chip2chip:*\
+  xilinx.com:ip:axi_protocol_converter:*\
   xilinx.com:ip:axi_vdma:*\
   xilinx.com:hls:img2axis:*\
   xilinx.com:hls:isolde_resizer:*\
@@ -139,36 +141,6 @@ proc create_hier_cell_microblaze_0_local_memory { parentCell nameHier } {
   # Create port connections
   connect_bd_net -net SYS_Rst_1 [get_bd_pins SYS_Rst] [get_bd_pins dlmb_bram_if_cntlr/LMB_Rst] [get_bd_pins dlmb_v10/SYS_Rst] [get_bd_pins ilmb_bram_if_cntlr/LMB_Rst] [get_bd_pins ilmb_v10/SYS_Rst]
   connect_bd_net -net microblaze_0_Clk [get_bd_pins LMB_Clk] [get_bd_pins dlmb_bram_if_cntlr/LMB_Clk] [get_bd_pins dlmb_v10/LMB_Clk] [get_bd_pins ilmb_bram_if_cntlr/LMB_Clk] [get_bd_pins ilmb_v10/LMB_Clk]
-
-  # Perform GUI Layout
-  regenerate_bd_layout -hierarchy [get_bd_cells /CAM_Subsystem/microblaze_0_local_memory] -layout_string {
-   "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"1.0",
-   "Default View_TopLeft":"-222,-142",
-   "ExpandedHierarchyInLayout":"",
-   "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
-#  -string -flagsOSRD
-preplace port DLMB -pg 1 -lvl 0 -x -10 -y 50 -defaultsOSRD
-preplace port ILMB -pg 1 -lvl 0 -x -10 -y 220 -defaultsOSRD
-preplace port LMB_Clk -pg 1 -lvl 0 -x -10 -y 70 -defaultsOSRD
-preplace port SYS_Rst -pg 1 -lvl 0 -x -10 -y 90 -defaultsOSRD
-preplace inst dlmb_bram_if_cntlr -pg 1 -lvl 2 -x 390 -y 90 -defaultsOSRD
-preplace inst dlmb_v10 -pg 1 -lvl 1 -x 140 -y 70 -defaultsOSRD
-preplace inst ilmb_bram_if_cntlr -pg 1 -lvl 2 -x 390 -y 260 -defaultsOSRD
-preplace inst ilmb_v10 -pg 1 -lvl 1 -x 140 -y 240 -defaultsOSRD
-preplace inst lmb_bram -pg 1 -lvl 3 -x 640 -y 100 -defaultsOSRD
-preplace netloc SYS_Rst_1 1 0 2 10 150 270
-preplace netloc microblaze_0_Clk 1 0 2 20 160 260
-preplace netloc microblaze_0_ilmb_bus 1 1 1 N 240
-preplace netloc microblaze_0_ilmb_cntlr 1 2 1 510 110n
-preplace netloc microblaze_0_dlmb 1 0 1 NJ 50
-preplace netloc microblaze_0_dlmb_bus 1 1 1 N 70
-preplace netloc microblaze_0_dlmb_cntlr 1 2 1 N 90
-preplace netloc microblaze_0_ilmb 1 0 1 NJ 220
-levelinfo -pg 1 -10 140 390 640 780
-pagesize -pg 1 -db -bbox -sgen -120 -10 780 340
-"
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -484,26 +456,53 @@ proc create_hier_cell_Resizer_BD { parentCell nameHier } {
   current_bd_instance $hier_obj
 
   # Create interface pins
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI_S2MM
-
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI_LITE
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI_IMG2AXIS
 
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi_data_mem
 
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi_cfg_port
-
 
   # Create pins
+  create_bd_pin -dir I -type clk axi_c2c_s2m_intr_in
+  create_bd_pin -dir I -from 14 -to 0 axi_c2c_selio_rx_data_in_0
+  create_bd_pin -dir I -type clk axi_c2c_selio_rx_diff_clk_in_n_0
+  create_bd_pin -dir I -type clk axi_c2c_selio_rx_diff_clk_in_p_0
+  create_bd_pin -dir O -from 14 -to 0 axi_c2c_selio_tx_data_out_0
+  create_bd_pin -dir O -type clk axi_c2c_selio_tx_diff_clk_out_n_0
+  create_bd_pin -dir O -type clk axi_c2c_selio_tx_diff_clk_out_p_0
   create_bd_pin -dir I -type rst axi_resetn
   create_bd_pin -dir I -type clk m_axi_s2mm_aclk
+
+  # Create instance: axi_chip2chip_0, and set properties
+  set axi_chip2chip_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_chip2chip axi_chip2chip_0 ]
+  set_property -dict [ list \
+   CONFIG.C_INCLUDE_AXILITE {1} \
+   CONFIG.C_INTERFACE_MODE {1} \
+   CONFIG.C_MASTER_FPGA {0} \
+   CONFIG.C_M_AXI_ID_WIDTH {0} \
+   CONFIG.C_M_AXI_WUSER_WIDTH {0} \
+   CONFIG.C_NUM_OF_IO {32} \
+   CONFIG.C_USE_DIFF_CLK {true} \
+ ] $axi_chip2chip_0
+
+  # Create instance: axi_interconnect_0, and set properties
+  set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect axi_interconnect_0 ]
+  set_property -dict [ list \
+   CONFIG.NUM_MI {2} \
+   CONFIG.NUM_SI {2} \
+ ] $axi_interconnect_0
+
+  # Create instance: axi_protocol_convert_0, and set properties
+  set axi_protocol_convert_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter axi_protocol_convert_0 ]
 
   # Create instance: axi_vdma_1, and set properties
   set axi_vdma_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_vdma axi_vdma_1 ]
   set_property -dict [ list \
    CONFIG.c_include_mm2s {0} \
+   CONFIG.c_m_axi_s2mm_data_width {32} \
    CONFIG.c_mm2s_genlock_mode {0} \
    CONFIG.c_num_fstores {2} \
    CONFIG.c_s2mm_linebuffer_depth {1024} \
+   CONFIG.c_s2mm_max_burst_length {2} \
  ] $axi_vdma_1
 
   # Create instance: img2axis_0, and set properties
@@ -513,16 +512,26 @@ proc create_hier_cell_Resizer_BD { parentCell nameHier } {
   set isolde_resizer_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:isolde_resizer isolde_resizer_0 ]
 
   # Create interface connections
-  connect_bd_intf_net -intf_net S04_AXI_1 [get_bd_intf_pins M_AXI_S2MM] [get_bd_intf_pins axi_vdma_1/M_AXI_S2MM]
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins S_AXI_IMG2AXIS] [get_bd_intf_pins axi_interconnect_0/S01_AXI]
   connect_bd_intf_net -intf_net S05_AXI_1 [get_bd_intf_pins m_axi_data_mem] [get_bd_intf_pins img2axis_0/m_axi_data_mem]
+  connect_bd_intf_net -intf_net axi_chip2chip_0_m_axi [get_bd_intf_pins axi_chip2chip_0/m_axi] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_interconnect_0/M00_AXI] [get_bd_intf_pins axi_vdma_1/S_AXI_LITE]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins axi_interconnect_0/M01_AXI] [get_bd_intf_pins img2axis_0/s_axi_cfg_port]
+  connect_bd_intf_net -intf_net axi_protocol_convert_0_M_AXI [get_bd_intf_pins axi_chip2chip_0/s_axi_lite] [get_bd_intf_pins axi_protocol_convert_0/M_AXI]
+  connect_bd_intf_net -intf_net axi_vdma_1_M_AXI_S2MM [get_bd_intf_pins axi_protocol_convert_0/S_AXI] [get_bd_intf_pins axi_vdma_1/M_AXI_S2MM]
   connect_bd_intf_net -intf_net img2axis_0_stream_o [get_bd_intf_pins img2axis_0/stream_o] [get_bd_intf_pins isolde_resizer_0/stream_i]
   connect_bd_intf_net -intf_net isolde_resizer_0_stream_o [get_bd_intf_pins axi_vdma_1/S_AXIS_S2MM] [get_bd_intf_pins isolde_resizer_0/stream_o]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M10_AXI [get_bd_intf_pins s_axi_cfg_port] [get_bd_intf_pins img2axis_0/s_axi_cfg_port]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M11_AXI [get_bd_intf_pins S_AXI_LITE] [get_bd_intf_pins axi_vdma_1/S_AXI_LITE]
 
   # Create port connections
-  connect_bd_net -net microblaze_0_Clk [get_bd_pins m_axi_s2mm_aclk] [get_bd_pins axi_vdma_1/m_axi_s2mm_aclk] [get_bd_pins axi_vdma_1/s_axi_lite_aclk] [get_bd_pins axi_vdma_1/s_axis_s2mm_aclk] [get_bd_pins img2axis_0/ap_clk] [get_bd_pins isolde_resizer_0/ap_clk]
-  connect_bd_net -net rst_clk_wiz_1_100M_peripheral_aresetn [get_bd_pins axi_resetn] [get_bd_pins axi_vdma_1/axi_resetn] [get_bd_pins img2axis_0/ap_rst_n] [get_bd_pins isolde_resizer_0/ap_rst_n]
+  connect_bd_net -net axi_c2c_s2m_intr_in_1 [get_bd_pins axi_c2c_s2m_intr_in] [get_bd_pins axi_chip2chip_0/axi_c2c_s2m_intr_in] [get_bd_pins axi_chip2chip_0/idelay_ref_clk]
+  connect_bd_net -net axi_c2c_selio_rx_data_in_0_1 [get_bd_pins axi_c2c_selio_rx_data_in_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_data_in]
+  connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_n_0_1 [get_bd_pins axi_c2c_selio_rx_diff_clk_in_n_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_diff_clk_in_n]
+  connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_p_0_1 [get_bd_pins axi_c2c_selio_rx_diff_clk_in_p_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_rx_diff_clk_in_p]
+  connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_data_out [get_bd_pins axi_c2c_selio_tx_data_out_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_data_out]
+  connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_n [get_bd_pins axi_c2c_selio_tx_diff_clk_out_n_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_diff_clk_out_n]
+  connect_bd_net -net axi_chip2chip_0_axi_c2c_selio_tx_diff_clk_out_p [get_bd_pins axi_c2c_selio_tx_diff_clk_out_p_0] [get_bd_pins axi_chip2chip_0/axi_c2c_selio_tx_diff_clk_out_p]
+  connect_bd_net -net microblaze_0_Clk [get_bd_pins m_axi_s2mm_aclk] [get_bd_pins axi_chip2chip_0/m_aclk] [get_bd_pins axi_chip2chip_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axi_interconnect_0/S01_ACLK] [get_bd_pins axi_protocol_convert_0/aclk] [get_bd_pins axi_vdma_1/m_axi_s2mm_aclk] [get_bd_pins axi_vdma_1/s_axi_lite_aclk] [get_bd_pins axi_vdma_1/s_axis_s2mm_aclk] [get_bd_pins img2axis_0/ap_clk] [get_bd_pins isolde_resizer_0/ap_clk]
+  connect_bd_net -net rst_clk_wiz_1_100M_peripheral_aresetn [get_bd_pins axi_resetn] [get_bd_pins axi_chip2chip_0/m_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins axi_protocol_convert_0/aresetn] [get_bd_pins axi_vdma_1/axi_resetn] [get_bd_pins img2axis_0/ap_rst_n] [get_bd_pins isolde_resizer_0/ap_rst_n]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -571,11 +580,7 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
 
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M10_AXI
 
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M11_AXI
-
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S04_AXI
-
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S05_AXI
 
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c1_062
 
@@ -591,6 +596,7 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   # Create pins
   create_bd_pin -dir I bg0_pin0_nc_0
   create_bd_pin -dir I bg2_pin0_nc_0
+  create_bd_pin -dir O -type clk clk_out2
   create_bd_pin -dir O -from 0 -to 0 -type rst peripheral_aresetn
   create_bd_pin -dir I -type rst reset
   create_bd_pin -dir O -type clk slowest_sync_clk1
@@ -651,8 +657,8 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   # Create instance: microblaze_0_axi_periph, and set properties
   set microblaze_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect microblaze_0_axi_periph ]
   set_property -dict [ list \
-   CONFIG.NUM_MI {12} \
-   CONFIG.NUM_SI {6} \
+   CONFIG.NUM_MI {11} \
+   CONFIG.NUM_SI {5} \
  ] $microblaze_0_axi_periph
 
   # Create instance: microblaze_0_local_memory
@@ -662,8 +668,8 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   set microblaze_0_xlconcat [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat microblaze_0_xlconcat ]
 
   # Create interface connections
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins M10_AXI] [get_bd_intf_pins microblaze_0_axi_periph/M10_AXI]
   connect_bd_intf_net -intf_net S04_AXI_1 [get_bd_intf_pins S04_AXI] [get_bd_intf_pins microblaze_0_axi_periph/S04_AXI]
-  connect_bd_intf_net -intf_net S05_AXI_1 [get_bd_intf_pins S05_AXI] [get_bd_intf_pins microblaze_0_axi_periph/S05_AXI]
   connect_bd_intf_net -intf_net axi_gpio_0_GPIO [get_bd_intf_pins led_8bits] [get_bd_intf_pins axi_gpio_0/GPIO]
   connect_bd_intf_net -intf_net axi_gpio_1_GPIO [get_bd_intf_pins GPIO_sensor] [get_bd_intf_pins MIPI_Pipeline/GPIO_sensor]
   connect_bd_intf_net -intf_net axi_gpio_2_GPIO [get_bd_intf_pins GPIO_rsvd] [get_bd_intf_pins MIPI_Pipeline/GPIO_rsvd]
@@ -684,8 +690,6 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M07_AXI [get_bd_intf_pins MIPI_Pipeline/S_AXI_LITE] [get_bd_intf_pins microblaze_0_axi_periph/M07_AXI]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M08_AXI [get_bd_intf_pins MIPI_Pipeline/csirxss_s_axi] [get_bd_intf_pins microblaze_0_axi_periph/M08_AXI]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M09_AXI [get_bd_intf_pins MIPI_Pipeline/s_axi_CTRL] [get_bd_intf_pins microblaze_0_axi_periph/M09_AXI]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M10_AXI [get_bd_intf_pins M10_AXI] [get_bd_intf_pins microblaze_0_axi_periph/M10_AXI]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M11_AXI [get_bd_intf_pins M11_AXI] [get_bd_intf_pins microblaze_0_axi_periph/M11_AXI]
   connect_bd_intf_net -intf_net microblaze_0_debug [get_bd_intf_pins mdm_1/MBDEBUG_0] [get_bd_intf_pins microblaze_0/DEBUG]
   connect_bd_intf_net -intf_net microblaze_0_dlmb_1 [get_bd_intf_pins microblaze_0/DLMB] [get_bd_intf_pins microblaze_0_local_memory/DLMB]
   connect_bd_intf_net -intf_net microblaze_0_ilmb_1 [get_bd_intf_pins microblaze_0/ILMB] [get_bd_intf_pins microblaze_0_local_memory/ILMB]
@@ -698,16 +702,16 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   connect_bd_net -net axi_uartlite_0_interrupt [get_bd_pins axi_uartlite_0/interrupt] [get_bd_pins microblaze_0_xlconcat/In0]
   connect_bd_net -net bg0_pin0_nc_0_1 [get_bd_pins bg0_pin0_nc_0] [get_bd_pins MIPI_Pipeline/bg0_pin0_nc_0]
   connect_bd_net -net bg2_pin0_nc_0_1 [get_bd_pins bg2_pin0_nc_0] [get_bd_pins MIPI_Pipeline/bg2_pin0_nc_0]
-  connect_bd_net -net clk_wiz_1_clk_out2 [get_bd_pins Clock_Reset/clk_out2] [get_bd_pins MIPI_Pipeline/dphy_clk_200M]
+  connect_bd_net -net clk_wiz_1_clk_out2 [get_bd_pins clk_out2] [get_bd_pins Clock_Reset/clk_out2] [get_bd_pins MIPI_Pipeline/dphy_clk_200M]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins Clock_Reset/slowest_sync_clk] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins microblaze_0_axi_periph/M06_ACLK]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_pins Clock_Reset/ext_reset_in] [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst]
   connect_bd_net -net mdm_1_debug_sys_rst [get_bd_pins Clock_Reset/mb_debug_sys_rst] [get_bd_pins mdm_1/Debug_SYS_Rst]
-  connect_bd_net -net microblaze_0_Clk [get_bd_pins slowest_sync_clk1] [get_bd_pins Clock_Reset/slowest_sync_clk1] [get_bd_pins MIPI_Pipeline/s_axi_aclk] [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_uartlite_0/s_axi_aclk] [get_bd_pins microblaze_0/Clk] [get_bd_pins microblaze_0_axi_intc/processor_clk] [get_bd_pins microblaze_0_axi_intc/s_axi_aclk] [get_bd_pins microblaze_0_axi_periph/ACLK] [get_bd_pins microblaze_0_axi_periph/M00_ACLK] [get_bd_pins microblaze_0_axi_periph/M01_ACLK] [get_bd_pins microblaze_0_axi_periph/M02_ACLK] [get_bd_pins microblaze_0_axi_periph/M03_ACLK] [get_bd_pins microblaze_0_axi_periph/M04_ACLK] [get_bd_pins microblaze_0_axi_periph/M05_ACLK] [get_bd_pins microblaze_0_axi_periph/M07_ACLK] [get_bd_pins microblaze_0_axi_periph/M08_ACLK] [get_bd_pins microblaze_0_axi_periph/M09_ACLK] [get_bd_pins microblaze_0_axi_periph/M10_ACLK] [get_bd_pins microblaze_0_axi_periph/M11_ACLK] [get_bd_pins microblaze_0_axi_periph/S00_ACLK] [get_bd_pins microblaze_0_axi_periph/S01_ACLK] [get_bd_pins microblaze_0_axi_periph/S02_ACLK] [get_bd_pins microblaze_0_axi_periph/S03_ACLK] [get_bd_pins microblaze_0_axi_periph/S04_ACLK] [get_bd_pins microblaze_0_axi_periph/S05_ACLK] [get_bd_pins microblaze_0_local_memory/LMB_Clk]
+  connect_bd_net -net microblaze_0_Clk [get_bd_pins slowest_sync_clk1] [get_bd_pins Clock_Reset/slowest_sync_clk1] [get_bd_pins MIPI_Pipeline/s_axi_aclk] [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_uartlite_0/s_axi_aclk] [get_bd_pins microblaze_0/Clk] [get_bd_pins microblaze_0_axi_intc/processor_clk] [get_bd_pins microblaze_0_axi_intc/s_axi_aclk] [get_bd_pins microblaze_0_axi_periph/ACLK] [get_bd_pins microblaze_0_axi_periph/M00_ACLK] [get_bd_pins microblaze_0_axi_periph/M01_ACLK] [get_bd_pins microblaze_0_axi_periph/M02_ACLK] [get_bd_pins microblaze_0_axi_periph/M03_ACLK] [get_bd_pins microblaze_0_axi_periph/M04_ACLK] [get_bd_pins microblaze_0_axi_periph/M05_ACLK] [get_bd_pins microblaze_0_axi_periph/M07_ACLK] [get_bd_pins microblaze_0_axi_periph/M08_ACLK] [get_bd_pins microblaze_0_axi_periph/M09_ACLK] [get_bd_pins microblaze_0_axi_periph/M10_ACLK] [get_bd_pins microblaze_0_axi_periph/S00_ACLK] [get_bd_pins microblaze_0_axi_periph/S01_ACLK] [get_bd_pins microblaze_0_axi_periph/S02_ACLK] [get_bd_pins microblaze_0_axi_periph/S03_ACLK] [get_bd_pins microblaze_0_axi_periph/S04_ACLK] [get_bd_pins microblaze_0_local_memory/LMB_Clk]
   connect_bd_net -net microblaze_0_intr [get_bd_pins microblaze_0_axi_intc/intr] [get_bd_pins microblaze_0_xlconcat/dout]
   connect_bd_net -net reset_1 [get_bd_pins reset] [get_bd_pins Clock_Reset/reset] [get_bd_pins ddr4_0/sys_rst]
   connect_bd_net -net rst_clk_wiz_1_100M_bus_struct_reset [get_bd_pins Clock_Reset/bus_struct_reset] [get_bd_pins microblaze_0_local_memory/SYS_Rst]
   connect_bd_net -net rst_clk_wiz_1_100M_mb_reset [get_bd_pins Clock_Reset/mb_reset] [get_bd_pins microblaze_0/Reset] [get_bd_pins microblaze_0_axi_intc/processor_rst]
-  connect_bd_net -net rst_clk_wiz_1_100M_peripheral_aresetn [get_bd_pins peripheral_aresetn] [get_bd_pins Clock_Reset/peripheral_aresetn] [get_bd_pins MIPI_Pipeline/s_axi_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_uartlite_0/s_axi_aresetn] [get_bd_pins microblaze_0_axi_intc/s_axi_aresetn] [get_bd_pins microblaze_0_axi_periph/ARESETN] [get_bd_pins microblaze_0_axi_periph/M00_ARESETN] [get_bd_pins microblaze_0_axi_periph/M01_ARESETN] [get_bd_pins microblaze_0_axi_periph/M02_ARESETN] [get_bd_pins microblaze_0_axi_periph/M03_ARESETN] [get_bd_pins microblaze_0_axi_periph/M04_ARESETN] [get_bd_pins microblaze_0_axi_periph/M05_ARESETN] [get_bd_pins microblaze_0_axi_periph/M07_ARESETN] [get_bd_pins microblaze_0_axi_periph/M08_ARESETN] [get_bd_pins microblaze_0_axi_periph/M09_ARESETN] [get_bd_pins microblaze_0_axi_periph/M10_ARESETN] [get_bd_pins microblaze_0_axi_periph/M11_ARESETN] [get_bd_pins microblaze_0_axi_periph/S00_ARESETN] [get_bd_pins microblaze_0_axi_periph/S01_ARESETN] [get_bd_pins microblaze_0_axi_periph/S02_ARESETN] [get_bd_pins microblaze_0_axi_periph/S03_ARESETN] [get_bd_pins microblaze_0_axi_periph/S04_ARESETN] [get_bd_pins microblaze_0_axi_periph/S05_ARESETN]
+  connect_bd_net -net rst_clk_wiz_1_100M_peripheral_aresetn [get_bd_pins peripheral_aresetn] [get_bd_pins Clock_Reset/peripheral_aresetn] [get_bd_pins MIPI_Pipeline/s_axi_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_uartlite_0/s_axi_aresetn] [get_bd_pins microblaze_0_axi_intc/s_axi_aresetn] [get_bd_pins microblaze_0_axi_periph/ARESETN] [get_bd_pins microblaze_0_axi_periph/M00_ARESETN] [get_bd_pins microblaze_0_axi_periph/M01_ARESETN] [get_bd_pins microblaze_0_axi_periph/M02_ARESETN] [get_bd_pins microblaze_0_axi_periph/M03_ARESETN] [get_bd_pins microblaze_0_axi_periph/M04_ARESETN] [get_bd_pins microblaze_0_axi_periph/M05_ARESETN] [get_bd_pins microblaze_0_axi_periph/M07_ARESETN] [get_bd_pins microblaze_0_axi_periph/M08_ARESETN] [get_bd_pins microblaze_0_axi_periph/M09_ARESETN] [get_bd_pins microblaze_0_axi_periph/M10_ARESETN] [get_bd_pins microblaze_0_axi_periph/S00_ARESETN] [get_bd_pins microblaze_0_axi_periph/S01_ARESETN] [get_bd_pins microblaze_0_axi_periph/S02_ARESETN] [get_bd_pins microblaze_0_axi_periph/S03_ARESETN] [get_bd_pins microblaze_0_axi_periph/S04_ARESETN]
   connect_bd_net -net rst_ddr4_0_300M_peripheral_aresetn [get_bd_pins Clock_Reset/peripheral_aresetn1] [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins microblaze_0_axi_periph/M06_ARESETN]
 
   # Restore current instance
@@ -762,6 +766,12 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
 
 
   # Create ports
+  set axi_c2c_selio_rx_data_in_0 [ create_bd_port -dir I -from 14 -to 0 axi_c2c_selio_rx_data_in_0 ]
+  set axi_c2c_selio_rx_diff_clk_in_n_0 [ create_bd_port -dir I -type clk axi_c2c_selio_rx_diff_clk_in_n_0 ]
+  set axi_c2c_selio_rx_diff_clk_in_p_0 [ create_bd_port -dir I -type clk axi_c2c_selio_rx_diff_clk_in_p_0 ]
+  set axi_c2c_selio_tx_data_out_0 [ create_bd_port -dir O -from 14 -to 0 axi_c2c_selio_tx_data_out_0 ]
+  set axi_c2c_selio_tx_diff_clk_out_n_0 [ create_bd_port -dir O -type clk axi_c2c_selio_tx_diff_clk_out_n_0 ]
+  set axi_c2c_selio_tx_diff_clk_out_p_0 [ create_bd_port -dir O -type clk axi_c2c_selio_tx_diff_clk_out_p_0 ]
   set bg0_pin0_nc_0 [ create_bd_port -dir I bg0_pin0_nc_0 ]
   set bg2_pin0_nc_0 [ create_bd_port -dir I bg2_pin0_nc_0 ]
   set reset [ create_bd_port -dir I -type rst reset ]
@@ -776,8 +786,8 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   create_hier_cell_Resizer_BD [current_bd_instance .] Resizer_BD
 
   # Create interface connections
-  connect_bd_intf_net -intf_net S04_AXI_1 [get_bd_intf_pins CAM_Subsystem/S04_AXI] [get_bd_intf_pins Resizer_BD/M_AXI_S2MM]
-  connect_bd_intf_net -intf_net S05_AXI_1 [get_bd_intf_pins CAM_Subsystem/S05_AXI] [get_bd_intf_pins Resizer_BD/m_axi_data_mem]
+  connect_bd_intf_net -intf_net CAM_Subsystem_M12_AXI_0 [get_bd_intf_pins CAM_Subsystem/M10_AXI] [get_bd_intf_pins Resizer_BD/S_AXI_IMG2AXIS]
+  connect_bd_intf_net -intf_net S04_AXI_1 [get_bd_intf_pins CAM_Subsystem/S04_AXI] [get_bd_intf_pins Resizer_BD/m_axi_data_mem]
   connect_bd_intf_net -intf_net axi_gpio_0_GPIO [get_bd_intf_ports led_8bits] [get_bd_intf_pins CAM_Subsystem/led_8bits]
   connect_bd_intf_net -intf_net axi_gpio_1_GPIO [get_bd_intf_ports GPIO_sensor] [get_bd_intf_pins CAM_Subsystem/GPIO_sensor]
   connect_bd_intf_net -intf_net axi_gpio_2_GPIO [get_bd_intf_ports GPIO_rsvd] [get_bd_intf_pins CAM_Subsystem/GPIO_rsvd]
@@ -785,11 +795,16 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   connect_bd_intf_net -intf_net axi_uartlite_0_UART [get_bd_intf_ports rs232_uart] [get_bd_intf_pins CAM_Subsystem/rs232_uart]
   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c1_062] [get_bd_intf_pins CAM_Subsystem/ddr4_sdram_c1_062]
   connect_bd_intf_net -intf_net default_250mhz_clk1_0_1 [get_bd_intf_ports default_250mhz_clk1_0] [get_bd_intf_pins CAM_Subsystem/default_250mhz_clk1_0]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M10_AXI [get_bd_intf_pins CAM_Subsystem/M10_AXI] [get_bd_intf_pins Resizer_BD/s_axi_cfg_port]
-  connect_bd_intf_net -intf_net microblaze_0_axi_periph_M11_AXI [get_bd_intf_pins CAM_Subsystem/M11_AXI] [get_bd_intf_pins Resizer_BD/S_AXI_LITE]
   connect_bd_intf_net -intf_net mipi_phy_if_0_1 [get_bd_intf_ports mipi_phy_if_0] [get_bd_intf_pins CAM_Subsystem/mipi_phy_if_0]
 
   # Create port connections
+  connect_bd_net -net CAM_Subsystem_clk_out2 [get_bd_pins CAM_Subsystem/clk_out2] [get_bd_pins Resizer_BD/axi_c2c_s2m_intr_in]
+  connect_bd_net -net Resizer_BD_axi_c2c_selio_tx_data_out_0 [get_bd_ports axi_c2c_selio_tx_data_out_0] [get_bd_pins Resizer_BD/axi_c2c_selio_tx_data_out_0]
+  connect_bd_net -net Resizer_BD_axi_c2c_selio_tx_diff_clk_out_n_0 [get_bd_ports axi_c2c_selio_tx_diff_clk_out_n_0] [get_bd_pins Resizer_BD/axi_c2c_selio_tx_diff_clk_out_n_0]
+  connect_bd_net -net Resizer_BD_axi_c2c_selio_tx_diff_clk_out_p_0 [get_bd_ports axi_c2c_selio_tx_diff_clk_out_p_0] [get_bd_pins Resizer_BD/axi_c2c_selio_tx_diff_clk_out_p_0]
+  connect_bd_net -net axi_c2c_selio_rx_data_in_0_1 [get_bd_ports axi_c2c_selio_rx_data_in_0] [get_bd_pins Resizer_BD/axi_c2c_selio_rx_data_in_0]
+  connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_n_0_1 [get_bd_ports axi_c2c_selio_rx_diff_clk_in_n_0] [get_bd_pins Resizer_BD/axi_c2c_selio_rx_diff_clk_in_n_0]
+  connect_bd_net -net axi_c2c_selio_rx_diff_clk_in_p_0_1 [get_bd_ports axi_c2c_selio_rx_diff_clk_in_p_0] [get_bd_pins Resizer_BD/axi_c2c_selio_rx_diff_clk_in_p_0]
   connect_bd_net -net bg0_pin0_nc_0_1 [get_bd_ports bg0_pin0_nc_0] [get_bd_pins CAM_Subsystem/bg0_pin0_nc_0]
   connect_bd_net -net bg2_pin0_nc_0_1 [get_bd_ports bg2_pin0_nc_0] [get_bd_pins CAM_Subsystem/bg2_pin0_nc_0]
   connect_bd_net -net microblaze_0_Clk [get_bd_pins CAM_Subsystem/slowest_sync_clk1] [get_bd_pins Resizer_BD/m_axi_s2mm_aclk]
@@ -797,114 +812,113 @@ proc create_hier_cell_CAM_Subsystem { parentCell nameHier } {
   connect_bd_net -net rst_clk_wiz_1_100M_peripheral_aresetn [get_bd_pins CAM_Subsystem/peripheral_aresetn] [get_bd_pins Resizer_BD/axi_resetn]
 
   # Create address segments
-  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg] -force
-  assign_bd_address -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg] -force
   assign_bd_address -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x04060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x04060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg] -force
-  assign_bd_address -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg] -force
-  assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg] -force
-  assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg] -force
-  assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg] -force
   assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
   assign_bd_address -offset 0x00000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/microblaze_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
-  assign_bd_address -offset 0x00000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/microblaze_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
-  assign_bd_address -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg] -force
-  assign_bd_address -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg] -force
-  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg] -force
   assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
   assign_bd_address -offset 0x00002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/mipi_csi2_rx_subsyst_0/csirxss_s_axi/Reg] -force
+  assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg] -force
+  assign_bd_address -offset 0x40020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/microblaze_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
+  assign_bd_address -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg] -force
+  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
   assign_bd_address -offset 0x00002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/mipi_csi2_rx_subsyst_0/csirxss_s_axi/Reg] -force
-  assign_bd_address -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Data] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg] -force
-  assign_bd_address -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg] -force
-  assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
+  assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/microblaze_0/Instruction] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg] -force
+  assign_bd_address -offset 0xA0010000 -range 0x00008000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_chip2chip_0/MAXI] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0xA0018000 -range 0x00008000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_chip2chip_0/MAXI] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs Resizer_BD/axi_chip2chip_0/s_axi_lite/Reg] -force
   assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
   assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg] -force
 
   # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x04060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg]
+  exclude_bd_addr_seg -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg]
+  exclude_bd_addr_seg -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg]
   exclude_bd_addr_seg -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x00002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/mipi_csi2_rx_subsyst_0/csirxss_s_axi/Reg]
-  exclude_bd_addr_seg -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg]
-  exclude_bd_addr_seg -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x04060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg]
-  exclude_bd_addr_seg -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/mipi_csi2_rx_subsyst_0/csirxss_s_axi/Reg]
-  exclude_bd_addr_seg -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/axi_vdma_1/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg]
-  exclude_bd_addr_seg -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x00030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/Data_S2MM] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg]
+  exclude_bd_addr_seg -offset 0x40020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/axi_gpio_0/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_1/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_gpio_2/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x40800000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_iic_0/S_AXI/Reg]
-  exclude_bd_addr_seg -offset 0x04060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg]
+  exclude_bd_addr_seg -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/axi_uartlite_0/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x44A00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/axi_vdma_0/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg]
-  exclude_bd_addr_seg -offset 0x00040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg]
+  exclude_bd_addr_seg -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs Resizer_BD/axi_vdma_1/S_AXI_LITE/Reg]
+  exclude_bd_addr_seg -offset 0x00010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs Resizer_BD/img2axis_0/s_axi_cfg_port/Reg]
   exclude_bd_addr_seg -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/microblaze_0_axi_intc/S_AXI/Reg]
   exclude_bd_addr_seg -offset 0x00002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/mipi_csi2_rx_subsyst_0/csirxss_s_axi/Reg]
-  exclude_bd_addr_seg -offset 0x44A20000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg]
+  exclude_bd_addr_seg -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces Resizer_BD/img2axis_0/Data_m_axi_data_mem] [get_bd_addr_segs CAM_Subsystem/MIPI_Pipeline/v_demosaic_0/s_axi_CTRL/Reg]
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.9352",
-   "Default View_TopLeft":"-217,-91",
+   "Default View_ScaleFactor":"0.631497",
+   "Default View_TopLeft":"1186,-505",
    "ExpandedHierarchyInLayout":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
-preplace port GPIO_rsvd -pg 1 -lvl 3 -x 840 -y 160 -defaultsOSRD
-preplace port GPIO_sensor -pg 1 -lvl 3 -x 840 -y 180 -defaultsOSRD
-preplace port IIC_sensor -pg 1 -lvl 3 -x 840 -y 140 -defaultsOSRD
-preplace port ddr4_sdram_c1_062 -pg 1 -lvl 3 -x 840 -y 120 -defaultsOSRD
-preplace port default_250mhz_clk1_0 -pg 1 -lvl 0 -x 0 -y 110 -defaultsOSRD
-preplace port led_8bits -pg 1 -lvl 3 -x 840 -y 80 -defaultsOSRD
-preplace port mipi_phy_if_0 -pg 1 -lvl 0 -x 0 -y 130 -defaultsOSRD
-preplace port rs232_uart -pg 1 -lvl 3 -x 840 -y 100 -defaultsOSRD
-preplace port bg0_pin0_nc_0 -pg 1 -lvl 0 -x 0 -y 210 -defaultsOSRD
-preplace port bg2_pin0_nc_0 -pg 1 -lvl 0 -x 0 -y 230 -defaultsOSRD
-preplace port reset -pg 1 -lvl 0 -x 0 -y 190 -defaultsOSRD
-preplace inst Resizer_BD -pg 1 -lvl 1 -x 220 -y 410 -defaultsOSRD
-preplace inst CAM_Subsystem -pg 1 -lvl 2 -x 600 -y 170 -defaultsOSRD
-preplace netloc bg0_pin0_nc_0_1 1 0 2 NJ 210 NJ
-preplace netloc bg2_pin0_nc_0_1 1 0 2 NJ 230 NJ
-preplace netloc reset_1 1 0 2 NJ 190 NJ
-preplace netloc microblaze_0_Clk 1 0 3 20 10 NJ 10 820
-preplace netloc rst_clk_wiz_1_100M_peripheral_aresetn 1 0 3 30 320 NJ 320 800
-preplace netloc default_250mhz_clk1_0_1 1 0 2 NJ 110 NJ
-preplace netloc ddr4_0_C0_DDR4 1 2 1 NJ 120
-preplace netloc axi_uartlite_0_UART 1 2 1 NJ 100
-preplace netloc axi_iic_0_IIC 1 2 1 NJ 140
-preplace netloc S04_AXI_1 1 1 1 390 150n
-preplace netloc axi_gpio_2_GPIO 1 2 1 NJ 160
-preplace netloc S05_AXI_1 1 1 1 400 170n
-preplace netloc axi_gpio_0_GPIO 1 2 1 NJ 80
-preplace netloc axi_gpio_1_GPIO 1 2 1 NJ 180
-preplace netloc microblaze_0_axi_periph_M11_AXI 1 0 3 50 310 NJ 310 810
-preplace netloc mipi_phy_if_0_1 1 0 2 NJ 130 NJ
-preplace netloc microblaze_0_axi_periph_M10_AXI 1 0 3 40 20 NJ 20 810
-levelinfo -pg 1 0 220 600 840
-pagesize -pg 1 -db -bbox -sgen -220 0 1040 490
+preplace port GPIO_rsvd -pg 1 -lvl 3 -x 5820 -y 160 -defaultsOSRD
+preplace port GPIO_sensor -pg 1 -lvl 3 -x 5820 -y 180 -defaultsOSRD
+preplace port IIC_sensor -pg 1 -lvl 3 -x 5820 -y 140 -defaultsOSRD
+preplace port ddr4_sdram_c1_062 -pg 1 -lvl 3 -x 5820 -y 120 -defaultsOSRD
+preplace port default_250mhz_clk1_0 -pg 1 -lvl 0 -x -500 -y 110 -defaultsOSRD
+preplace port led_8bits -pg 1 -lvl 3 -x 5820 -y 80 -defaultsOSRD
+preplace port mipi_phy_if_0 -pg 1 -lvl 0 -x -500 -y 20 -defaultsOSRD
+preplace port rs232_uart -pg 1 -lvl 3 -x 5820 -y 100 -defaultsOSRD
+preplace port port-id_bg0_pin0_nc_0 -pg 1 -lvl 0 -x -500 -y 210 -defaultsOSRD
+preplace port port-id_bg2_pin0_nc_0 -pg 1 -lvl 0 -x -500 -y 230 -defaultsOSRD
+preplace port port-id_reset -pg 1 -lvl 0 -x -500 -y 250 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_p_0 -pg 1 -lvl 3 -x 5820 -y 780 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_tx_diff_clk_out_n_0 -pg 1 -lvl 3 -x 5820 -y 800 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_rx_diff_clk_in_p_0 -pg 1 -lvl 0 -x -500 -y 590 -defaultsOSRD
+preplace port port-id_axi_c2c_selio_rx_diff_clk_in_n_0 -pg 1 -lvl 0 -x -500 -y 610 -defaultsOSRD
+preplace portBus axi_c2c_selio_rx_data_in_0 -pg 1 -lvl 0 -x -500 -y 570 -defaultsOSRD
+preplace portBus axi_c2c_selio_tx_data_out_0 -pg 1 -lvl 3 -x 5820 -y 820 -defaultsOSRD
+preplace inst CAM_Subsystem -pg 1 -lvl 2 -x 2868 -y 148 -defaultsOSRD
+preplace inst Resizer_BD -pg 1 -lvl 1 -x 320 -y 156 -defaultsOSRD
+preplace netloc CAM_Subsystem_clk_out2 1 0 3 -400 -54 NJ -54 3090
+preplace netloc Resizer_BD_axi_c2c_selio_tx_data_out_0 1 1 2 600J -2 3100J
+preplace netloc Resizer_BD_axi_c2c_selio_tx_diff_clk_out_n_0 1 1 2 650J -32 3180J
+preplace netloc Resizer_BD_axi_c2c_selio_tx_diff_clk_out_p_0 1 1 2 620J -12 3170J
+preplace netloc axi_c2c_selio_rx_data_in_0_1 1 0 1 -430 156n
+preplace netloc axi_c2c_selio_rx_diff_clk_in_n_0_1 1 0 1 -410 196n
+preplace netloc axi_c2c_selio_rx_diff_clk_in_p_0_1 1 0 1 -420 176n
+preplace netloc bg0_pin0_nc_0_1 1 0 2 -480J -24 630J
+preplace netloc bg2_pin0_nc_0_1 1 0 2 -470J -14 610J
+preplace netloc microblaze_0_Clk 1 0 3 -380 -44 NJ -44 3070
+preplace netloc reset_1 1 0 2 -440J -4 570J
+preplace netloc rst_clk_wiz_1_100M_peripheral_aresetn 1 0 3 -370 -34 640J -22 3060
+preplace netloc CAM_Subsystem_M12_AXI_0 1 0 3 -390 -64 N -64 3080
+preplace netloc S04_AXI_1 1 1 1 580 98n
+preplace netloc axi_gpio_0_GPIO 1 2 1 3120J 80n
+preplace netloc axi_gpio_1_GPIO 1 2 1 3110J 78n
+preplace netloc axi_gpio_2_GPIO 1 2 1 3160J 58n
+preplace netloc axi_iic_0_IIC 1 2 1 3140J 98n
+preplace netloc axi_uartlite_0_UART 1 2 1 3150J 100n
+preplace netloc ddr4_0_C0_DDR4 1 2 1 3130J 118n
+preplace netloc default_250mhz_clk1_0_1 1 0 2 -460J 6 590J
+preplace netloc mipi_phy_if_0_1 1 0 2 -450J 16 640J
+levelinfo -pg 1 -500 320 2868 5820
+pagesize -pg 1 -db -bbox -sgen -780 -550 6110 3190
 "
 }
 
@@ -913,7 +927,6 @@ pagesize -pg 1 -db -bbox -sgen -220 0 1040 490
 
   # Create PFM attributes
   set_property PFM_NAME {xilinx:vcu118:vcu118_mipi_uart_115200:0.0} [get_files [current_bd_design].bd]
-  set_property PFM.AXI_PORT {M10_AXI {memport "M_AXI_GP" sptag "" memory "" is_range "false"}} [get_bd_cells /CAM_Subsystem/microblaze_0_axi_periph]
   set_property PFM.CLOCK {clk_out1 {id "0" is_default "true" proc_sys_reset "/rst_clk_wiz_1_100M" status "fixed" freq_hz "100000000"}} [get_bd_cells /CAM_Subsystem/Clock_Reset/clk_wiz_1]
 
 
