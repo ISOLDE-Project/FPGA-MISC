@@ -116,7 +116,7 @@ int main() {
 	 }
 
 	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
-	dump_img2axis_status(XPAR_RESIZER_BD_IMG2AXIS_0_S_AXI_CFG_PORT_BASEADDR);
+	dump_img2axis_status(0x00010000);
 	//
 	img2axis_start();
 	wait_frame(XPAR_AXIVDMA_1_BASEADDR);

@@ -107,9 +107,9 @@ struct regval_list sensor_pre[] = {
   {0x3c0b, 0x40},
 
   //[7]=1 color bar enable, [3:2]=00 eight color bar
-  {0x503d, 0x80}, // modified from 0x00 to 0x01 +++++++++++++++++++++++++++++
+  {0x503d, 0x00}, // modified from 0x00 to 0x01 +++++++++++++++++++++++++++++
   //[2]=1 ISP vflip, [1]=1 sensor vflip
-  {0x3820, 0x40}, //modified from 0x46 to 0x40 +++++++++++++++++++++++++++++++++===
+  {0x3820, 0x46}, //modified from 0x46 to 0x40 +++++++++++++++++++++++++++++++++===
 
   {0x300e, 0x45},
   //{0x300e, 0x25},

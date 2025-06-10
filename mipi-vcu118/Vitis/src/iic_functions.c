@@ -31,7 +31,7 @@ static XIntc Intc;
 #define VDMA_BASE 			XPAR_AXIVDMA_0_BASEADDR
 #define VDMA_RESIZER		XPAR_AXIVDMA_1_BASEADDR
 
-#define IMG2AXIS_BASEADDR	XPAR_RESIZER_BD_IMG2AXIS_0_S_AXI_CFG_PORT_BASEADDR
+#define IMG2AXIS_BASEADDR	0x00010000
 
 #define XCSIRXSS_DEVICE_ID  XPAR_CSISS_0_DEVICE_ID
 #define DEMOSAIC_DEVICE_ID 	XPAR_XV_DEMOSAIC_0_DEVICE_ID
@@ -127,8 +127,8 @@ void img2axis_start(){
 	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_DATA_PORT_DATA, 0x815EEC00);
 	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_FRAME_CNT_DATA, 0x4);
 	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_END_OF_STREAM_DATA, 0x0);
-	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL, 0x1);
-	while(Xil_In32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL) != 0x4);
+	//Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL, 0x1);
+	//while(Xil_In32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL) != 0x4);
 
 }
 
@@ -364,7 +364,7 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   vdma_context[DeviceId].enable_frm_cnt_intr = enable_frm_cnt_intr;
   vdma_context[DeviceId].buffer_address = buf_base_addr;
   vdma_context[DeviceId].number_of_frame_count = number_frame_count;
-  vdma_context[DeviceId].hsize = hsize ;
+  vdma_context[DeviceId].hsize = hsize * 3;
 
   /* Setup the write channel */
 
