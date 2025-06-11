@@ -221,7 +221,7 @@ void matrix_to_axis_unaligned(stream_t &stream_o,
     for (int i = 0; i < last_row; ++i)
     {
 
-        offset = i * BRAM_W;
+        //offset = i * BRAM_W;
         int j = 0; 
         while(j < BRAM_W)
         {
