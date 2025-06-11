@@ -122,34 +122,26 @@ typedef struct {
 #define IMG2AXIS_FRAME_CNT_DATA     0x18
 #define IMG2AXIS_END_OF_STREAM_DATA 0x20
 
-void img2axis_start(){
-
-	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_DATA_PORT_DATA, 0x815EEC00);
-	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_FRAME_CNT_DATA, 0x4);
-	Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_END_OF_STREAM_DATA, 0x0);
-	//Xil_Out32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL, 0x1);
-	//while(Xil_In32(IMG2AXIS_BASEADDR + IMG2AXIS_CTRL) != 0x4);
-
-}
-
 void dump_img2axis_status(uintptr_t vdma_base)
 {
+
 	uint32_t ctrl           = read_reg(vdma_base + IMG2AXIS_CTRL);
 	uint32_t data_port      = read_reg(vdma_base + IMG2AXIS_DATA_PORT_DATA);
     uint32_t frame_cnt      = read_reg(vdma_base + IMG2AXIS_FRAME_CNT_DATA);
     uint32_t end_of_stream  = read_reg(vdma_base + IMG2AXIS_END_OF_STREAM_DATA);
 
 
-    printf("----- img2axis Status Dump -----\n");
-    printf("CTRL Reg                (0x%02X): 0x%08X\n", IMG2AXIS_CTRL, ctrl);
-    printf("DATA_PORT_DATA Reg      (0x%02X): 0x%08X\n", IMG2AXIS_DATA_PORT_DATA, data_port);
-    printf("FRAME_CNT_DATA Reg      (0x%02X): %u\n", IMG2AXIS_FRAME_CNT_DATA, frame_cnt);
-    printf("END_OF_STREAM  Reg      (0x%02X): %u\n", IMG2AXIS_END_OF_STREAM_DATA, end_of_stream);
+    xil_printf("----- img2axis Status Dump -----\r\n");
+    xil_printf("CTRL Reg                (0x%02X): 0x%08X\r\n", IMG2AXIS_CTRL, ctrl);
+    xil_printf("DATA_PORT_DATA Reg      (0x%02X): 0x%08X\r\n", IMG2AXIS_DATA_PORT_DATA, data_port);
+    xil_printf("FRAME_CNT_DATA Reg      (0x%02X): %u\r\n", IMG2AXIS_FRAME_CNT_DATA, frame_cnt);
+    xil_printf("END_OF_STREAM  Reg      (0x%02X): %u\r\n", IMG2AXIS_END_OF_STREAM_DATA, end_of_stream);
 
 }
 
 void dump_s2mm_status(uintptr_t vdma_base)
 {
+
     uint32_t cr     = read_reg(vdma_base + S2MM_VDMACR);
     uint32_t sr     = read_reg(vdma_base + S2MM_VDMASR);
     uint32_t vsize  = read_reg(vdma_base + S2MM_VSIZE);
@@ -158,16 +150,16 @@ void dump_s2mm_status(uintptr_t vdma_base)
     uint32_t sa1    = read_reg(vdma_base + S2MM_SA1);
     uint32_t sa2    = read_reg(vdma_base + S2MM_SA2);
 
-    printf("----- VDMA S2MM Status Dump -----\n");
-    printf("Control Reg     (0x%02X): 0x%08X\n", S2MM_VDMACR, cr);
-    printf("Status Reg      (0x%02X): 0x%08X\n", S2MM_VDMASR, sr);
-    printf("Vertical Size   (0x%02X): %u\n", S2MM_VSIZE, vsize);
-    printf("Horizontal Size (0x%02X): %u\n", S2MM_HSIZE, hsize);
-    printf("Stride          (0x%02X): %u\n", S2MM_STRIDE, stride);
-    printf("S2MM_SA1        (0x%02X): 0x%08X\n", S2MM_SA1, sa1);
-    printf("S2MM_SA2        (0x%02X): 0x%08X\n", S2MM_SA2, sa2);
+    xil_printf("----- VDMA S2MM Status Dump -----\r\n");
+    xil_printf("Control Reg     (0x%02X): 0x%08X\r\n", S2MM_VDMACR, cr);
+    xil_printf("Status Reg      (0x%02X): 0x%08X\r\n", S2MM_VDMASR, sr);
+    xil_printf("Vertical Size   (0x%02X): %u\r\n", S2MM_VSIZE, vsize);
+    xil_printf("Horizontal Size (0x%02X): %u\r\n", S2MM_HSIZE, hsize);
+    xil_printf("Stride          (0x%02X): %u\r\n", S2MM_STRIDE, stride);
+    xil_printf("S2MM_SA1        (0x%02X): 0x%08X\r\n", S2MM_SA1, sa1);
+    xil_printf("S2MM_SA2        (0x%02X): 0x%08X\r\n", S2MM_SA2, sa2);
 
-    printf("Status Flags:\n");
+    xil_printf("Status Flags:\r\n");
 
     struct {
         int bit;
@@ -189,41 +181,15 @@ void dump_s2mm_status(uintptr_t vdma_base)
 
     for (int i = 0; i < sizeof(status_bits)/sizeof(status_bits[0]); ++i) {
         if (sr & (1 << status_bits[i].bit)) {
-            printf(" - Bit %d: %s\n", status_bits[i].bit, status_bits[i].desc);
+            xil_printf(" - Bit %d: %s\r\n", status_bits[i].bit, status_bits[i].desc);
         }
     }
 
-    printf("----------------------------------\n");
-}
-
-void vdma_readframes(uintptr_t vdma_base, uint32_t stride, uint32_t v_size,
-                     FrameBuffer frame_rcv1, FrameBuffer frame_rcv2)
-{
-    // Reset
-    write_reg(vdma_base + S2MM_VDMACR, 0x00000004);
-    usleep(10); // 10 ms delay
-
-    // Enable Run/Stop and Circular Mode=0
-    write_reg(vdma_base + S2MM_VDMACR, 0x00000001);
-
-    // Set Register Index to 0
-    write_reg(vdma_base + S2MM_REG_INDEX, 0x0);
-
-    // Set Frame Buffers
-    write_reg(vdma_base + S2MM_SA1, frame_rcv1.physical_address);
-    write_reg(vdma_base + S2MM_SA2, frame_rcv2.physical_address);
-
-    // Set Stride
-    write_reg(vdma_base + S2MM_STRIDE, stride);
-
-    // Set HSIZE (in bytes)
-    write_reg(vdma_base + S2MM_HSIZE, stride);
-
-    // Set VSIZE (in lines) to trigger
-    write_reg(vdma_base + S2MM_VSIZE, v_size);
+    xil_printf("----------------------------------\r\n");
 }
 
 void wait_frame(uintptr_t vdma_base){
+
 	const int FrameCountIRQ_Mask=0x00001000;
 	while(1){
 		 volatile uint32_t sr     = read_reg(vdma_base + S2MM_VDMASR);
@@ -231,8 +197,8 @@ void wait_frame(uintptr_t vdma_base){
 	}
 	//clear  IRQ flag
     write_reg(vdma_base + S2MM_VDMASR, FrameCountIRQ_Mask);
-}
 
+}
 
 /******************** Data structure Declarations *****************************/
 
@@ -338,7 +304,7 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   Config = XAxiVdma_LookupConfig(DeviceId);
 
   if (!Config) {
-	xil_printf("No video DMA found for ID %d\r\n",DeviceId );
+	xil_printf("No video DMA found for ID %d\r\r\n",DeviceId );
 	return XST_FAILURE;
   }
 
@@ -350,7 +316,7 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 						Config, Config->BaseAddress);
 
 	if (Status != XST_SUCCESS) {
-	  xil_printf("Configuration Initialization failed %d\r\n",
+	  xil_printf("Configuration Initialization failed %d\r\r\n",
 					Status);
 	  return XST_FAILURE;
 	}
@@ -709,30 +675,6 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   FrameBuffer frame_rcv1;
   FrameBuffer frame_rcv2;
-  int vdma_resizer(){
-
-//# FRAME configuration
-//# ----------------------------------------
-const int WIDTH          = 160;
-const int HEIGHT         = 480;
-const int BPP            = 4;//           # Bytes per pixel (32bpp)
-const int STRIDE         = WIDTH * BPP; // # Bytes per line
-//const int FRAME_SIZE     = STRIDE * HEIGHT;
-frame_rcv1.physical_address = srcBuffer + 0x9000000;
-frame_rcv2.physical_address = srcBuffer + 0x9000000;
-//  	ResetVDMA_Resizer();
-
-//  	RunVDMA(&AxiVdmaResizer, XPAR_AXIVDMA_1_DEVICE_ID, HORIZONTAL_RESOLUTION_1, \
-//  			  VERTICAL_RESOLUTION_1, dstBufferResizer, FRAME_COUNTER_1, 0);
-//void vdma_resizer_config(UINTPTR base_addr, int frame_cnt,UINTPTR phys_addr, int _stride, int _v_size)
-//  	   vdma_resizer_config(VDMA_RESIZER,2 ,dstBufferResizer, STRIDE_VDMA_1, VERTICAL_RESOLUTION_1);
-
-	  vdma_readframes(VDMA_RESIZER, STRIDE, HEIGHT,
-	                       frame_rcv1, frame_rcv2);
-
-  	return XST_SUCCESS;
-
-  }
 
   void stop_vdma_resizer(){
 

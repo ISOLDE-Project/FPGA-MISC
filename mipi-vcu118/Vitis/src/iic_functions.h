@@ -27,5 +27,6 @@ int vdma_resizer();
 void CamReset();
 
 void img2axis_config();
+void poll_sr();
 
 #endif

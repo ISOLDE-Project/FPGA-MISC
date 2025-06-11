@@ -93,8 +93,9 @@ int main() {
 
 	SensorConfig();
 
-	Sensor_Delay();
+	WriteToReg(0x3008, 0x02);
 
+	Sensor_Delay();
 
 	Status = vdma();
 		if (Status != XST_SUCCESS) {
@@ -102,32 +103,15 @@ int main() {
 	   return XST_FAILURE;
 	 }
 
-	xil_printf("\n Wait to store the frame\r\n");
+	dump_s2mm_status(0x44A20000);
 
-	usleep(3000);
-
-	xil_printf("\n Ready to read the frame\r\n");
-
-	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
-	Status = vdma_resizer();
-		if (Status != XST_SUCCESS) {
-	   xil_printf("\n\rVdma Failed \n\r");
-	   return XST_FAILURE;
-	 }
-
-	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
 	dump_img2axis_status(0x00010000);
-	//
-	img2axis_start();
-	wait_frame(XPAR_AXIVDMA_1_BASEADDR);
-	//
-	dump_s2mm_status(XPAR_AXIVDMA_1_BASEADDR);
-	u8 data = 0;
 
-	WriteToReg(0x3008, 0x02);
-	ReadCameraReg(0x3008, &data);
-	xil_printf("RD_DATA : 0x%02X \r\n", data);
-	Sensor_Delay();
+	wait_frame(0x44A20000);
+	xil_printf("\n\r +++++++++++++ FRAME SENT COMPLETED +++++++++++++\r\n");
+
+	dump_s2mm_status(0x44A20000);
+	u8 data = 0;
 
 	ReadCameraReg(0x300A, &data);
 	xil_printf("RD_DATA : 0x%02X \r\n", data);
@@ -135,6 +119,15 @@ int main() {
 	ReadCameraReg(0x300B, &data);
 	xil_printf("RD_DATA : 0x%02X \r\n", data);
 
+//	char s;
+//
+//	while(1){
+//		s = getchar();
+//		if(s == 115){
+//			stop_vdma();
+//			break;
+//		}
+//	}
 
     return XST_SUCCESS;
 }
