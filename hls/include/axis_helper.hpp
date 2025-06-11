@@ -204,6 +204,85 @@ void matrix_to_axis(stream_t &stream_o,
         }
     }
 }
+
+template <
+    typename pixel_pkg_t,
+    int BRAM_W,
+    typename stream_t>
+void matrix_to_axis_unaligned(stream_t &stream_o,
+                    volatile uint32_t *y_bram,
+                    int last_row,
+                    uint32_t frame_cnt ,
+                    bool en_SOF )
+{
+    uint32_t offset = 0;
+    uint32_t data_cache[3];
+    bool sof;
+    for (int i = 0; i < last_row; ++i)
+    {
+
+        //offset = i * BRAM_W;
+        int j = 0; 
+        while(j < BRAM_W)
+        {
+            pixel_pkg_t px;
+            //read 3 consecutive double words
+            data_cache[0] = y_bram[offset++];
+            data_cache[1] = y_bram[offset++];
+            data_cache[2] = y_bram[offset++];
+            //send 1'st double word
+                {
+                    px.data = data_cache[0]>>8;
+                    px.data &=0xFFFFFF;
+                    px.keep = -1; // All bytes valid
+                    px.strb = -1;
+                    px.id = 0;
+                    px.dest = 0;
+                    px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
+                    sof = en_SOF && (i == 0 && j == 0) ; // Start of frame only
+                    set_SOF(px.user, frame_cnt, sof);
+                    stream_o.write(px);
+                    j++;
+                }
+            //send 2'nd double word    
+                {
+                    px.data = ((data_cache[0]&0xFF)<<16)|(data_cache[1]>>16);
+                    px.data &=0xFFFFFF;
+                    px.keep = -1; // All bytes valid
+                    px.strb = -1;
+                    px.id = 0;
+                    px.dest = 0;
+                    px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
+                    stream_o.write(px);
+                    j++;
+                }
+            //send 3'rd double word   
+                {    
+                    px.data = ((data_cache[1]&0xFFFF)<<8)|(data_cache[2]>>24);
+                    px.data &=0xFFFFFF;
+                    px.keep = -1; // All bytes valid
+                    px.strb = -1;
+                    px.id = 0;
+                    px.dest = 0;
+                    px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
+                    stream_o.write(px);
+                    j++;
+                }
+            //send 4'th double word 
+                {
+                    px.data =data_cache[2]& 0xFFFFFF;
+                    px.keep = -1; // All bytes valid
+                    px.strb = -1;
+                    px.id = 0;
+                    px.dest = 0;
+                    px.last = (j == BRAM_W - 1) ? 1 : 0;            // End of each line
+                    stream_o.write(px);
+                    j++;
+                }
+        }; //while(j < BRAM_W)
+    } //for (int i = 0; i < last_row; ++i)  
+}
+
 // === crop to vga
 
 // === matrix to axis ===
