@@ -36,6 +36,7 @@ static XIntc Intc;
 #define XCSIRXSS_DEVICE_ID  XPAR_CSISS_0_DEVICE_ID
 #define DEMOSAIC_DEVICE_ID 	XPAR_XV_DEMOSAIC_0_DEVICE_ID
 #define GPIO_SENSOR 		XPAR_GPIO_1_BASEADDR
+#define GPIO_LEDS			XPAR_GPIO_3_BASEADDR
 
 volatile int TransmitComplete = 0;
 volatile int ReceiveComplete = 0;
@@ -68,6 +69,8 @@ volatile int ReceiveComplete = 0;
 
 #define IRPT_EN_ID XPAR_CAM_SUBSYSTEM_MICROBLAZE_0_AXI_INTC_CAM_SUBSYSTEM_MIPI_PIPELINE_INT_ENABLE_0_INT_O_INTR
 #define IRPT_VIO_ID XPAR_CAM_SUBSYSTEM_MICROBLAZE_0_AXI_INTC_VIO_0_PROBE_OUT0_INTR
+
+#define GPIO_IRPT_CTRL XPAR_GPIO_2_BASEADDR
 
 
 //########## END OF INTRPT DEFINES ##########
@@ -134,31 +137,8 @@ typedef struct {
 //*********** IRPT FUNCTIONS **************
 
 int irpt_en = 0, irpt_vio = 0, k = 0;
+int Status;
 
-void ISR_3(void *CallbackRef) {
-
-	irpt_en = 1;
-	k++;
-	if(k%100 == 0){
-	xil_printf("Interrupt 3 has occurred: Frame sent from Demosaic --> VDMA \n\r");
-	}
-
-}
-
-void ISR_4(void *CallbackRef) {
-
-	irpt_vio = 1;
-	xil_printf("Interrupt 4 has occurred: Virtual I/O irpt is OK. \n\r");
-//	xil_printf("************ START VDMA_0 ***************\n\r");
-
-//	XAxiVdma_DmaStart(&AxiVdma, XAXIVDMA_WRITE);
-
-//	vdma();
-	irpt_en = 0;
-//	k=0;
-//	xil_printf("VDMA_0 started...\n\r");
-
-}
 
 //*****************************************
 
@@ -830,30 +810,7 @@ int SetupInterruptSystem() {
     return XST_SUCCESS;
 }
 
-int SetupInterruptSystemNewIrpt() {
 
-    int Status;
-//
-//    Status = XIntc_Initialize(&Intc, INTC_DEVICE_ID);
-//    if (Status != XST_SUCCESS) return XST_FAILURE;
-
-    Status = XIntc_Connect(&Intc, IRPT_EN_ID,
-        (XInterruptHandler)ISR_3, NULL);
-    if (Status != XST_SUCCESS) return XST_FAILURE;
-
-    Status = XIntc_Connect(&Intc, IRPT_VIO_ID,
-        (XInterruptHandler)ISR_4, NULL);
-    if (Status != XST_SUCCESS) return XST_FAILURE;
-
-    XIntc_Start(&Intc, XIN_REAL_MODE);
-
-    XIntc_Enable(&Intc, IRPT_EN_ID);
-    XIntc_Enable(&Intc, IRPT_VIO_ID);
-
-    microblaze_enable_interrupts();
-
-    return XST_SUCCESS;
-}
 
 // I2C register read: OV5640 uses 16-bit reg addresses, 8-bit data
 int ReadCameraReg(u16 reg_addr, u8* data) {
@@ -992,4 +949,77 @@ int SensorConfig() {
 
 	return XST_SUCCESS;
 
+}
+
+
+void ISR_3(void *CallbackRef) {
+
+	irpt_en = 1;
+	k++;
+	if(k%20 == 0){
+		xil_printf("FHD frame written into DDR. \n\r");
+		Xil_Out32(GPIO_LEDS, 0x1);
+		stop_vdma();
+
+    // reconfig the vdma_1
+	Status = vdma_1();
+	if (Status != XST_SUCCESS) {
+	   xil_printf("\n\rVdma1 Failed \n\r");
+	   return XST_FAILURE;
+	}
+
+	// restart the img2axis ip to read, resize and write VGA grayscale frame into memory
+	img2axis_config();
+	Xil_Out32(GPIO_LEDS, 0x3);
+	Xil_Out32(GPIO_IRPT_CTRL, 0x0); //disable the interrupt frame_sent
+
+	xil_printf("Interrupts disabled. \n\r");
+	}
+
+}
+
+int nr = 0;
+
+void ISR_4(void *CallbackRef) {
+
+	irpt_vio = 1;
+	xil_printf("Accelerator ready to read data from 0x81000000. \n\r");
+
+	nr++;
+	if(nr%3==0){
+		xil_printf("Interrupts enabled. \n\r");
+		//after three vio interrupts result that accelerator done to read the image from the location
+		Xil_Out32(GPIO_IRPT_CTRL, 0x1);// enable interrupt frame_sent
+		Xil_Out32(GPIO_LEDS, 0x0);
+		Sensor_Delay();
+		Status = vdma();
+			if (Status != XST_SUCCESS) {
+		   xil_printf("\n\rVdma Failed \n\r");
+		   return XST_FAILURE;
+		 };
+		xil_printf("VDMA_0 configured. \n\r");
+
+	};
+
+}
+int SetupInterruptSystemNewIrpt() {
+
+    int Status;
+
+    Status = XIntc_Connect(&Intc, IRPT_EN_ID,
+        (XInterruptHandler)ISR_3, NULL);
+    if (Status != XST_SUCCESS) return XST_FAILURE;
+
+    Status = XIntc_Connect(&Intc, IRPT_VIO_ID,
+        (XInterruptHandler)ISR_4, NULL);
+    if (Status != XST_SUCCESS) return XST_FAILURE;
+
+    XIntc_Start(&Intc, XIN_REAL_MODE);
+
+    XIntc_Enable(&Intc, IRPT_EN_ID);
+    XIntc_Enable(&Intc, IRPT_VIO_ID);
+
+    microblaze_enable_interrupts();
+
+    return XST_SUCCESS;
 }

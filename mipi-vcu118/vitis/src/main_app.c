@@ -61,6 +61,8 @@
 
 #include "xil_io.h"
 
+//#define GPIO_IRPT_CTRL XPAR_GPIO_2_BASEADDR
+
 int main() {
     int Status;
 
@@ -123,10 +125,7 @@ int main() {
 
 	img2axis_config();
 
-//	dump_s2mm_status(0x44A20000);
 	u8 data = 0;
-
-	xil_printf("HEYYYY\r\n");
 
 	ReadCameraReg(0x300A, &data);
 	xil_printf("RD_DATA : 0x%02X \r\n", data);
@@ -134,62 +133,16 @@ int main() {
 	ReadCameraReg(0x300B, &data);
 	xil_printf("RD_DATA : 0x%02X \r\n", data);
 
-//	char s;
-//
-//	while(1){
-//		s = getchar();
-//		if(s == 115){
-//			stop_vdma();
-//			break;
-//		}
-//	}
-
 	xil_printf(" Waiting for interrupt...\n\r");
-
-	int nr = 0;
 
 	while(1){
 
 		if(irpt_vio){
-			xil_printf("Frames sent : %d \n\r",k);
-			k = 0;
+
 			irpt_vio = 0;
 
-			nr++;
-
-			Status = vdma_1();
-						if (Status != XST_SUCCESS) {
-					   xil_printf("\n\rVdma1 Failed \n\r");
-					   return XST_FAILURE;
-					 }
-
-
-
-			if(nr%4==0){
-				WriteToReg(0x3008, 0x02);
-
-					Sensor_Delay();
-
-					Status = vdma();
-						if (Status != XST_SUCCESS) {
-					   xil_printf("\n\rVdma Failed \n\r");
-					   return XST_FAILURE;
-					 }
-			}
-			else {
-				stop_vdma();
-			}
 		}
-//		if(irpt_en){
-//			xil_printf("Demosaic sent successfuly one frame. START img2axis ...\n\r");
-//
-////			stop_vdma();
-//
-//			irpt_en = 0;
-//
-//
-//			//swait vdma1_done-->fotonation_acc_oks
-//		}
+
 	};
 
     return XST_SUCCESS;

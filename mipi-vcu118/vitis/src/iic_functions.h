@@ -7,6 +7,7 @@ void IicStatusHandler(XIic* InstancePtr, int Event);
 
 void Sensor_Delay();
 int SetupInterruptSystem();
+int SetupInterruptSystemNewIrpt();
 int ReadCameraReg(u16 reg_addr, u8* data);
 int WriteToReg(u16 reg_addr, u8 write_data);
 
@@ -22,6 +23,7 @@ void ResetVDMA();
 void DisableCSI(void);
 int demosaic();
 int vdma();
+int vdma_1();
 void stop_vdma();
 int vdma_resizer();
 void CamReset();
