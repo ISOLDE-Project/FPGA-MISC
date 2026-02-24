@@ -150,6 +150,7 @@ def image_to_GRAY(path, image_fname, suffix):
     
     # === SAVE ORIGINAL IMAGE SHAPE FOR RECONSTRUCTION ===
     # Save as (1, 1, H, W) tensor format
+    img_np = packed.reshape(H,int(num_int32/H))
     img_tensor = np.expand_dims(np.expand_dims(img_np, axis=0), axis=0).astype(np.uint32)
     np.save(f"{path}/x_linux_sim_int32_{suffix}.npy", img_tensor)
     

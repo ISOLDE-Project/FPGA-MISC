@@ -11,8 +11,6 @@
 #include <iostream>
 #include <string>
 
-
-
 #include "resizer.h"
 
 #include "axis_helper.hpp"
@@ -27,11 +25,13 @@ static constexpr int VGA_CHANNELS = 1;
 static constexpr int VGA_HEIGHT = 224;
 static constexpr int VGA_WIDTH = 224;
 
+static constexpr int FRAME_SIZE_O = 1 * 1 * VGA_HEIGHT * VGA_HEIGHT;
+
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 
 // int32_t rgb_x[HEIGHT_I][WIDTH_I];
 // int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
-uint32_t y[1 * CHANNELS_O * HEIGHT_O * WIDTH_O];
+uint32_t y[FRAME_SIZE_O];
 
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
@@ -45,9 +45,9 @@ void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
   int H = 0, W = 0;
   std::memset(y, 0, sizeof(y));
 
-  axis_read_frame<(HEIGHT_O * (WIDTH_O / 4))>(os, px_in_q, y, H, W);
+  axis_read_frame<FRAME_SIZE_O>(os, px_in_q, y, H, W);
   size_t remaining_frames =
-      os.size() ? (os.size() - 1) / (VGA_HEIGHT * (VGA_WIDTH / 4)) : 0;
+      os.size() ? (os.size() - 1) / (FRAME_SIZE_O / 4) : 0;
   std::cerr << "read frame (H,W)= (" << H << "," << W
             << "), remainig frames: " << remaining_frames << " " << os.size()
             << std::endl;
@@ -57,8 +57,8 @@ void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
   np_y.set_data((int32_t *)y);
   np_y.set_shape(shape_y);
   numpy_save(y_bin, np_y, numpy_module);
-  // PythonScriptRunner runner;
-  // runner(smoke_test);
+  /*   PythonScriptRunner runner;
+    runner(smoke_test); */
 }
 
 int main() {
@@ -74,7 +74,7 @@ int main() {
   stream_t input_stream(3 * HEIGHT_I * WIDTH_I + 1);
   stream_vga_t output_stream;
 
-  NumpyModule numpy_module;
+ NumpyModule numpy_module;
 
   offset_x = 0;
   try {
@@ -86,6 +86,7 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
+      
     }
     // === Stream 2nd image into AXI4-Stream ===
     {
@@ -95,6 +96,7 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
+      
     }
     // === Stream 3rd image into AXI4-Stream ===
     {
@@ -104,6 +106,7 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
+      
     }
     // === just to signal the end of streaming
     pixel_pkg_t px;
@@ -115,8 +118,8 @@ int main() {
     px.last = 0;
     px.user = 1; // Start of frame only
     input_stream.write(px);
-  }catch ( ... ) {
-    PyErr_Print();  // or PyErr_Fetch(...) for detailed handling
+  } catch (...) {
+    PyErr_Print(); // or PyErr_Fetch(...) for detailed handling
     throw std::runtime_error("Python call failed");
   }
 
@@ -126,7 +129,7 @@ int main() {
     pixel_pkg_t px_in_q;
     px_in_q.user = 0;
     std::cerr << "available frames: "
-              << (output_stream.size() - 1) / (VGA_HEIGHT * VGA_WIDTH) << " "
+              << (output_stream.size() - 1) / (FRAME_SIZE_O / 4) << " "
               << output_stream.size() << std::endl;
     check_frame(output_stream, px_in_q, numpy_module);
     check_frame(output_stream, px_in_q, numpy_module);

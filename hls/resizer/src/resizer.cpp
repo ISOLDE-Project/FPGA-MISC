@@ -14,7 +14,7 @@ void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 #endif
 
 constexpr int N_KNOB = 20;
-constexpr int CHUNK_HEIGHT = (2 * N_KNOB + 3);
+constexpr int CHUNK_HEIGHT = (2 * N_KNOB );
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
  * since stride=0, the last block shall be larger then 2 rows

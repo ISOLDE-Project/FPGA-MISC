@@ -76,6 +76,7 @@ void slice_tensor_2_vector(tensor_io &io,
   }
 }
 #ifdef GRAYING
+#include "shapes.inc"
 template <typename out_t, typename in_t, 
           typename dim_t, typename tensor_io>
 void conv2d(tensor_io &io, 
@@ -85,7 +86,7 @@ void conv2d(tensor_io &io,
             int32_t Hlast = 0
           ) {
 dim_t weight_shape;
-weight_shape.set(1,3,3,3);
+weight_shape.set(1,CHANNELS_W,HEIGHT_W,WIDTH_W);
  #else
  template <typename out_t, typename in_t, typename weight_t, 
           typename dim_t, typename tensor_io>
