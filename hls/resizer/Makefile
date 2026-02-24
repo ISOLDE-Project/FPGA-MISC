@@ -17,5 +17,6 @@ check:
 	cd ../operators && python conv2d/test/smoke_test_xsim.py
 
 clean:		
+	rm -fr $(BUILD_DIR)
 	rm -fr isolde_resizer/
 	cd ../operators && rm -f conv2d/test/output_xsim.png

@@ -45,32 +45,32 @@ void axis_read_lines(
     {
         // === compute source offsets ===
         frame_i_index_r.set(0, 0, BRAM_H_I - 1, 0);
-        frame_i_index_g.set(0, 1, BRAM_H_I - 1, 0);
-        frame_i_index_b.set(0, 2, BRAM_H_I - 1, 0);
+        // frame_i_index_g.set(0, 1, BRAM_H_I - 1, 0);
+        // frame_i_index_b.set(0, 2, BRAM_H_I - 1, 0);
         src_offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-        src_offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
-        src_offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
+        // src_offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
+        // src_offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
         // === compute destination offsets ===
         frame_i_index_r.set(0, 0, 0, 0);
-        frame_i_index_g.set(0, 1, 0, 0);
-        frame_i_index_b.set(0, 2, 0, 0);
+        // frame_i_index_g.set(0, 1, 0, 0);
+        // frame_i_index_b.set(0, 2, 0, 0);
         offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-        offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
-        offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
+        // offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
+        // offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
         // === copy last line into the first position ===
         copy_row<BRAM_W_I>(x_bram + offset_r, x_bram + src_offset_r);
-        copy_row<BRAM_W_I>(x_bram + offset_g, x_bram + src_offset_g);
-        copy_row<BRAM_W_I>(x_bram + offset_b, x_bram + src_offset_b);
+        // copy_row<BRAM_W_I>(x_bram + offset_g, x_bram + src_offset_g);
+        // copy_row<BRAM_W_I>(x_bram + offset_b, x_bram + src_offset_b);
         // === increment the row ===
         row = 1;
     }
     // === Compute tensor offsets ===
     frame_i_index_r.set(0, 0, row, 0);
-    frame_i_index_g.set(0, 1, row, 0);
-    frame_i_index_b.set(0, 2, row, 0);
+    // frame_i_index_g.set(0, 1, row, 0);
+    // frame_i_index_b.set(0, 2, row, 0);
     offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-    offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
-    offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
+    // offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
+    // offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
 
     while (row < BRAM_H_I)
     {
@@ -101,16 +101,31 @@ void axis_read_lines(
         }
 
         // === Unpack RGB from 0x00RRGGBB ===
-        uint8_t red = (px_in.data >> 16) & 0xFF;
-        uint8_t green = (px_in.data >> 8) & 0xFF;
-        uint8_t blue = (px_in.data) & 0xFF;
+        // uint8_t red = (px_in.data >> 16) & 0xFF;
+        // uint8_t green = (px_in.data >> 8) & 0xFF;
+        // uint8_t blue = (px_in.data) & 0xFF;
+
+        // ===  Format: pixel0 | pixel1 | pixel2 | pixel3
+        // Most significant byte = pixel0, least significant = pixel3
+
+        uint8_t pixel0 = (px_in.data >> 24) & 0xFF;
+        uint8_t pixel1 = (px_in.data >> 16) & 0xFF;
+        uint8_t pixel2 = (px_in.data >> 8) & 0xFF;
+        uint8_t pixel3 = (px_in.data) & 0xFF;
+
+    
+    
 
         // === Write to BRAM ===
         if (row < BRAM_H_I && col < BRAM_W_I)
         {
-            x_bram[offset_r++] = red;
-            x_bram[offset_g++] = green;
-            x_bram[offset_b++] = blue;
+            // x_bram[offset_r++] = red;
+            // x_bram[offset_g++] = green;
+            // x_bram[offset_b++] = blue;
+            x_bram[offset_r++] = pixel0;
+            x_bram[offset_r++] = pixel1;
+            x_bram[offset_r++] = pixel2;
+            x_bram[offset_r++] = pixel3;
         }
 
         // === Advance coordinates ===
@@ -126,8 +141,8 @@ void axis_read_lines(
             frame_i_index_g.set(0, 1, row, 0);
             frame_i_index_b.set(0, 2, row, 0);
             offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-            offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
-            offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
+            // offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
+            // offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
         }
     }
 
@@ -283,11 +298,16 @@ void matrix_to_axis_unaligned(stream_t &stream_o,
     } //for (int i = 0; i < last_row; ++i)  
 }
 
-// === crop to vga
+// === crop frame
 
-// === matrix to axis ===
-static constexpr int VGA_H = 480;
-static constexpr int VGA_W = 640;
+// === input stream ===
+static constexpr int STREAM_H_I = 260;
+static constexpr int STREAM_W_I = 360;
+// === output stream ===
+// static constexpr int VGA_H = 480;
+// static constexpr int VGA_W = 640;
+static constexpr int VGA_H = 224;
+static constexpr int VGA_W = 224;
 
 
 template <
@@ -301,7 +321,7 @@ void vga_to_axis(stream_t &stream_o,
     static constexpr int j_start = (BRAM_W - VGA_W) / 2;
     static constexpr int j_end = j_start + VGA_W;
     static_assert(j_end < BRAM_W, "Crop not possible allong y axis");
-    static constexpr int top_row = 30;
+    static constexpr int top_row = 8;
     static constexpr int bottom_row = top_row + VGA_H - 1;
     static int row_out = 0;
     uint32_t offset = 0;

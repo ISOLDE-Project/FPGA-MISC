@@ -28,7 +28,7 @@ add_custom_target(test-resizer
 )
 
 add_custom_target(test-generate
-    COMMAND ${Python3_EXECUTABLE} conv2d/test/generate.py
+    COMMAND ${Python3_EXECUTABLE} conv2d/test/generate_v2.py
     COMMAND cp conv2d/shapes.inc ../resizer/src/
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Running Python to generate test data"
@@ -38,8 +38,12 @@ add_custom_target(test-clean
     COMMAND rm -f conv2d/test/*.npy
     COMMAND rm -f conv2d/test/*.bin
     COMMAND rm -f conv2d/shapes.inc
+    COMMAND rm -f conv2d/test/output_downsampled.jpg
+    COMMAND rm -f conv2d/test/output_downsampled_q.jpg
+    COMMAND rm -f conv2d/test/output_q_.jpg
+    COMMAND rm -f conv2d/test/output_q__01.jpg
     COMMAND rm -f ../resizer/src/shapes.inc
     COMMAND rm -f conv2d/test/output*.png
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
-    COMMENT "Running Python to generate test data"
+    COMMENT "Deletes the generated files"
 )

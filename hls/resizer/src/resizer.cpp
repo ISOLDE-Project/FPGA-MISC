@@ -3,7 +3,8 @@
 #include "resizer.h"
 #include "axis_helper.hpp"
 #include "conv2d/conv2d.hpp"
-#include "conv2d/shapes_FullHD.inc"
+//#include "conv2d/shapes_FullHD.inc"
+#include "shapes.inc"
 #include "utils/tensor_io.hpp"
 
 #ifdef LINUX_APP
@@ -12,29 +13,26 @@
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 #endif
 
-constexpr int N_KNOB = 15;
+constexpr int N_KNOB = 20;
 constexpr int CHUNK_HEIGHT = (2 * N_KNOB + 3);
-constexpr int _HLAST__ = CHUNK_HEIGHT - (FHD_HEIGHT_I % CHUNK_HEIGHT);
+constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
  * since stride=0, the last block shall be larger then 2 rows
  */
 static_assert(_HLAST__ > 2,
               "_HLAST__ must be greater than 2, please modify N_KNOB");
 
-#define BRAM_C_I FHD_CHANNELS_I
+#define BRAM_C_I CHANNELS_I
 // #define BRAM_H_I FHD_HEIGHT_I
 #define BRAM_H_I CHUNK_HEIGHT
-#define BRAM_W_I FHD_WIDTH_I
+#define BRAM_W_I WIDTH_I
 
-#define BRAM_C_O FHD_CHANNELS_O
+#define BRAM_C_O CHANNELS_O
 // #define BRAM_H_O FHD_HEIGHT_O
 #define BRAM_H_O (CHUNK_HEIGHT / 2 + 1)
-#define BRAM_W_O FHD_WIDTH_O
+#define BRAM_W_O WIDTH_O
 
-/*frame shape*/
-#define CHANNELS_I BRAM_C_I
-#define HEIGHT_I BRAM_H_I
-#define WIDTH_I BRAM_W_I
+
 
 uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
@@ -99,10 +97,10 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     }
     //
     shape_x.set(1, BRAM_C_I, row_q, col_q);
-    shape_w.set(1, 3, 3, 3);
+    shape_w.set(1, CHANNELS_W, HEIGHT_W , WIDTH_W );
     //
-    pads.set(0, 0, 0, 0);
-    strides.set(2, 2, 1, 1);
+    pads.set(CONV_PADDING, CONV_PADDING,CONV_PADDING,CONV_PADDING);
+    strides.set(CONV_STRIDE, CONV_STRIDE, 1, 1);
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);

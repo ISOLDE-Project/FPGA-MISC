@@ -24,7 +24,7 @@ set configs { \
 
 # ########################################################
 #set active solution
-set config_index 2
+set config_index 1
 
 # helpers ########################################################
 proc listconfigs {configs} {
