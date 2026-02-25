@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_allclose 
 from PIL import Image
 
-
+# %%
 def save_img(fname, tensor):
     img_tensor = np.squeeze(tensor)  # Remove batch dim → [C, H, W]
     img = Image.fromarray(img_tensor.astype(np.uint8), mode='L')  # 'L' = 8-bit pixels, black and white
@@ -11,26 +11,16 @@ def save_img(fname, tensor):
     img.save(save_path)
     return save_path
 
-# Input stream size
-STREAM_H_I = 260
-STREAM_W_I = 320
-# Output (VGA) size
-VGA_H = 224
-VGA_W = 224
-# Derived values (integer arithmetic)
-j_start = (STREAM_W_I - VGA_W) // 2 
-j_end = j_start + VGA_W
-#
-top_row = (STREAM_H_I - VGA_H) // 2 - 1
-bottom_row = top_row + VGA_H 
 
-print(j_start, j_end, top_row, bottom_row)
+ 
+# %%
 
 work_dir = 'conv2d/test'
 current_dir = os.getcwd()
 
-output_ref = np.load(f"{work_dir}/y_int32.npy")
-output_ref =  output_ref[:,:,top_row:bottom_row,j_start:j_end]
+img = Image.open(f"{work_dir}/grey_1600x1300.jpg").convert('L')  # 'L' = grayscale
+img_np = np.array(img)  # Shape: (H, W), dtype=uint8
+output_ref =  np.expand_dims(np.expand_dims(img_np, axis=0), axis=0).astype(np.uint32)
 
 output_tensor = np.load(f"{work_dir}/y_cpp_int32.npy")
 
@@ -55,7 +45,7 @@ print(f"Max absolute difference: {diff_max}")
 
 saved_path=save_img(f"{current_dir}/{work_dir}/diff_xsim_visual", diff) 
 print(f"\n* Output: {saved_path}\n")
-#assert_allclose(output_ref, output_tensor,rtol=1e-6,atol=1e-6)
+assert_allclose(output_ref, output_tensor,rtol=1e-6,atol=1e-6)
 print("\n****************")
 print("* Test passed! *")
 print("****************\n")

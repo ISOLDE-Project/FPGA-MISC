@@ -22,39 +22,46 @@
 
 static constexpr int VGA_CHANNELS = 1;
 // ResNet-18 input shape
-static constexpr int VGA_HEIGHT = 224;
-static constexpr int VGA_WIDTH = 224;
+// static constexpr int VGA_HEIGHT = 224;
+// static constexpr int VGA_WIDTH = 224;
 
-static constexpr int FRAME_SIZE_O = 1 * 1 * VGA_HEIGHT * VGA_HEIGHT;
+static constexpr int FRAME_SIZE_O = 1 * 1 * HEIGHT_I * WIDTH_I;
 
-static constexpr int FRAME_CNT = 2;
+static constexpr int FRAME_CNT = 7;
 
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 
-// int32_t rgb_x[HEIGHT_I][WIDTH_I];
-// int32_t y[1][CHANNELS_O][HEIGHT_O][WIDTH_O];
 uint32_t y[FRAME_SIZE_O];
 
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
-const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
+const char *smoke_test = "conv2d/test/unit_test.py";
 
-void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
+void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
                  NumpyModule &numpy_module) {
   typedef dim_t<4> shape_type;
   shape_type shape_y;
   int H = 0, W = 0;
   std::memset(y, 0, sizeof(y));
 
-  axis_read_frame<FRAME_SIZE_O>(os, px_in_q, y, H, W);
-  size_t remaining_frames =
-      os.size() ? (os.size() - 1) / (FRAME_SIZE_O / 4) : 0;
-  std::cerr << "read frame (H,W)= (" << H << "," << W
-            << "), remainig frames: " << remaining_frames << " " << os.size()
-            << std::endl;
+  shape_type frame_i_shape;
+  // pixel_pkg_t px_in_q;
+
+  int row_abs = 0;
+  int row_q = 0;
+  int col_q = 0;
+  int chunk_cnt = 0;
+  bool frame_started = 0;
+  bool endOfFrame = 0;
+
+  frame_i_shape.set(1, CHANNELS_I, HEIGHT_I, WIDTH_I);
+
+  axis_read_lines<HEIGHT_I, WIDTH_I>(os, frame_i_shape, px_in_q, y, row_abs,
+                                     row_q, col_q, chunk_cnt, frame_started,
+                                     endOfFrame);
 
   NumpyArray np_y;
-  shape_y.set(1, 1, H, W);
+  shape_y.set(1, 1, row_q, col_q);
   np_y.set_data((int32_t *)y);
   np_y.set_shape(shape_y);
   numpy_save(y_bin, np_y, numpy_module);
@@ -86,7 +93,6 @@ int main() {
     // === Stream image into AXI4-Stream ===
     for (int cnt = 0; cnt < FRAME_CNT; ++cnt) {
 
-     
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
     }
@@ -106,16 +112,12 @@ int main() {
   px.user = 1; // Start of frame only
   input_stream.write(px);
 
-  execute(output_stream, input_stream);
-
   try {
     pixel_pkg_t px_in_q;
     px_in_q.user = 0;
-    std::cerr << "available frames: "
-              << (output_stream.size() - 1) / (FRAME_SIZE_O / 4) << " "
-              << output_stream.size() << std::endl;
+
     for (int cnt = 0; cnt < FRAME_CNT; ++cnt) {
-      check_frame(output_stream, px_in_q, numpy_module);
+      check_frame(input_stream, px_in_q, numpy_module);
     }
   } catch (const std::exception &e) {
     std::cerr << "\nError: " << e.what() << std::endl;

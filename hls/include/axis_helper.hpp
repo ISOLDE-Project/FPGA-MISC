@@ -327,6 +327,8 @@ void vga_to_axis(stream_t &stream_o,
     static constexpr int bottom_row = top_row + VGA_H - 1;
     static int row_out = 0;
     uint32_t offset = 0;
+    std::cerr<<"*** top_row "<<top_row<<", left collumn "<<j_start <<"\n\n";
+    std::cerr<<"*** y_bram "<<std::uintptr_t(y_bram)<<"\n\n";
     for (int i = 0; i < last_row; ++i)
     {
         row_out++;
@@ -336,7 +338,9 @@ void vga_to_axis(stream_t &stream_o,
                 row_out = 0;
             continue;
         }
+        
         offset = i * BRAM_W + j_start;
+
         for (int j = 0; j < VGA_W; j += 4)
         {
 

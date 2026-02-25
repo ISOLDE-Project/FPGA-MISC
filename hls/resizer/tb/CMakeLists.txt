@@ -14,9 +14,20 @@ add_executable(resizer
                ../../operators/conv2d/scratchpad_memory.cpp
                )
 
+
 target_compile_definitions(resizer PRIVATE LINUX_APP DTYPE_I32 SCALE=256 GRAYING NO_BIAS)
 add_include_directories (resizer )
 target_link_libraries(resizer PRIVATE py_runtime)
+
+add_executable(utest
+               ../src/resizer.cpp
+               unit_test.cpp
+               utils.cpp
+               ../../operators/conv2d/scratchpad_memory.cpp
+               )
+target_compile_definitions(utest PRIVATE LINUX_APP DTYPE_I32 SCALE=256 GRAYING NO_BIAS)
+add_include_directories (utest )
+target_link_libraries(utest PRIVATE py_runtime)
 
 # Add a "test-conv2d" target that runs the Python smoke test
 add_custom_target(test-resizer
@@ -25,6 +36,14 @@ add_custom_target(test-resizer
     DEPENDS resizer
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Running Python smoke test for resizer"
+)
+
+add_custom_target(test-unit
+    COMMAND $<TARGET_FILE:utest>
+    #COMMAND ${Python3_EXECUTABLE} conv2d/test/smoke_test_conv2d_i32.py
+    DEPENDS utest
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
+    COMMENT "Running unit test"
 )
 
 add_custom_target(test-generate

@@ -13,7 +13,7 @@
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 #endif
 
-constexpr int N_KNOB = 20;
+constexpr int N_KNOB = 1400;
 constexpr int CHUNK_HEIGHT = (2 * N_KNOB );
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
@@ -46,7 +46,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
   typedef tensor_io::_TensorIO io_type;
   io_type io;
 
-  int32_t *ptr_bias = 0;
+ 
   frame_i_shape.set(1, CHANNELS_I, HEIGHT_I, WIDTH_I);
   int32_t offset_y;
 
