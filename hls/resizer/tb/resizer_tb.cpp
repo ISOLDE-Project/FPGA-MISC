@@ -57,8 +57,8 @@ void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
   np_y.set_data((int32_t *)y);
   np_y.set_shape(shape_y);
   numpy_save(y_bin, np_y, numpy_module);
-  /*   PythonScriptRunner runner;
-    runner(smoke_test); */
+  PythonScriptRunner runner;
+  runner(smoke_test);
 }
 
 int main() {
@@ -74,7 +74,7 @@ int main() {
   stream_t input_stream(3 * HEIGHT_I * WIDTH_I + 1);
   stream_vga_t output_stream;
 
- NumpyModule numpy_module;
+  NumpyModule numpy_module;
 
   offset_x = 0;
   try {
@@ -86,7 +86,6 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
-      
     }
     // === Stream 2nd image into AXI4-Stream ===
     {
@@ -96,7 +95,6 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
-      
     }
     // === Stream 3rd image into AXI4-Stream ===
     {
@@ -106,7 +104,6 @@ int main() {
       uint32_t *flat_data = np_x.as<uint32_t>();
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
-      
     }
     // === just to signal the end of streaming
     pixel_pkg_t px;

@@ -304,7 +304,7 @@ void matrix_to_axis_unaligned(stream_t &stream_o,
 
 // === input stream ===
 static constexpr int STREAM_H_I = 260;
-static constexpr int STREAM_W_I = 360;
+//static constexpr int STREAM_W_I = 360;
 // === output stream ===
 // static constexpr int VGA_H = 480;
 // static constexpr int VGA_W = 640;
@@ -340,10 +340,10 @@ void vga_to_axis(stream_t &stream_o,
         for (int j = 0; j < VGA_W; j += 4)
         {
 
-            uint32_t p0 = y_bram[offset++] & 0xFF;
-            uint32_t p1 = y_bram[offset++] & 0xFF;
-            uint32_t p2 = y_bram[offset++] & 0xFF;
             uint32_t p3 = y_bram[offset++] & 0xFF;
+            uint32_t p2 = y_bram[offset++] & 0xFF;
+            uint32_t p1 = y_bram[offset++] & 0xFF;
+            uint32_t p0 = y_bram[offset++] & 0xFF;
 
             uint32_t packed = (p3 << 24) | (p2 << 16) | (p1 << 8) | p0;
             pixel_pkg_t px;
