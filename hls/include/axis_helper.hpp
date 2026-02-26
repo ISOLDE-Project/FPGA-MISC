@@ -72,7 +72,7 @@ void axis_read_lines(
     // offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
     // offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
 
-    while (row < BRAM_H_I)
+    while (row <= BRAM_H_I)
     {
         // #pragma HLS PIPELINE II=1
 
@@ -327,8 +327,7 @@ void vga_to_axis(stream_t &stream_o,
     static constexpr int bottom_row = top_row + VGA_H - 1;
     static int row_out = 0;
     uint32_t offset = 0;
-    std::cerr<<"*** top_row "<<top_row<<", left collumn "<<j_start <<"\n\n";
-    std::cerr<<"*** y_bram "<<std::uintptr_t(y_bram)<<"\n\n";
+
     for (int i = 0; i < last_row; ++i)
     {
         row_out++;
