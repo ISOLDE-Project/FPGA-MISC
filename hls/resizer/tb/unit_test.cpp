@@ -5,6 +5,7 @@
 #include "py_rt/py_rt.h"
 #include "utils/tensor_utils.hpp"
 #include "utils/trace.hpp"
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
@@ -17,15 +18,6 @@
 #include "utils/tensor_io.hpp"
 
 #include "shapes.inc"
-
-/*
- * Full HD input
- */
-
-static constexpr int VGA_CHANNELS = 1;
-// ResNet-18 input shape
-// static constexpr int VGA_HEIGHT = 224;
-// static constexpr int VGA_WIDTH = 224;
 
 static constexpr int FRAME_SIZE_O = 1 * 1 * HEIGHT_I * WIDTH_I;
 
@@ -73,7 +65,8 @@ void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
   runner(smoke_test);
 }
 
-void execute(stream_t &stream_i, NumpyModule &numpy_module) {
+void execute(stream_t &stream_i, stream_vga_t &stream_o,
+             NumpyModule &numpy_module) {
   typedef dim_t<4> shape_type;
   shape_type shape_y, shape_x, shape_w, pads, strides;
   shape_type frame_i_shape;
@@ -93,6 +86,15 @@ void execute(stream_t &stream_i, NumpyModule &numpy_module) {
   pixel_pkg_t px_in_q;
   px_in_q.user = 0;
   int frame_cnt = 0;
+  pixel4_pkg_t eos_px; // end of stream pixel
+  eos_px.data = 0xAABBCC;
+  eos_px.keep = 0; // All bytes invalid
+  eos_px.strb = 0x1;
+  eos_px.id = 0;
+  eos_px.dest = 0;
+  eos_px.last = 0;
+  eos_px.user = 1; // Start of frame only
+
   volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(y);
   volatile uint32_t *ptr_y = reinterpret_cast<uint32_t *>(conv_o);
   shape_w.set(1, CHANNELS_W, HEIGHT_W, WIDTH_W);
@@ -134,8 +136,36 @@ void execute(stream_t &stream_i, NumpyModule &numpy_module) {
       np_y.set_data((int32_t *)ptr_y);
       np_y.set_shape(shape_y);
       PythonScriptRunner runner;
-      runner(save_img,frame_cnt,np_y);
+      runner(save_img, "conv_o", frame_cnt, np_y);
     }
+    //std::cerr << "\n Before vga_to_axis,stream_o.size: " << stream_o.size() << std::endl;
+    assert(stream_o.size() ==0);
+    vga_to_axis<pixel4_pkg_t, HEIGHT_O, WIDTH_O>(stream_o, ptr_y, shape_y[2]);
+    stream_o.write(eos_px); // for debug purpouses only
+    //std::cerr << "\n After vga_to_axis,stream_o.size: " << stream_o.size() << std::endl;
+    {
+      shape_type frame_o_shape;
+      shape_type shape_y;
+      frame_o_shape.set(1, 1, VGA_H, VGA_W);
+      int row_q = 0, col_q = 0, row_abs = 0;
+      int chunk_cnt = 0;
+      pixel_pkg_t px_in_q;
+      px_in_q.user = 0;
+      bool frame_started = false;
+      bool endOfFrame = false;
+      axis_read_lines<VGA_H, VGA_W>(stream_o, frame_o_shape, px_in_q, y,
+                                    row_abs, row_q, col_q, chunk_cnt,
+                                    frame_started, endOfFrame);
+      //
+      NumpyArray np_y;
+      shape_y.set(1, 1, row_q, col_q);
+      np_y.set_data((int32_t *)y);
+      np_y.set_shape(shape_y);
+      PythonScriptRunner runner;
+      runner(save_img, "resizer_o", frame_cnt, np_y);
+    }
+    //std::cerr << "\n After axis_read_lines,stream_o.size: " << stream_o.size() << std::endl;
+    assert(stream_o.size() ==0);
     frame_cnt++;
   }
 }
@@ -183,7 +213,7 @@ int main() {
   px.user = 1; // Start of frame only
   input_stream.write(px);
 
-  execute(input_stream, numpy_module);
+  execute(input_stream, output_stream, numpy_module);
   // try {
   //   pixel_pkg_t px_in_q;
   //   px_in_q.user = 0;

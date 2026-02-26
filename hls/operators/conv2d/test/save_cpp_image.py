@@ -28,7 +28,7 @@ print(f"\nCPP output   shape: { cpp_array.shape}, MIN: { cpp_array.min()}, MAX:{
 
 
 
-save_path=f"{current_dir}/{work_dir}/cpp_image_{cpp_value}"
+save_path=f"{current_dir}/{work_dir}/{cpp_base_name}_{cpp_value}"
 saved_path= save_img(save_path, cpp_array)
 print(f"\n\n* Output: {saved_path}\n")
 

@@ -68,7 +68,8 @@ add_custom_target(test-clean
 )
 
 add_custom_target(test-compare
-    COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py conv2d/test/cpp_image_0.png conv2d/test/cpp_image_1.png
+    COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py conv_o_0.png conv_o_6.png
+    COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py resizer_o_0.png resizer_o_6.png
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "compare two images"
 )
