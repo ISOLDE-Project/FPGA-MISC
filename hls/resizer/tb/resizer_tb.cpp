@@ -20,14 +20,14 @@
  * Full HD input
  */
 
-static constexpr int VGA_CHANNELS = 1;
+//static constexpr int VGA_CHANNELS = 1;
 // ResNet-18 input shape
-static constexpr int VGA_HEIGHT = 224;
-static constexpr int VGA_WIDTH = 224;
+//static constexpr int VGA_HEIGHT = 224;
+//static constexpr int VGA_WIDTH = 224;
 
-static constexpr int FRAME_SIZE_O = 1 * 1 * VGA_HEIGHT * VGA_HEIGHT;
+static constexpr int FRAME_SIZE_O = 1 * 1 * VGA_H * VGA_W;
 
-static constexpr int FRAME_CNT = 2;
+static constexpr int FRAME_CNT = 7;
 
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 
@@ -39,29 +39,6 @@ const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
 const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
 const char *save_img = "conv2d/test/save_cpp_image.py";
-
-void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
-                 NumpyModule &numpy_module) {
-  typedef dim_t<4> shape_type;
-  shape_type shape_y;
-  int H = 0, W = 0;
-  std::memset(y, 0, sizeof(y));
-
-  axis_read_frame<FRAME_SIZE_O>(os, px_in_q, y, H, W);
-  size_t remaining_frames =
-      os.size() ? (os.size() - 1) / (FRAME_SIZE_O / 4) : 0;
-  std::cerr << "read frame (H,W)= (" << H << "," << W
-            << "), remainig frames: " << remaining_frames << " " << os.size()
-            << std::endl;
-
-  NumpyArray np_y;
-  shape_y.set(1, 1, H, W);
-  np_y.set_data((int32_t *)y);
-  np_y.set_shape(shape_y);
-  numpy_save(y_bin, np_y, numpy_module);
-  PythonScriptRunner runner;
-  runner(smoke_test);
-}
 
 int main() {
 
@@ -87,7 +64,6 @@ int main() {
     // === Stream image into AXI4-Stream ===
     for (int cnt = 0; cnt < FRAME_CNT; ++cnt) {
 
-     
       matrix_to_axis<pixel_pkg_t, WIDTH_I>(input_stream, flat_data, shape_x[2],
                                            0, true);
     }
@@ -110,14 +86,48 @@ int main() {
   execute(output_stream, input_stream);
 
   try {
+
+    shape_type frame_o_shape;
+    shape_type shape_y;
+    frame_o_shape.set(1, 1, VGA_H, VGA_W);
+    int row_q = 0, col_q = 0, row_abs = 0;
+    int chunk_cnt = 0;
     pixel_pkg_t px_in_q;
     px_in_q.user = 0;
-    std::cerr << "available frames: "
-              << (output_stream.size() - 1) / (FRAME_SIZE_O / 4) << " "
-              << output_stream.size() << std::endl;
-    for (int cnt = 0; cnt < FRAME_CNT; ++cnt) {
-      check_frame(output_stream, px_in_q, numpy_module);
+    bool frame_started = false;
+    bool endOfFrame = false;
+    int frame_cnt = 0;
+
+    while (!endOfFrame) {
+
+      axis_read_lines<VGA_H, VGA_W>(output_stream, frame_o_shape, px_in_q, y,
+                                    row_abs, row_q, col_q, chunk_cnt,
+                                    frame_started, endOfFrame);
+      if (endOfFrame) {
+        row_abs = 0;
+        chunk_cnt = 0;
+        endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
+        if (row_q == 0) {
+
+          std::cerr << "|** nada ** |\n";
+          continue;
+        }
+      }
+
+      {
+
+        //
+        NumpyArray np_y;
+        shape_y.set(1, 1, row_q, col_q);
+        np_y.set_data((int32_t *)y);
+        np_y.set_shape(shape_y);
+        PythonScriptRunner runner;
+        runner(save_img, "resizer_o", frame_cnt, np_y);
+      }
+      frame_cnt++;
     }
+    assert(output_stream.size() == 0);
+
   } catch (const std::exception &e) {
     std::cerr << "\nError: " << e.what() << std::endl;
   }

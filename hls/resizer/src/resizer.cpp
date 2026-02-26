@@ -8,12 +8,14 @@
 #include "utils/tensor_io.hpp"
 
 #ifdef LINUX_APP
+#include "py_rt/py_rt.h"
 #include "utils/trace.hpp"
 #include <iostream>
-void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
+extern const char *save_img;
 #endif
 
-constexpr int N_KNOB = 700;
+// constexpr int N_KNOB = 700;
+constexpr int N_KNOB = 400;
 constexpr int CHUNK_HEIGHT = (2 * N_KNOB);
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
@@ -56,6 +58,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
   px_in_q.user = 0;
 
 #ifdef LINUX_APP
+  int frame_cnt = 0;
   FILE *trace = stdout;
   fprintf(trace, "frame_i_shape=");
   dump(trace, frame_i_shape);
@@ -80,22 +83,8 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
 
 #ifdef LINUX_APP
     std::cerr << row_abs << "] -> ";
-    std::string base = "conv2d/test/x_slice_";
-    std::string fname = base + std::to_string(chunk_cnt) + ".bin";
-    serialize(fname.c_str(), x_bram, sizeof(x_bram));
 #endif
 
-    if (endOfFrame) {
-      row_abs = 0;
-      chunk_cnt = 0;
-      endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
-      if (row_q == 0) {
-#ifdef LINUX_APP
-        std::cerr << "|** nada ** |\n";
-#endif
-        continue;
-      }
-    }
     //
     shape_x.set(1, BRAM_C_I, row_q, col_q);
 
@@ -112,18 +101,34 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     std::cerr << " " << shape_y[2] << ", " << shape_y[3] << "]"
               << "\n";
     {
-      std::string base = "conv2d/test/conv_slice_";
-      std::string fname = base + std::to_string(chunk_cnt) +
-                          std::to_string(shape_y[2]) + "x" +
-                          std::to_string(shape_y[3]) + ".bin";
-      serialize(fname.c_str(), y_bram,
-                shape_y[2] * shape_y[3] * sizeof(y_bram[0]));
+      NumpyArray np_y;
+      np_y.set_data((int32_t *)ptr_y);
+      np_y.set_shape(shape_y);
+      PythonScriptRunner runner;
+      runner(save_img, "conv_o", frame_cnt++, np_y);
     }
 #endif
 
     // === Stream result into AXI4-Stream ===
 
-    vga_to_axis<pixel4_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
+    vga_to_axis<pixel4_pkg_t, HEIGHT_O, WIDTH_O>(stream_o, y_bram, row_out,
+                                                 shape_y[2]);
+#ifdef LINUX_APP
+    std::cerr << " 🚀 Frame  " << frame_cnt << ", written pixels "
+              << stream_o.size() << "\n";
+#endif
+    if (endOfFrame) {
+      row_abs = 0;
+      chunk_cnt = 0;
+      row_out = 0;
+      endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
+      if (row_q == 0) {
+#ifdef LINUX_APP
+        std::cerr << "|** nada ** |\n";
+#endif
+        continue;
+      }
+    }
   }
   // just to signal the end of streaming
   pixel4_pkg_t px;

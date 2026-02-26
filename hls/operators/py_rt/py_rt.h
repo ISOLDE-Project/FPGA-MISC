@@ -184,4 +184,66 @@ print(" dtype:", cpp_array.dtype)
     if (result != 0)
       throw std::runtime_error("Python script execution failed.");
   }
+
+  void operator()(const std::string &scriptPath,
+                const std::string &base_name,
+                int value,
+                NumpyArray &arr)
+{
+    // Open script
+    FILE *fp = fopen(scriptPath.c_str(), "r");
+    if (!fp)
+        throw std::runtime_error("Failed to open Python script: " + scriptPath);
+
+    // Get main module dictionary
+    PyObject *main_module = PyImport_AddModule("__main__");
+    PyObject *global_dict = PyModule_GetDict(main_module);
+
+    //--------------------------------------------------
+    // Inject integer
+    //--------------------------------------------------
+    PyObject *py_int = PyLong_FromLong(value);
+    PyDict_SetItemString(global_dict, "cpp_value", py_int);
+    Py_DECREF(py_int);
+
+    //--------------------------------------------------
+    // Inject base_name string
+    //--------------------------------------------------
+    PyObject *py_base = PyUnicode_FromString(base_name.c_str());
+    if (!py_base)
+        throw std::runtime_error("Failed to create Python string.");
+
+    PyDict_SetItemString(global_dict, "cpp_base_name", py_base);
+    Py_DECREF(py_base);
+
+    //--------------------------------------------------
+    // Create NumPy array from raw memory
+    //--------------------------------------------------
+    if (!arr.data)
+        throw std::runtime_error("NumpyArray data is null.");
+
+    PyObject *numpy_array =
+        PyArray_SimpleNewFromData(
+            (int)arr.shape.size(),
+            arr.shape.data(),
+            arr.numpy_type,
+            arr.data);
+
+    if (!numpy_array)
+        throw std::runtime_error("Failed to create NumPy array.");
+
+    // Keep ownership so memory is not freed prematurely
+    arr.array_obj = numpy_array;
+
+    PyDict_SetItemString(global_dict, "cpp_array", numpy_array);
+
+    //--------------------------------------------------
+    // Run script
+    //--------------------------------------------------
+    int result = PyRun_SimpleFile(fp, scriptPath.c_str());
+    fclose(fp);
+
+    if (result != 0)
+        throw std::runtime_error("Python script execution failed.");
+}
 };
