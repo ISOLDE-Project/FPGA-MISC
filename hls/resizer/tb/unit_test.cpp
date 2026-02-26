@@ -11,10 +11,10 @@
 #include <iostream>
 #include <string>
 
-#include "resizer.h"
-#include "utils/tensor_io.hpp"
 #include "axis_helper.hpp"
 #include "conv2d/conv2d.hpp"
+#include "resizer.h"
+#include "utils/tensor_io.hpp"
 
 #include "shapes.inc"
 
@@ -39,6 +39,7 @@ uint32_t conv_o[FRAME_SIZE_O];
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
 const char *smoke_test = "conv2d/test/unit_test.py";
+const char *save_img = "conv2d/test/save_cpp_image.py";
 
 void check_frame(stream_t &os, pixel_pkg_t &px_in_q,
                  NumpyModule &numpy_module) {
@@ -91,10 +92,10 @@ void execute(stream_t &stream_i, NumpyModule &numpy_module) {
   int chunk_cnt = 0;
   pixel_pkg_t px_in_q;
   px_in_q.user = 0;
-
-   volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(y);
+  int frame_cnt = 0;
+  volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(y);
   volatile uint32_t *ptr_y = reinterpret_cast<uint32_t *>(conv_o);
-    shape_w.set(1, CHANNELS_W, HEIGHT_W, WIDTH_W);
+  shape_w.set(1, CHANNELS_W, HEIGHT_W, WIDTH_W);
   //
   pads.set(CONV_PADDING, CONV_PADDING, CONV_PADDING, CONV_PADDING);
   strides.set(CONV_STRIDE, CONV_STRIDE, 1, 1);
@@ -123,11 +124,19 @@ void execute(stream_t &stream_i, NumpyModule &numpy_module) {
         continue;
       }
     }
-        shape_x.set(1, 1, row_q, col_q);
+    shape_x.set(1, 1, row_q, col_q);
 
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);
+    {
+      NumpyArray np_y;
+      np_y.set_data((int32_t *)ptr_y);
+      np_y.set_shape(shape_y);
+      PythonScriptRunner runner;
+      runner(save_img,frame_cnt,np_y);
+    }
+    frame_cnt++;
   }
 }
 

@@ -66,3 +66,9 @@ add_custom_target(test-clean
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Deletes the generated files"
 )
+
+add_custom_target(test-compare
+    COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py conv2d/test/cpp_image_0.png conv2d/test/cpp_image_1.png
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
+    COMMENT "compare two images"
+)

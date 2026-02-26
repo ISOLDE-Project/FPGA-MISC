@@ -38,6 +38,7 @@ uint32_t y[FRAME_SIZE_O];
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
 const char *smoke_test = "conv2d/test/smoke_test_conv2d_i32.py";
+const char *save_img = "conv2d/test/save_cpp_image.py";
 
 void check_frame(stream_vga_t &os, pixel_pkg_t &px_in_q,
                  NumpyModule &numpy_module) {
