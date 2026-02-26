@@ -13,8 +13,8 @@
 void serialize(const char *fname, uint32_t *buffer, std::streamsize _n);
 #endif
 
-constexpr int N_KNOB = 1400;
-constexpr int CHUNK_HEIGHT = (2 * N_KNOB );
+constexpr int N_KNOB = 700;
+constexpr int CHUNK_HEIGHT = (2 * N_KNOB);
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
  * since stride=0, the last block shall be larger then 2 rows
@@ -32,8 +32,6 @@ static_assert(_HLAST__ > 2,
 #define BRAM_H_O (CHUNK_HEIGHT / 2 + 1)
 #define BRAM_W_O WIDTH_O
 
-
-
 uint32_t x_bram[1 * BRAM_C_I * BRAM_H_I * BRAM_W_I];
 uint32_t y_bram[1 * BRAM_C_O * BRAM_H_O * BRAM_W_O];
 
@@ -46,7 +44,6 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
   typedef tensor_io::_TensorIO io_type;
   io_type io;
 
- 
   frame_i_shape.set(1, CHANNELS_I, HEIGHT_I, WIDTH_I);
   int32_t offset_y;
 
@@ -67,6 +64,10 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
   //
   volatile uint32_t *ptr_x = reinterpret_cast<uint32_t *>(x_bram);
   volatile uint32_t *ptr_y = reinterpret_cast<uint32_t *>(y_bram);
+  shape_w.set(1, CHANNELS_W, HEIGHT_W, WIDTH_W);
+  //
+  pads.set(CONV_PADDING, CONV_PADDING, CONV_PADDING, CONV_PADDING);
+  strides.set(CONV_STRIDE, CONV_STRIDE, 1, 1);
   while (!endOfFrame) {
 
 #ifdef LINUX_APP
@@ -97,10 +98,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     }
     //
     shape_x.set(1, BRAM_C_I, row_q, col_q);
-    shape_w.set(1, CHANNELS_W, HEIGHT_W , WIDTH_W );
-    //
-    pads.set(CONV_PADDING, CONV_PADDING,CONV_PADDING,CONV_PADDING);
-    strides.set(CONV_STRIDE, CONV_STRIDE, 1, 1);
+
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);
@@ -111,7 +109,8 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     std::cerr << " " << shape_x[2] << ", " << shape_x[3] << "]";
     std::cerr << " => ";
     std::cerr << "[" << shape_y[0] << ", " << shape_y[1] << ",";
-    std::cerr << " " << shape_y[2] << ", " << shape_y[3] << "]" << "\n";
+    std::cerr << " " << shape_y[2] << ", " << shape_y[3] << "]"
+              << "\n";
     {
       std::string base = "conv2d/test/conv_slice_";
       std::string fname = base + std::to_string(chunk_cnt) +
@@ -123,7 +122,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
 #endif
 
     // === Stream result into AXI4-Stream ===
-   
+
     vga_to_axis<pixel4_pkg_t, BRAM_W_O>(stream_o, y_bram, shape_y[2]);
   }
   // just to signal the end of streaming
