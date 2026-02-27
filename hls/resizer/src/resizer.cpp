@@ -15,7 +15,7 @@ extern const char *save_img;
 #endif
 
 // constexpr int N_KNOB = 700;
-constexpr int N_KNOB = 400;
+constexpr int N_KNOB = 50;
 constexpr int CHUNK_HEIGHT = (2 * N_KNOB);
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**
@@ -105,7 +105,7 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
       np_y.set_data((int32_t *)ptr_y);
       np_y.set_shape(shape_y);
       PythonScriptRunner runner;
-      runner(save_img, "conv_o", frame_cnt++, np_y);
+      runner(save_img, "conv_o", ++frame_cnt*chunk_cnt, np_y);
     }
 #endif
 
@@ -114,8 +114,8 @@ void execute(stream_vga_t &stream_o, stream_t &stream_i) {
     vga_to_axis<pixel4_pkg_t, HEIGHT_O, WIDTH_O>(stream_o, y_bram, row_out,
                                                  shape_y[2]);
 #ifdef LINUX_APP
-    std::cerr << " 🚀 Frame  " << frame_cnt << ", written pixels "
-              << stream_o.size() << "\n";
+    // std::cerr << " 🚀 Frame  " << frame_cnt << ", written pixels "
+    //           << stream_o.size() << "\n";
 #endif
     if (endOfFrame) {
       row_abs = 0;
