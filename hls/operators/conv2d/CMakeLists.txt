@@ -66,6 +66,7 @@ add_custom_target(test-clean
     COMMAND rm -f conv2d/shapes.inc
     COMMAND rm -f ../resizer/src/shapes.inc
     COMMAND rm -f conv2d/test/output*.png
+    COMMAND rm -f conv2d/test/conv_o_*.png
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running Python to generate test data"
 )

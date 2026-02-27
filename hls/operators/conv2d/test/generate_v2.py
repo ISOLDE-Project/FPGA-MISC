@@ -162,38 +162,28 @@ def image_to_GRAY(path, image_fname, suffix):
     return packed, (H, W)
 
 
-def GRAY_to_image(path, suffix, original_shape):
-    """
-    Unpack int32 binary file back to grayscale image.
+def GRAY_to_image(path, suffix, packed):
+
     
-    Parameters:
-    -----------
-    path : str
-        Directory path
-    suffix : str
-        File suffix
-    original_shape : tuple
-        (H, W) original image dimensions
-    """
-    # === LOAD PACKED DATA ===
-    packed = np.fromfile(f"{path}/x_xsim_int32_{suffix}.bin", dtype=np.uint32)
-    
-    H, W = original_shape
-    num_pixels = H * W
+    packed_flat = packed.flatten().astype(np.uint32)
+
+    num_words = packed_flat.size
+    num_pixels = num_words * 4
     
     # === UNPACK INT32 TO PIXELS ===
-    gray_flat = np.zeros(len(packed) * 4, dtype=np.uint8)
+    gray_flat = np.zeros(num_pixels, dtype=np.uint8)
     
-    for i in range(len(packed)):
-        val = packed[i]
+    for i in range(num_words):
+        val = int(packed_flat[i])
+
         gray_flat[i * 4 + 0] = (val >> 24) & 0xFF  # pixel0
         gray_flat[i * 4 + 1] = (val >> 16) & 0xFF  # pixel1
         gray_flat[i * 4 + 2] = (val >> 8) & 0xFF   # pixel2
         gray_flat[i * 4 + 3] = val & 0xFF          # pixel3
     
     # === TRIM PADDING AND RESHAPE ===
-    gray_flat = gray_flat[:num_pixels]
-    img_np = gray_flat.reshape(H, W)
+    H,_= packed.shape
+    img_np = gray_flat.reshape(H, num_pixels//H)
     
     # === SAVE AS IMAGE ===
     img = Image.fromarray(img_np, mode='L')
@@ -313,3 +303,9 @@ def gen_test_i32(image_path,suffix):
 
 gen_test_i32(image_fname,'')
 gen_test_i32(image_fname_01,'_01')
+
+image_to_GRAY(path=output_dir,image_fname="resizer_o_224x224.png",suffix="vitis")
+vitis_tensor=np.fromfile(f"{output_dir}/x_xsim_int32_vitis.bin", dtype=np.uint32)
+vitis_tensor=vitis_tensor.reshape(224,224//4)
+print(f"vitis_tensor: {vitis_tensor.shape}")
+GRAY_to_image(path=output_dir, suffix="vitis",packed= vitis_tensor)

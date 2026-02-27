@@ -63,6 +63,7 @@ add_custom_target(test-clean
     COMMAND rm -f conv2d/test/output_q__01.jpg
     COMMAND rm -f ../resizer/src/shapes.inc
     COMMAND rm -f conv2d/test/output*.png
+    COMMAND rm -f conv2d/test/conv_o_*.png
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Deletes the generated files"
 )
