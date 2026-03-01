@@ -7,11 +7,7 @@
 #include <iostream>
 #endif
 
-template <int BRAM_W_I>
-void copy_row(volatile uint32_t *dst, volatile uint32_t *src) {
-  for (int i = 0; i < BRAM_W_I; ++i)
-    dst[i] = src[i];
-}
+
 
 template <int BRAM_H_I, int BRAM_W_I, typename stream_t, typename dim_t,
           typename pixel_pkg_t>
@@ -25,32 +21,6 @@ void axis_read_lines(stream_t &stream_i, const dim_t &frame_i_shape,
   int32_t src_offset_r /* , src_offset_g, src_offset_b */;
   dim_t frame_i_index_r /* , frame_i_index_g, frame_i_index_b */;
 
-  // // === Copy the previous line to the first line of the current chunk ===
-  // if (chunk_cnt)
-  // {
-  //     // === compute source offsets ===
-  //     frame_i_index_r.set(0, 0, BRAM_H_I - 1, 0);
-  //     // frame_i_index_g.set(0, 1, BRAM_H_I - 1, 0);
-  //     // frame_i_index_b.set(0, 2, BRAM_H_I - 1, 0);
-  //     src_offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-  //     // src_offset_g = tensor_index_to_offset(frame_i_shape,
-  //     frame_i_index_g);
-  //     // src_offset_b = tensor_index_to_offset(frame_i_shape,
-  //     frame_i_index_b);
-  //     // === compute destination offsets ===
-  //     frame_i_index_r.set(0, 0, 0, 0);
-  //     // frame_i_index_g.set(0, 1, 0, 0);
-  //     // frame_i_index_b.set(0, 2, 0, 0);
-  //     offset_r = tensor_index_to_offset(frame_i_shape, frame_i_index_r);
-  //     // offset_g = tensor_index_to_offset(frame_i_shape, frame_i_index_g);
-  //     // offset_b = tensor_index_to_offset(frame_i_shape, frame_i_index_b);
-  //     // === copy last line into the first position ===
-  //     copy_row<BRAM_W_I>(x_bram + offset_r, x_bram + src_offset_r);
-  //     // copy_row<BRAM_W_I>(x_bram + offset_g, x_bram + src_offset_g);
-  //     // copy_row<BRAM_W_I>(x_bram + offset_b, x_bram + src_offset_b);
-  //     // === increment the row ===
-  //     row = 1;
-  // }
   // === Compute tensor offsets ===
   frame_i_index_r.set(0, 0, row, 0);
   // frame_i_index_g.set(0, 1, row, 0);
@@ -92,10 +62,10 @@ void axis_read_lines(stream_t &stream_i, const dim_t &frame_i_shape,
     // ===  Format: pixel0 | pixel1 | pixel2 | pixel3
     // Most significant byte = pixel0, least significant = pixel3
 
-    uint8_t pixel0 = (px_in.data >> 24) & 0xFF;
-    uint8_t pixel1 = (px_in.data >> 16) & 0xFF;
-    uint8_t pixel2 = (px_in.data >> 8) & 0xFF;
-    uint8_t pixel3 = (px_in.data) & 0xFF;
+    uint8_t pixel3 = (px_in.data >> 24) & 0xFF;
+    uint8_t pixel2 = (px_in.data >> 16) & 0xFF;
+    uint8_t pixel1 = (px_in.data >> 8) & 0xFF;
+    uint8_t pixel0 = (px_in.data) & 0xFF;
 
     // === Write to BRAM ===
     if (row < BRAM_H_I && col < BRAM_W_I) {
@@ -218,10 +188,10 @@ void vga_to_axis(stream_t &stream_o, volatile uint32_t *y_bram, int& row_out,int
 
     for (int j = j_start; j < j_end; j += 4) {
 
-      uint32_t p3 = y_bram[offset++] & 0xFF;
-      uint32_t p2 = y_bram[offset++] & 0xFF;
-      uint32_t p1 = y_bram[offset++] & 0xFF;
       uint32_t p0 = y_bram[offset++] & 0xFF;
+      uint32_t p1 = y_bram[offset++] & 0xFF;
+      uint32_t p2 = y_bram[offset++] & 0xFF;
+      uint32_t p3 = y_bram[offset++] & 0xFF;
 
       uint32_t packed = (p3 << 24) | (p2 << 16) | (p1 << 8) | p0;
       pixel_pkg_t px;

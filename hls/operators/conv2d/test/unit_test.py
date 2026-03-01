@@ -3,6 +3,8 @@ import numpy as np
 from numpy.testing import assert_allclose 
 from PIL import Image
 
+image_fname   ="vitis_color_bar_1300x1600.png"
+
 # %%
 def save_img(fname, tensor):
     img_tensor = np.squeeze(tensor)  # Remove batch dim → [C, H, W]
@@ -18,7 +20,7 @@ def save_img(fname, tensor):
 work_dir = 'conv2d/test'
 current_dir = os.getcwd()
 
-img = Image.open(f"{work_dir}/grey_1600x1300.jpg").convert('L')  # 'L' = grayscale
+img = Image.open(f"{work_dir}/{image_fname}").convert('L')  # 'L' = grayscale
 img_np = np.array(img)  # Shape: (H, W), dtype=uint8
 output_ref =  np.expand_dims(np.expand_dims(img_np, axis=0), axis=0).astype(np.uint32)
 

@@ -3,7 +3,8 @@ import os
 
 
 
-image_fname   ="grey_1600x1300.jpg"
+#image_fname   ="grey_1600x1300.jpg"
+image_fname   ="vitis_color_bar_1300x1600.png"
 image_fname_01="grey_1600x1300.jpg"
 
 output_dir = f"{os.getcwd()}/conv2d/test"
@@ -136,10 +137,10 @@ def image_to_GRAY(path, image_fname, suffix):
     packed = np.zeros(num_int32, dtype=np.uint32)
     
     for i in range(num_int32):
-        pixel0 = gray_flat[i * 4 + 0]
-        pixel1 = gray_flat[i * 4 + 1]
-        pixel2 = gray_flat[i * 4 + 2]
-        pixel3 = gray_flat[i * 4 + 3]
+        pixel0 = gray_flat[i * 4 + 3]
+        pixel1 = gray_flat[i * 4 + 2]
+        pixel2 = gray_flat[i * 4 + 1]
+        pixel3 = gray_flat[i * 4 + 0]
         
         # Pack: [pixel0][pixel1][pixel2][pixel3]
         packed[i] = (pixel0 << 24) | (pixel1 << 16) | (pixel2 << 8) | pixel3
@@ -176,10 +177,10 @@ def GRAY_to_image(path, suffix, packed):
     for i in range(num_words):
         val = int(packed_flat[i])
 
-        gray_flat[i * 4 + 0] = (val >> 24) & 0xFF  # pixel0
-        gray_flat[i * 4 + 1] = (val >> 16) & 0xFF  # pixel1
-        gray_flat[i * 4 + 2] = (val >> 8) & 0xFF   # pixel2
-        gray_flat[i * 4 + 3] = val & 0xFF          # pixel3
+        gray_flat[i * 4 + 3] = (val >> 24) & 0xFF  # pixel0
+        gray_flat[i * 4 + 2] = (val >> 16) & 0xFF  # pixel1
+        gray_flat[i * 4 + 1] = (val >> 8) & 0xFF   # pixel2
+        gray_flat[i * 4 + 0] = val & 0xFF          # pixel3
     
     # === TRIM PADDING AND RESHAPE ===
     H,_= packed.shape
@@ -279,7 +280,20 @@ import torch.nn.functional as F
 
 
 
-
+def gen_test_from_device(image_path,suffix):
+    image_to_GRAY(path=output_dir,image_fname="resizer_o_224x224.png",suffix="vitis")
+    vitis_tensor=np.fromfile(f"{output_dir}/x_xsim_int32_vitis.bin", dtype=np.uint32)
+    vitis_tensor=vitis_tensor.reshape(224,224//4)
+    print(f"vitis_tensor: {vitis_tensor.shape}")
+    GRAY_to_image(path=output_dir, suffix="vitis",packed= vitis_tensor)
+    ##
+    vitis_tensor=np.fromfile(f"{output_dir}/color_bars_1300x1600.bin", dtype=np.uint32)
+    vitis_tensor=vitis_tensor.reshape(1300,1600//4)
+    print(f"vitis_tensor: {vitis_tensor.shape}")
+    GRAY_to_image(path=output_dir, suffix="vitis_color_bar",packed= vitis_tensor)
+    ## test vector
+    img_tensor = np.expand_dims(np.expand_dims(vitis_tensor, axis=0), axis=0).astype(np.uint32)
+    np.save(f"{output_dir}/color_bars_1300x1600.npy", img_tensor)
 #
 def gen_test_i32(image_path,suffix):
     kernel_size=5
@@ -302,10 +316,5 @@ def gen_test_i32(image_path,suffix):
     output.save(f"{output_dir}/output_q_{suffix}.jpg")
 
 gen_test_i32(image_fname,'')
-gen_test_i32(image_fname_01,'_01')
+#gen_test_i32(image_fname_01,'_01')
 
-image_to_GRAY(path=output_dir,image_fname="resizer_o_224x224.png",suffix="vitis")
-vitis_tensor=np.fromfile(f"{output_dir}/x_xsim_int32_vitis.bin", dtype=np.uint32)
-vitis_tensor=vitis_tensor.reshape(224,224//4)
-print(f"vitis_tensor: {vitis_tensor.shape}")
-GRAY_to_image(path=output_dir, suffix="vitis",packed= vitis_tensor)

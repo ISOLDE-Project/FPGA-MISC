@@ -68,6 +68,14 @@ add_custom_target(test-clean
     COMMENT "Deletes the generated files"
 )
 
+add_custom_target(dumps-clean
+    COMMAND rm -f conv2d/test/output*.png
+    COMMAND rm -f conv2d/test/conv_o_*.png
+    COMMAND rm -f conv2d/test/resizer_o_*.png
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
+    COMMENT "Deletes the generated files"
+)
+
 add_custom_target(test-compare
     COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py conv_o_0.png conv_o_6.png
     COMMAND ${Python3_EXECUTABLE} conv2d/test/compare_png_grey.py resizer_o_0.png resizer_o_6.png

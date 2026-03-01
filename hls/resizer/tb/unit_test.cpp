@@ -29,6 +29,7 @@ uint32_t y[FRAME_SIZE_O];
 uint32_t conv_o[FRAME_SIZE_O];
 
 const char *y_bin = "conv2d/test/y_cpp_int32.npy";
+//const char *x_bin = "conv2d/test/color_bars_1300x1600.npy";
 const char *x_bin = "conv2d/test/x_linux_sim_int32_.npy";
 const char *smoke_test = "conv2d/test/unit_test.py";
 const char *save_img = "conv2d/test/save_cpp_image.py";
@@ -116,18 +117,8 @@ void execute(stream_t &stream_i, stream_vga_t &stream_o,
       PythonScriptRunner runner;
       runner(smoke_test);
     }
-    if (endOfFrame) {
-      row_abs = 0;
-      chunk_cnt = 0;
-      endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
-      if (row_q == 0) {
 
-        std::cerr << "|** nada ** |\n";
-        continue;
-      }
-    }
     shape_x.set(1, 1, row_q, col_q);
-
     //
     uint32_t Hlast = row_q == frame_i_shape[2] ? 0 : row_q;
     conv2d(io, ptr_y, shape_y, ptr_x, frame_i_shape, pads, strides, Hlast);
@@ -140,9 +131,19 @@ void execute(stream_t &stream_i, stream_vga_t &stream_o,
     }
     //std::cerr << "\n Before vga_to_axis,stream_o.size: " << stream_o.size() << std::endl;
     assert(stream_o.size() ==0);
-    vga_to_axis<pixel4_pkg_t, HEIGHT_O, WIDTH_O>(stream_o, ptr_y, shape_y[2]);
+    vga_to_axis<pixel4_pkg_t, HEIGHT_O, WIDTH_O>(stream_o, ptr_y,row_out, shape_y[2]);
     stream_o.write(eos_px); // for debug purpouses only
-    //std::cerr << "\n After vga_to_axis,stream_o.size: " << stream_o.size() << std::endl;
+       if (endOfFrame) {
+      row_abs = 0;
+      chunk_cnt = 0;
+      row_out = 0;
+      endOfFrame = px_in_q.keep ? false : true; // check for end of simulation
+      if (row_q == 0) {
+
+        std::cerr << "|** nada ** |\n";
+        continue;
+      }
+    }
     {
       shape_type frame_o_shape;
       shape_type shape_y;

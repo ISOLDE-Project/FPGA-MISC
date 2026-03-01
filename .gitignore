@@ -21,3 +21,7 @@ grlib-gpl-mipi.*
 *.zip
 *.xlsx
 *.csv
+vivado-ip/
+Chip2Chip/ip_repo/
+MIPI-VCU118/
+Chip2Chip/one/
