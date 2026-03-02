@@ -4,7 +4,9 @@ import os
 
 
 #image_fname   ="grey_1600x1300.jpg"
-image_fname   ="vitis_color_bar_1300x1600.png"
+#image_fname   ="reconstructed_color_bars_1300x1600.jpg"
+#image_fname   ="reconstructed_test_1_1300x1600.jpg"
+image_fname   ="reconstructed_test_2_1300x1600.jpg"
 image_fname_01="grey_1600x1300.jpg"
 
 output_dir = f"{os.getcwd()}/conv2d/test"
@@ -188,8 +190,9 @@ def GRAY_to_image(path, suffix, packed):
     
     # === SAVE AS IMAGE ===
     img = Image.fromarray(img_np, mode='L')
-    img.save(f"{path}/reconstructed_{suffix}.png")
-    print(f"Reconstructed image saved to: {path}/reconstructed_{suffix}.png")
+    full_path= f"{path}/reconstructed_{suffix}.jpg"
+    img.save(full_path)
+    print(f"Reconstructed image saved to: {full_path}")
     
     return img_np
 
@@ -280,20 +283,20 @@ import torch.nn.functional as F
 
 
 
-def gen_test_from_device(image_path,suffix):
-    image_to_GRAY(path=output_dir,image_fname="resizer_o_224x224.png",suffix="vitis")
-    vitis_tensor=np.fromfile(f"{output_dir}/x_xsim_int32_vitis.bin", dtype=np.uint32)
-    vitis_tensor=vitis_tensor.reshape(224,224//4)
-    print(f"vitis_tensor: {vitis_tensor.shape}")
-    GRAY_to_image(path=output_dir, suffix="vitis",packed= vitis_tensor)
+def gen_test_from_sensor(path_i,path_o, f_name,suffix):
+    # image_to_GRAY(path=output_dir,image_fname="resizer_o_224x224.png",suffix="vitis")
+    # vitis_tensor=np.fromfile(f"{output_dir}/x_xsim_int32_vitis.bin", dtype=np.uint32)
+    # vitis_tensor=vitis_tensor.reshape(224,224//4)
+    # print(f"vitis_tensor: {vitis_tensor.shape}")
+    # GRAY_to_image(path=output_dir, suffix="vitis",packed= vitis_tensor)
     ##
-    vitis_tensor=np.fromfile(f"{output_dir}/color_bars_1300x1600.bin", dtype=np.uint32)
+    vitis_tensor=np.fromfile(f"{path_i}/{f_name}", dtype=np.uint32)
     vitis_tensor=vitis_tensor.reshape(1300,1600//4)
-    print(f"vitis_tensor: {vitis_tensor.shape}")
-    GRAY_to_image(path=output_dir, suffix="vitis_color_bar",packed= vitis_tensor)
+    print(f"{path_i}/{f_name}: {vitis_tensor.shape}")
+    GRAY_to_image(path=path_o, suffix=suffix,packed= vitis_tensor)
     ## test vector
-    img_tensor = np.expand_dims(np.expand_dims(vitis_tensor, axis=0), axis=0).astype(np.uint32)
-    np.save(f"{output_dir}/color_bars_1300x1600.npy", img_tensor)
+    #img_tensor = np.expand_dims(np.expand_dims(vitis_tensor, axis=0), axis=0).astype(np.uint32)
+    #np.save(f"{path_o}/x_ref_int32.npy", img_tensor)
 #
 def gen_test_i32(image_path,suffix):
     kernel_size=5
@@ -315,6 +318,11 @@ def gen_test_i32(image_path,suffix):
     output = T.ToPILImage()(output.squeeze(0).to(torch.uint8))
     output.save(f"{output_dir}/output_q_{suffix}.jpg")
 
+
+gen_test_from_sensor(path_i=f"{output_dir}/device",path_o=output_dir,f_name="color_bars_1.bin", suffix="color_bars_1300x1600")
+gen_test_from_sensor(path_i=f"{output_dir}/device",path_o=output_dir,f_name="gray_test_1.bin", suffix="test_1_1300x1600")
+gen_test_from_sensor(path_i=f"{output_dir}/device",path_o=output_dir,f_name="gray_test_2.bin", suffix="test_2_1300x1600")
 gen_test_i32(image_fname,'')
+
 #gen_test_i32(image_fname_01,'_01')
 

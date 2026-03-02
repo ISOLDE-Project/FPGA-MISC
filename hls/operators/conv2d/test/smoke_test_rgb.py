@@ -27,7 +27,7 @@ def save_img(fname, packed):
 work_dir = 'conv2d/test'
 current_dir = os.getcwd()
 
-output_ref = np.load(f"{work_dir}/x_linux_sim_int32.npy")
+output_ref = np.load(f"{work_dir}/x_int32.npy")
 
 output_tensor = np.load(f"{work_dir}/y_cpp_int32.npy")
 
@@ -36,7 +36,7 @@ print(f"\nOutput    shape: {output_tensor.shape}, MIN: {output_tensor.min()}, MA
 print(f"Reference shape: {output_ref.shape}, MIN: {output_ref.min()}, MAX:{output_ref.max()}\n" )
 
 
-save_path=f"{current_dir}/{work_dir}/output_conv2d_i32"
+save_path=f"{current_dir}/{work_dir}/output_i32"
 saved_path= save_img(save_path, output_tensor)
 print(f"\n\n* Output: {saved_path}\n")
 diff = np.abs(output_ref - output_tensor)

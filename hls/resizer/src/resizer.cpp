@@ -14,8 +14,8 @@
 extern const char *save_img;
 #endif
 
- constexpr int N_KNOB = 700;
-//constexpr int N_KNOB = 50;
+ //constexpr int N_KNOB = 700;
+constexpr int N_KNOB = 50;
 constexpr int CHUNK_HEIGHT = (2 * N_KNOB);
 constexpr int _HLAST__ = CHUNK_HEIGHT - (HEIGHT_I % CHUNK_HEIGHT);
 /**

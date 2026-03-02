@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_allclose 
 from PIL import Image
 
-image_fname   ="vitis_color_bar_1300x1600.png"
+
 
 # %%
 def save_img(fname, tensor):
@@ -20,9 +20,8 @@ def save_img(fname, tensor):
 work_dir = 'conv2d/test'
 current_dir = os.getcwd()
 
-img = Image.open(f"{work_dir}/{image_fname}").convert('L')  # 'L' = grayscale
-img_np = np.array(img)  # Shape: (H, W), dtype=uint8
-output_ref =  np.expand_dims(np.expand_dims(img_np, axis=0), axis=0).astype(np.uint32)
+
+output_ref =  np.load(f"{work_dir}/x_int32.npy")
 
 output_tensor = np.load(f"{work_dir}/y_cpp_int32.npy")
 
@@ -33,11 +32,11 @@ print(f"\nOutput    shape: {output_tensor.shape}, MIN: {output_tensor.min()}, MA
 print(f"Reference shape: {output_ref.shape}, MIN: {output_ref.min()}, MAX:{output_ref.max()}\n" )
 
 
-save_path=f"{current_dir}/{work_dir}/output_conv2d_i32"
+save_path=f"{current_dir}/{work_dir}/output_i32"
 saved_path= save_img(save_path, output_tensor)
 print(f"\n\n* Output: {saved_path}\n")
 
-save_path=f"{current_dir}/{work_dir}/reference_conv2d_i32"
+save_path=f"{current_dir}/{work_dir}/reference_i32"
 saved_path= save_img(save_path, output_ref)
 print(f"\n\n* Reference: {saved_path}\n")
 
