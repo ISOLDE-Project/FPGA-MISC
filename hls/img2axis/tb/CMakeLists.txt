@@ -10,7 +10,6 @@ target_link_libraries(py_runtime PRIVATE ${Python3_LIBRARIES})
 add_executable(img2axis 
                ../src/img2axis.cpp
                img2axis_tb.cpp
-               ../../operators/conv2d/scratchpad_memory.cpp
                )
 
 target_compile_definitions(img2axis PRIVATE LINUX_APP DTYPE_I32 SCALE=256 GRAYING NO_BIAS)
@@ -27,7 +26,7 @@ add_custom_target(test-img2axis
 )
 
 add_custom_target(test-generate
-    COMMAND ${Python3_EXECUTABLE} conv2d/test/generate.py
+    COMMAND ${Python3_EXECUTABLE} conv2d/test/generate_v2.py
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../operators
     COMMENT "Running Python to generate test data"
 )

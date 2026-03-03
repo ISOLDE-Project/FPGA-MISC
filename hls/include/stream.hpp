@@ -2,7 +2,11 @@
 #include <queue>
 #include <cstddef>
 #include <cassert>
+#include "shapes/shapes.inc"
 
+#ifdef LINUX_APP
+#include <iostream>
+#endif
 namespace isolde
 {
 
@@ -13,7 +17,7 @@ namespace isolde
         std::queue<T> q;
         size_t capacity;
 
-        static constexpr size_t DEFAULT_CAPACITY = 2*1920 * 1080+1; // Full HD pixels
+        static constexpr size_t DEFAULT_CAPACITY = 4*HEIGHT_I * WIDTH_I+1; // Full HD pixels
 
     public:
         // Default constructor uses Full HD capacity
@@ -24,6 +28,7 @@ namespace isolde
 
         void write(const T &val)
         {
+            
             assert(q.size() < capacity && "Attempted write in a full queue");
             
             
