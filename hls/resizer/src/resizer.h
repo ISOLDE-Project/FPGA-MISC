@@ -19,21 +19,28 @@ struct ap_axiu {
 };
  */
 
-typedef ap_uint<24> pixel_t;
-typedef ap_axiu<24, 1, 1, 1> pixel_pkg_t;
+//typedef ap_uint<24> pixel_t;                
+//typedef ap_uint<32> pixel4_t;
+// === AXIS definitions
+//typedef ap_axiu<24, 1, 1, 1> pixel_pkg_t;    // === RGB pixel 0xRRGGBB ===
+typedef ap_axiu<32, 1, 1, 1> pixel4_pkg_t;  // ===  4 pixels cluster: pixel3 | pixel3 | pixel2 | pixel1
+typedef pixel4_pkg_t pixel_pkg_t;          //alias for input pixels
+// === input stream
 typedef hls::stream<pixel_pkg_t> stream_t;
-typedef ap_uint<32> pixel4_t;
-typedef ap_axiu<32, 1, 1, 1> pixel4_pkg_t;
+// === output stream
 typedef hls::stream<pixel4_pkg_t> stream_vga_t;
 #else
 #include "ap_data.hpp"
 #include "stream.hpp"
-typedef uint32_t pixel_t;
-typedef uint32_t pixel4_t;
-typedef isolde::ap_axiu <pixel_t, bool, bool, bool> pixel_pkg_t;
-typedef isolde::ap_axiu <pixel4_t, bool, bool, bool> pixel4_pkg_t;
+//typedef uint32_t pixel_t;           // === RGB pixel 0xRRGGBB ===
+typedef uint32_t pixel4_t;         // ===  4 pixels cluster: pixel3 | pixel3 | pixel2 | pixel1
+// === input stream
+typedef isolde::ap_axiu <pixel4_t, bool, bool, bool> pixel_pkg_t;
 typedef isolde::stream<pixel_pkg_t> stream_t;
+// === output stream
+typedef isolde::ap_axiu <pixel4_t, bool, bool, bool> pixel4_pkg_t;
 typedef isolde::stream<pixel4_pkg_t> stream_vga_t;
+
 #endif
 
 void execute(stream_vga_t &stream_o, stream_t &stream_i);

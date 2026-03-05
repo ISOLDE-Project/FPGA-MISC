@@ -18,9 +18,16 @@ struct ap_axiu {
     ap_uint<TD>  dest;  // Destination routing (optional)
 };
  */
-
-typedef ap_uint<24> pixel_t;
+ #ifdef RGB_PIXEL
+// === RGB pixel 0xRRGGBB ===
+typedef ap_uint<24> pixel_t;  
 typedef ap_axiu<24, 32, 1, 1> pixel_pkg_t;
+#else
+// ===  4 pixels cluster: pixel3 | pixel3 | pixel2 | pixel1
+typedef ap_uint<32> pixel_t;  
+typedef ap_axiu<32, 32, 1, 1> pixel_pkg_t;
+#endif
+// === output stream
 typedef hls::stream<pixel_pkg_t> stream_t;
 #else
 #include "ap_data.hpp"
