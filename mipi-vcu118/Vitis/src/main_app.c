@@ -85,13 +85,9 @@ int main() {
     resetIp();
     EnableCSI();
 
-	Status = demosaic();
-	if (Status != XST_SUCCESS) {
-		xil_printf("\n\rDemosaic Failed \n\r");
-		return XST_FAILURE;
-	}
-
 	SensorConfig();
+
+	Sensor_Delay();
 
 	WriteToReg(0x3008, 0x02);
 
@@ -103,8 +99,9 @@ int main() {
 	   return XST_FAILURE;
 	 }
 
+//	SetupInterruptSystemNewIrpt();
+	
 	dump_s2mm_status(0x44A20000);
-
 	dump_img2axis_status(0x00010000);
 
 	wait_frame(0x44A20000);
@@ -119,20 +116,7 @@ int main() {
 	ReadCameraReg(0x300B, &data);
 	xil_printf("RD_DATA : 0x%02X \r\n", data);
 
-//	char s;
-//
-//	while(1){
-//		s = getchar();
-//		if(s == 115){
-//			stop_vdma();
-//			break;
-//		}
-//	}
 
     return XST_SUCCESS;
 }
-
-
-
-
 

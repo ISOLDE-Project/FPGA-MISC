@@ -6,7 +6,7 @@
 /*****************************************************************************/
 /**
 *
-* @file pcam_5C_cfgs.h
+* @file sensor_config_pcam.h
 *
 * <pre>
 * MODIFICATION HISTORY:
@@ -21,26 +21,15 @@
 #ifndef SENSOR_CONFIG_PCAM_H
 #define SENSOR_CONFIG_PCAM_H
 
-
 extern struct regval_list {
   u16 Address;
   u16  Data;
 } regval_list;
 
-extern struct regval_list sensor_pre[];
-extern const int length_sensor_pre;
-
-extern struct regval_list pcam5c_mode1[];
-extern const int length_pcam5c_mode1;
-
-extern struct regval_list seq_shrt[];
-extern const int length_seq_shrt;
+extern struct regval_list sensor_cfg[];
+extern const int length_sensor_cfg;
 
 extern struct regval_list sensor_list[];
 extern const int length_sensor_list;
-extern const int size_sensor_list;
-
-extern struct regval_list seq[];
-extern const int length_seq;
 
 #endif

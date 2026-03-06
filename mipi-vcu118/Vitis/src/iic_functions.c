@@ -12,7 +12,7 @@
 #include "xcsiss.h"
 #include "xil_io.h"
 
-#include "xv_demosaic.h"
+//#include "xv_demosaic.h"
 
 #include "xintc.h"
 
@@ -23,7 +23,7 @@ typedef uint16_t u16;
 #define INTC_DEVICE_ID XPAR_INTC_0_DEVICE_ID
 #define IIC_INTR_ID XPAR_INTC_0_IIC_0_VEC_ID
 
-#define OV5640_I2C_ADDR 0x3C
+#define OV2311_I2C_ADDR 0x60
 
 static XIic IicInstance;
 static XIntc Intc;
@@ -34,23 +34,26 @@ static XIntc Intc;
 #define IMG2AXIS_BASEADDR	0x00010000
 
 #define XCSIRXSS_DEVICE_ID  XPAR_CSISS_0_DEVICE_ID
-#define DEMOSAIC_DEVICE_ID 	XPAR_XV_DEMOSAIC_0_DEVICE_ID
-#define GPIO_SENSOR 		XPAR_GPIO_1_BASEADDR
+
+#define GPIO_LEDS			XPAR_GPIO_2_BASEADDR
 
 volatile int TransmitComplete = 0;
 volatile int ReceiveComplete = 0;
 
-/* Definitions for VDMA_0: CAM -> MIPI_PIPELINE -> VDMA */
-#define HORIZONTAL_RESOLUTION	1920 //1280
-#define VERTICAL_RESOLUTION		1080 //720
-#define FRAME_COUNTER			3
-#define STRIDE_VDMA_0			1920*3
+/* Definitions for VDMA_0: CAM_OV2311 -> MIPI_PIPELINE -> VDMA */
+#define HORIZONTAL_RESOLUTION		400
+#define VERTICAL_RESOLUTION			1300
+#define FRAME_COUNTER				3
+#define STRIDE_VDMA					400*4
 
-/* Definitions for VDMA_1 (from Resizer BD): IMG2AXIS -> RESIZER -> VDMA */
-#define HORIZONTAL_RESOLUTION_1		160 //640
-#define VERTICAL_RESOLUTION_1		480
-#define FRAME_COUNTER_1				2
-#define STRIDE_VDMA_1				160*4
+/* Definitions for VDMA_1: DDR -> RESIZER -> VDMA */
+#define HORIZONTAL_RESOLUTION_RES		56
+#define VERTICAL_RESOLUTION_RES			224
+#define FRAME_COUNTER_RES				2
+#define STRIDE_VDMA_RES					56*4
+
+unsigned int srcBuffer = (0x80000000U + 0x1000000);
+unsigned int dstBuffer = (0x90000000U + 0x1000000);
 
 /* Debug Constants */
 #define MM2S_HALT_SUCCESS	121
@@ -63,16 +66,23 @@ volatile int ReceiveComplete = 0;
 #define VDMA_S2MM_RESIZER	(VDMA_RESIZER + 0x30)
 #define S2MM				1
 
+//########## INTERRUPTS DEFINES #############
+
+#define IRPT_EN_ID XPAR_CAM_SUBSYSTEM_MICROBLAZE_0_AXI_INTC_CAM_SUBSYSTEM_MIPI_PIPELINE_INT_ENABLE_0_INT_O_INTR
+#define IRPT_VIO_ID XPAR_CAM_SUBSYSTEM_MICROBLAZE_0_AXI_INTC_VIO_0_PROBE_OUT0_INTR
+
+#define GPIO_IRPT_CTRL XPAR_GPIO_1_BASEADDR
+
+
+//########## END OF INTRPT DEFINES ##########
+
 typedef u8 AddressType;
 
 /****************** Instances **********************/
 XCsiSs CsiRxSs;
 
-XV_demosaic InstancePtr;
-XV_demosaic_Config  *demosaic_Config;
 XAxiVdma AxiVdma;
 XAxiVdma AxiVdmaResizer;
-
 
 uint32_t read_reg(uintptr_t addr) {
     return *((volatile uint32_t *)addr);
@@ -87,6 +97,8 @@ typedef struct {
     // Add virtual address if needed
 } FrameBuffer;
 
+int irpt_en = 0, irpt_vio = 0, k = 0;
+int Status;
 
 #define S2MM_VDMACR        0x30
 #define S2MM_VDMASR        0x34
@@ -235,151 +247,104 @@ static unsigned int context_init=0;
 
 /******************* Function Prototypes ************************************/
 
+//void img2axis_config(){
+//
+//	Xil_Out32(IMG2AXIS_BASEADDR + 0x10, srcBuffer);
+//	Xil_Out32(IMG2AXIS_BASEADDR + 0x18, 0x4);
+//	Xil_Out32(IMG2AXIS_BASEADDR + 0x20, 0x1);
+//	Xil_Out32(IMG2AXIS_BASEADDR + 0x00, 0x1);
+//	while(Xil_In32(IMG2AXIS_BASEADDR + 0x00) != 0x4);
+//
+//}
+
 static int WriteSetup(vdma_handle *vdma_context);
 static int StartTransfer(XAxiVdma *InstancePtr);
 
-unsigned int srcBuffer = (0x80000000U + 0x1000000);
-unsigned int dstBufferResizer = (0x80000000U + 0x9000000);
-
-/*****************************************************************************/
-/**
-*
-* RunVDMA API
-*
-* This API is the interface between application and other API.
-* When application will call this API with right argument, This API will call
-* rest of the API to configure the read and write path of VDMA,based on ID.
-* After that it will start both the read and write path of VDMA
-*
-* @param	InstancePtr is the handle to XAxiVdma data structure.
-* @param	DeviceId is the device ID of current VDMA
-* @param	hsize is the horizontal size of the frame. It will be in Pixels.
-* 		The actual size of frame will be calculated by multiplying this
-* 		with tdata width.
-* @param 	vsize is the Vertical size of the frame.
-* @param	buf_base_addr is the buffer address where frames will be written
-*		and read by VDMA.
-* @param 	number_frame_count specifies after how many frames the interrupt
-*		should come.
-* @param 	enable_frm_cnt_intr is for enabling frame count interrupt
-*		when set to 1.
-* @return
-*		- XST_SUCCESS if example finishes successfully
-*		- XST_FAILURE if example fails.
-*
-******************************************************************************/
-int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
-		int vsize, int buf_base_addr, int number_frame_count,
-		int enable_frm_cnt_intr)
+int ConfigureVDMA(XAxiVdma* InstancePtr, int DeviceId,
+                  int hsize, int vsize,
+                  int buf_base_addr,
+                  int number_frame_count,
+                  int enable_frm_cnt_intr)
 {
-  int Status,i;
- XAxiVdma_Config *Config;
- XAxiVdma_FrameCounter FrameCfgPtr;
+    int Status, i;
+    XAxiVdma_Config *Config;
+    XAxiVdma_FrameCounter FrameCfg;
 
-  /* This is one time initialization of state machine context.
-   * In first call it will be done for all VDMA instances in the system.
-   */
-  if(context_init==0) {
-	for(i=0; i < XPAR_XAXIVDMA_NUM_INSTANCES; i++) {
-	  vdma_context[i].InstancePtr = NULL;
-	  vdma_context[i].device_id = -1;
-	  vdma_context[i].hsize = 0;
-	  vdma_context[i].vsize = 0;
-	  vdma_context[i].init_done = 0;
-	  vdma_context[i].buffer_address = 0;
-	  vdma_context[i].enable_frm_cnt_intr = 0;
-	  vdma_context[i].number_of_frame_count = 0;
-	}
-	context_init = 1;
-  }
+    /* Initialize VDMA context table once */
+    if (!context_init) {
+        for (i = 0; i < XPAR_XAXIVDMA_NUM_INSTANCES; i++) {
+            vdma_context[i].InstancePtr = NULL;
+            vdma_context[i].device_id = -1;
+            vdma_context[i].hsize = 0;
+            vdma_context[i].vsize = 0;
+            vdma_context[i].init_done = 0;
+            vdma_context[i].buffer_address = 0;
+            vdma_context[i].enable_frm_cnt_intr = 0;
+            vdma_context[i].number_of_frame_count = 0;
+        }
+        context_init = 1;
+    }
 
-  /* The below initialization will happen for each VDMA. The API argument
-   * will be stored in internal data structure
-   */
+    /* Lookup VDMA config from hardware */
+    Config = XAxiVdma_LookupConfig(DeviceId);
+    if (!Config) {
+        xil_printf("No VDMA config found for device %d\r\n", DeviceId);
+        return XST_FAILURE;
+    }
 
-  /* The information of the XAxiVdma_Config comes from hardware build.
-   * The user IP should pass this information to the AXI DMA core.
-   */
+    /* Initialize VDMA instance once */
+    if (!vdma_context[DeviceId].init_done) {
+        Status = XAxiVdma_CfgInitialize(InstancePtr,
+                                        Config,
+                                        Config->BaseAddress);
+        if (Status != XST_SUCCESS) {
+            xil_printf("VDMA init failed: %d\r\n", Status);
+            return Status;
+        }
+        vdma_context[DeviceId].InstancePtr = InstancePtr;
+        vdma_context[DeviceId].init_done = 1;
+    }
 
-  Config = XAxiVdma_LookupConfig(DeviceId);
+    /* Store parameters */
+    vdma_context[DeviceId].device_id = DeviceId;
+    vdma_context[DeviceId].vsize = vsize;
+    vdma_context[DeviceId].buffer_address = buf_base_addr;
+    vdma_context[DeviceId].enable_frm_cnt_intr = enable_frm_cnt_intr;
+    vdma_context[DeviceId].number_of_frame_count = number_frame_count;
 
-  if (!Config) {
-	xil_printf("No video DMA found for ID %d\r\r\n",DeviceId );
-	return XST_FAILURE;
-  }
+    /* Adjust hsize based on RGB (3 bytes/pixel) */
+//    vdma_context[DeviceId].hsize = (hsize == 1600) ? hsize : hsize * 4;
+    vdma_context[DeviceId].hsize = hsize*4;
 
-  if(vdma_context[DeviceId].init_done ==0) {
-	vdma_context[DeviceId].InstancePtr = InstancePtr;
+    /* Configure write channel (but do NOT start) */
+    Status = WriteSetup(&vdma_context[DeviceId]);
+    if (Status != XST_SUCCESS) {
+        xil_printf("Write setup failed: %d\r\n", Status);
+        return Status;
+    }
 
-	/* Initialize DMA engine */
-	Status = XAxiVdma_CfgInitialize(vdma_context[DeviceId].InstancePtr,
-						Config, Config->BaseAddress);
+    /* Configure frame counter interrupt if enabled */
+    if (enable_frm_cnt_intr) {
+        FrameCfg.WriteDelayTimerCount = 1;
+        FrameCfg.WriteFrameCount = number_frame_count;
 
-	if (Status != XST_SUCCESS) {
-	  xil_printf("Configuration Initialization failed %d\r\r\n",
-					Status);
-	  return XST_FAILURE;
-	}
+        XAxiVdma_SetFrameCounter(InstancePtr, &FrameCfg);
 
-	  vdma_context[DeviceId].init_done = 1;
+        XAxiVdma_IntrEnable(InstancePtr,
+                            XAXIVDMA_IXR_ERROR_MASK |
+                            XAXIVDMA_IXR_FRMCNT_MASK,
+                            XAXIVDMA_WRITE);
+    }
+    else {
+        XAxiVdma_IntrEnable(InstancePtr,
+                            XAXIVDMA_IXR_ERROR_MASK,
+                            XAXIVDMA_WRITE);
+    }
 
-  }
-
-  vdma_context[DeviceId].device_id = DeviceId;
-  vdma_context[DeviceId].vsize = vsize;
-  vdma_context[DeviceId].enable_frm_cnt_intr = enable_frm_cnt_intr;
-  vdma_context[DeviceId].buffer_address = buf_base_addr;
-  vdma_context[DeviceId].number_of_frame_count = number_frame_count;
-  vdma_context[DeviceId].hsize = hsize * 3;
-
-  /* Setup the write channel */
-
-  Status = WriteSetup(&vdma_context[DeviceId]);
-
-  if (Status != XST_SUCCESS) {
-	xil_printf("Write channel setup failed %d\r\n", Status);
-	if(Status == XST_VDMA_MISMATCH_ERROR)
-	  xil_printf("DMA Mismatch Error\r\n");
-	return XST_FAILURE;
-  }
-
-  /* The frame counter interrupt is enabled, setting VDMA for same */
-
-  if(vdma_context[DeviceId].enable_frm_cnt_intr) {
-
-	FrameCfgPtr.WriteDelayTimerCount = 1;
-	FrameCfgPtr.WriteFrameCount = number_frame_count;
-
-	XAxiVdma_SetFrameCounter(vdma_context[DeviceId].InstancePtr,
-			&FrameCfgPtr);
-	/* Enable DMA read and write channel interrupts.
-	 * The configuration for interrupt
-	 * controller will be done by application	 */
-	XAxiVdma_IntrEnable(vdma_context[DeviceId].InstancePtr,
-				XAXIVDMA_IXR_ERROR_MASK |
-				XAXIVDMA_IXR_FRMCNT_MASK,XAXIVDMA_WRITE);
-
-  } else	{
-	  /* Enable DMA read and write channel interrupts.
-	   * The configuration for interrupt
-	   * controller will be done by application	 */
-	XAxiVdma_IntrEnable(vdma_context[DeviceId].InstancePtr,
-				XAXIVDMA_IXR_ERROR_MASK,XAXIVDMA_WRITE);
-
-  }
-
-  /* Start the DMA engine to transfer */
-  Status = StartTransfer(vdma_context[DeviceId].InstancePtr);
-
-  if (Status != XST_SUCCESS) {
-	if(Status == XST_VDMA_MISMATCH_ERROR)
-	  xil_printf("DMA Mismatch Error\r\n");
-	return XST_FAILURE;
-  }
-
-  return XST_SUCCESS;
-
+    xil_printf("VDMA %d configured successfully\r\n", DeviceId);
+    return XST_SUCCESS;
 }
+
 
   /*****************************************************************************/
   /**
@@ -402,10 +367,10 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
     vdma_context->WriteCfg.VertSizeInput = vdma_context->vsize;
     vdma_context->WriteCfg.HoriSizeInput = vdma_context->hsize;
 
-    if(vdma_context->vsize == 1080)
-    	vdma_context->WriteCfg.Stride = STRIDE_VDMA_0;
+    if(vdma_context->vsize == 1300)
+    	vdma_context->WriteCfg.Stride = STRIDE_VDMA;
     else
-    	vdma_context->WriteCfg.Stride = STRIDE_VDMA_1;
+    	vdma_context->WriteCfg.Stride = STRIDE_VDMA_RES;
 
     /* This example does not test frame delay */
     vdma_context->WriteCfg.FrameDelay = 0;
@@ -485,6 +450,28 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   }
 
+  int StartVDMA(int DeviceId)
+  {
+      int Status;
+
+      XAxiVdma *InstancePtr = vdma_context[DeviceId].InstancePtr;
+
+      if (!vdma_context[DeviceId].init_done) {
+          xil_printf("VDMA %d not configured yet!\r\n", DeviceId);
+          return XST_FAILURE;
+      }
+
+      Status = StartTransfer(InstancePtr);
+      if (Status != XST_SUCCESS) {
+          xil_printf("VDMA %d start failed: %d\r\n", DeviceId, Status);
+          return Status;
+      }
+
+      xil_printf("VDMA %d started.\r\n", DeviceId);
+      return XST_SUCCESS;
+  }
+
+
   /***************************************************************************/
   /**
   *
@@ -504,10 +491,10 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   }
 
-  void ResetVDMA_Resizer()
+  void ResetVDMA_1()
   {
 
-    XAxiVdma_Reset(&AxiVdmaResizer,XAXIVDMA_WRITE);
+	  XAxiVdma_Reset(&AxiVdmaResizer,XAXIVDMA_WRITE);
 
   }
 
@@ -588,71 +575,7 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
   {
 
     DisableCSI();
-    // HaltVDMA();
-    // resetVIP();
     xil_printf("\n\rReset Done\n\r");
-
-  }
-
-  /*
-  * The configuration table for devices
-  */
-  #ifndef SDT
-  XV_demosaic_Config XV_demosaic_ConfigTable[] =
-  {
-  	{
-  #ifdef XPAR_XV_DEMOSAIC_NUM_INSTANCES
-  		XPAR_XV_DEMOSAIC_0_DEVICE_ID,
-  		XPAR_XV_DEMOSAIC_0_S_AXI_CTRL_BASEADDR,
-  		XPAR_XV_DEMOSAIC_0_SAMPLES_PER_CLOCK,
-  		XPAR_XV_DEMOSAIC_0_MAX_COLS,
-  		XPAR_XV_DEMOSAIC_0_MAX_ROWS,
-  		XPAR_XV_DEMOSAIC_0_MAX_DATA_WIDTH,
-  		XPAR_XV_DEMOSAIC_0_ALGORITHM
-  #endif
-  	}
-  };
-
-  XV_demosaic_Config *XV_demosaic_LookupConfig(u16 DeviceId) {
-  	XV_demosaic_Config *ConfigPtr = NULL;
-
-  	int Index;
-
-  	for (Index = 0; Index < XPAR_XV_DEMOSAIC_NUM_INSTANCES; Index++) {
-  		if (XV_demosaic_ConfigTable[Index].DeviceId == DeviceId) {
-  			ConfigPtr = &XV_demosaic_ConfigTable[Index];
-  			break;
-  		}
-  	}
-
-  	return ConfigPtr;
-  }
-  #endif
-
-  /*****************************************************************************/
-  /**
-   * This function programs demosaic with the given width and height
-   *
-   * @param	width is Hsize of a packet in pixels.
-   * @param	height is number of lines of a packet.
-   *
-   * @return	None.
-   *
-   * @note	None.
-   *
-   *****************************************************************************/
-  int demosaic()
-  {
-    demosaic_Config = XV_demosaic_LookupConfig(DEMOSAIC_DEVICE_ID);
-
-    XV_demosaic_CfgInitialize(&InstancePtr, demosaic_Config,
-  		                           demosaic_Config->BaseAddress);
-    XV_demosaic_Set_HwReg_width(&InstancePtr, 1920);
-    XV_demosaic_Set_HwReg_height(&InstancePtr, 1080);
-    XV_demosaic_Set_HwReg_bayer_phase(&InstancePtr, 0x3);
-    XV_demosaic_EnableAutoRestart(&InstancePtr);
-    XV_demosaic_Start(&InstancePtr);
-    return XST_SUCCESS;
 
   }
 
@@ -660,33 +583,34 @@ int RunVDMA(XAxiVdma* InstancePtr, int DeviceId, int hsize,
 
   	ResetVDMA();
 
-  	RunVDMA(&AxiVdma, XPAR_AXIVDMA_0_DEVICE_ID, HORIZONTAL_RESOLUTION, \
-  			  VERTICAL_RESOLUTION, srcBuffer, FRAME_COUNTER, 0);
+  	ConfigureVDMA(&AxiVdma, XPAR_AXIVDMA_0_DEVICE_ID, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, \
+  			srcBuffer, FRAME_COUNTER, 0);
+
+  	StartVDMA(XPAR_AXIVDMA_0_DEVICE_ID);
+
 
   	return XST_SUCCESS;
 
   }
 
+  int vdma_1(){
+
+    	ResetVDMA_1();
+
+    	ConfigureVDMA(&AxiVdmaResizer, XPAR_AXIVDMA_1_DEVICE_ID, HORIZONTAL_RESOLUTION_RES, VERTICAL_RESOLUTION_RES, \
+    			dstBuffer, FRAME_COUNTER_RES, 0);
+
+    	StartVDMA(XPAR_AXIVDMA_1_DEVICE_ID);
+
+
+    	return XST_SUCCESS;
+
+    }
+
   void stop_vdma(){
 
   	XAxiVdma_DmaStop(&AxiVdma, XAXIVDMA_WRITE);
 
-  }
-
-  FrameBuffer frame_rcv1;
-  FrameBuffer frame_rcv2;
-
-  void stop_vdma_resizer(){
-
-  	XAxiVdma_DmaStop(&AxiVdmaResizer, XAXIVDMA_WRITE);
-
-  }
-
-  void CamReset()
-  {
-  	Xil_Out32(GPIO_SENSOR, 0x01);
-  	Xil_Out32(GPIO_SENSOR, 0x00);
-  	Xil_Out32(GPIO_SENSOR, 0x01);
   }
 
 int WriteToReg(u16 reg_addr, u8 write_data);
@@ -720,7 +644,7 @@ int initIIC(){
         return XST_FAILURE;
     }
 
-    XIic_SetAddress(&IicInstance, XII_ADDR_TO_SEND_TYPE, OV5640_I2C_ADDR);
+    XIic_SetAddress(&IicInstance, XII_ADDR_TO_SEND_TYPE, OV2311_I2C_ADDR);
     XIic_SetRecvHandler(&IicInstance, &IicInstance, IicRecvHandler);
     XIic_SetSendHandler(&IicInstance, &IicInstance, IicSendHandler);
     XIic_SetStatusHandler(&IicInstance, &IicInstance, IicStatusHandler);
@@ -749,7 +673,9 @@ int SetupInterruptSystem() {
     return XST_SUCCESS;
 }
 
-// I2C register read: OV5640 uses 16-bit reg addresses, 8-bit data
+
+
+// I2C register read: OV2311 uses 16-bit reg addresses, 8-bit data
 int ReadCameraReg(u16 reg_addr, u8* data) {
     u8 WriteBuffer[2];
     int Status;
@@ -811,11 +737,11 @@ int WriteToReg(u16 reg_addr, u8 write_data) {
 
 int SensorConfig() {
 
-	u32 Index, MaxIndex, MaxIndex1, MaxIndex2;
+	u32 Index, MaxIndex;
 	int Status;
 	u8 WriteBuffer[3];
 
-	Status = XIic_SetAddress(&IicInstance, XII_ADDR_TO_SEND_TYPE, OV5640_I2C_ADDR);
+	Status = XIic_SetAddress(&IicInstance, XII_ADDR_TO_SEND_TYPE, OV2311_I2C_ADDR);
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
@@ -824,12 +750,12 @@ int SensorConfig() {
 	WriteToReg(0x3008, 0x82);
 	Sensor_Delay();
 
-	MaxIndex = length_sensor_pre;
+	MaxIndex = length_sensor_cfg;
 	for(Index = 0; Index < (MaxIndex - 0); Index++)
 	{
-		WriteBuffer[0] = sensor_pre[Index].Address >> 8;
-		WriteBuffer[1] = sensor_pre[Index].Address;
-		WriteBuffer[2] = sensor_pre[Index].Data;
+		WriteBuffer[0] = sensor_cfg[Index].Address >> 8;
+		WriteBuffer[1] = sensor_cfg[Index].Address;
+		WriteBuffer[2] = sensor_cfg[Index].Data;
 
 		uint16_t reg_addr = ((uint16_t)WriteBuffer[0] << 8) | WriteBuffer[1];
 		uint8_t write_data = WriteBuffer[2];
@@ -837,47 +763,6 @@ int SensorConfig() {
 		WriteToReg(reg_addr, write_data);
 
 	}
-
-
-	WriteToReg(0x3008, 0x42);
-
-
-	MaxIndex1 = length_pcam5c_mode1;
-
-	for(Index = 0; Index < (MaxIndex1 - 0); Index++)
-	{
-		WriteBuffer[0] = pcam5c_mode1[Index].Address >> 8;
-		WriteBuffer[1] = pcam5c_mode1[Index].Address;
-		WriteBuffer[2] = pcam5c_mode1[Index].Data;
-
-		uint16_t reg_addr = ((uint16_t)WriteBuffer[0] << 8) | WriteBuffer[1];
-		uint8_t write_data = WriteBuffer[2];
-
-		Sensor_Delay();
-
-		WriteToReg(reg_addr, write_data);
-
-	}
-
-
-	WriteToReg(0x3008, 0x02);
-	Sensor_Delay();
-	WriteToReg(0x3008, 0x42);
-
-	MaxIndex2 = length_sensor_list;
-
-	for(Index = 0; Index < (MaxIndex2 - 0); Index++)
-	{
-		WriteBuffer[0] = sensor_list[Index].Address >> 8;
-		WriteBuffer[1] = sensor_list[Index].Address;
-		WriteBuffer[2] = sensor_list[Index].Data;
-
-		uint16_t reg_addr = ((uint16_t)WriteBuffer[0] << 8) | WriteBuffer[1];
-		uint8_t write_data = WriteBuffer[2];
-		Sensor_Delay();
-		WriteToReg(reg_addr, write_data);
-	}
-
 
 	if(Status != XST_SUCCESS) {
 	  xil_printf("Error: in Writing entry status = %x \r\n", Status);
@@ -887,3 +772,72 @@ int SensorConfig() {
 	return XST_SUCCESS;
 
 }
+
+
+//void ISR_3(void *CallbackRef) {
+//
+//	irpt_en = 1;
+//	k++;
+//
+//	if(k%10 == 0){
+//		xil_printf("FHD frame written into DDR. \n\r");
+//
+//		Xil_Out32(GPIO_LEDS, 0x1);
+//
+//		img2axis_config();
+//
+////		stop_vdma();
+//
+//		Xil_Out32(GPIO_LEDS, 0x3);
+//		Xil_Out32(GPIO_IRPT_CTRL, 0x0); //disable the interrupt frame_sent
+//
+//		xil_printf("Interrupts disabled. \n\r");
+//	}
+//
+//}
+//
+//int nr = 0;
+//
+////void ISR_4(void *CallbackRef) {
+//
+//	irpt_vio = 1;
+//	xil_printf("Accelerator ready to read data from 0x%08X. \n\r", srcBuffer);
+//
+//	nr++;
+//	if(nr%2==0){
+//		xil_printf("Interrupts enabled. \n\r");
+//		//after three vio interrupts result that accelerator done to read the image from the location
+//		Xil_Out32(GPIO_IRPT_CTRL, 0x1);// enable interrupt frame_sent
+//		Xil_Out32(GPIO_LEDS, 0x3);
+//		Sensor_Delay();
+//
+////		StartVDMA(XPAR_AXIVDMA_0_DEVICE_ID);
+//		vdma();
+//		xil_printf("VDMA_0 configured. \n\r");
+//		vdma_1();
+//		xil_printf("VDMA_1 configured. \n\r");
+//
+//	};
+//
+//}
+//int SetupInterruptSystemNewIrpt() {
+//
+//    int Status;
+//
+//    Status = XIntc_Connect(&Intc, IRPT_EN_ID,
+//        (XInterruptHandler)ISR_3, NULL);
+//    if (Status != XST_SUCCESS) return XST_FAILURE;
+//
+//    Status = XIntc_Connect(&Intc, IRPT_VIO_ID,
+//        (XInterruptHandler)ISR_4, NULL);
+//    if (Status != XST_SUCCESS) return XST_FAILURE;
+//
+//    XIntc_Start(&Intc, XIN_REAL_MODE);
+//
+//    XIntc_Enable(&Intc, IRPT_EN_ID);
+//    XIntc_Enable(&Intc, IRPT_VIO_ID);
+//
+//    microblaze_enable_interrupts();
+//
+//    return XST_SUCCESS;
+//}
