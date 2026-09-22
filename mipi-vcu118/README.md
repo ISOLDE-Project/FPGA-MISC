@@ -5,7 +5,7 @@ To recreate the complete block design, copy the following files and directories 
 - `final_bd.tcl`
 - `vivado_ip/`
 
-Open Vivado and, from the Tcl Console, run:
+Open Vivado, cd to this folder and, from the Tcl Console, run:
 
 ```tcl
 source ./final_bd.tcl
